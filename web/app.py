@@ -20,6 +20,22 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 db = DatabaseManager('../database/licitaciones.db')
 
+# Ejecutar migración automática
+try:
+    with db.get_connection() as conn:
+        cursor = conn.cursor()
+        if db.USE_POSTGRES:
+            cursor.execute("""
+                SELECT column_name 
+                FROM information_schema.columns 
+                WHERE table_name='licitaciones' AND column_name='tipo_licitacion_id'
+            """)
+            if cursor.fetchone() is None:
+                cursor.execute("ALTER TABLE licitaciones ADD COLUMN tipo_licitacion_id INTEGER")
+                print("✓ Migración: tipo_licitacion_id agregada")
+except Exception as e:
+    print(f"Migración: {e}")
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
