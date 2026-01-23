@@ -7,18 +7,25 @@ import pandas as pd
 # Detectar si estamos en producción (Render)
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
+# Render usa postgres:// pero psycopg2 necesita postgresql://
+if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
+    DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+
 if DATABASE_URL:
     # Usar PostgreSQL en producción
     try:
         import psycopg2
         from psycopg2.extras import RealDictCursor
         USE_POSTGRES = True
-    except ImportError:
-        print("Warning: psycopg2 not installed, using SQLite")
+        print(f"✓ Conectado a PostgreSQL")
+    except ImportError as e:
+        print(f"✗ Error importando psycopg2: {e}")
+        print("Usando SQLite como fallback")
         USE_POSTGRES = False
 else:
     # Usar SQLite en local
     USE_POSTGRES = False
+    print("Usando SQLite (desarrollo local)")
 
 class DatabaseManager:
     def __init__(self, db_path="database/licitaciones.db"):

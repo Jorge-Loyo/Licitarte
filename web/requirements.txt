@@ -4,3 +4,6 @@ psycopg2-binary==2.9.9
 pandas>=2.0.0
 openpyxl>=3.1.0
 python-dotenv==1.0.0
+
+# Asegurar compatibilidad con PostgreSQL 18
+psycopg2>=2.9.9

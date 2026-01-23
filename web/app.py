@@ -12,6 +12,10 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', secrets.token_hex(32))
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max
 db = DatabaseManager('../database/licitaciones.db')
 
+@app.route('/favicon.ico')
+def favicon():
+    return '', 204
+
 @app.route('/')
 def index():
     return render_template('dashboard.html')
