@@ -28,14 +28,14 @@
     </div>
 
     <div class="form-section">
-        <div class="section-header">
-            <h3>Productos</h3>
-            <button type="button" onclick="agregarProducto()" class="btn-primary">+ Agregar Producto</button>
-        </div>
+        <h3>Productos</h3>
         <div id="productosContainer"></div>
     </div>
 
-    <button type="submit" class="btn-success">Guardar Licitación</button>
+    <div style="display: flex; gap: 10px;">
+        <button type="button" onclick="agregarProducto()" class="btn-primary">+ Agregar Producto</button>
+        <button type="submit" class="btn-success">Guardar Licitación</button>
+    </div>
 </form>
 
 <div id="mensaje" class="mensaje"></div>
