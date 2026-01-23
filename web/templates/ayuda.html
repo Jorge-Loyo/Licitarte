@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Ayuda - Licitarte{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>❓ Manual de Usuario</h2>
+</div>
+
+<div class="help-container">
+    <div class="help-sidebar">
+        <a href="#inicio" class="help-link">🏠 Inicio</a>
+        <a href="#ingreso" class="help-link">➕ Nueva Licitación</a>
+        <a href="#gestion" class="help-link">📋 Gestión</a>
+        <a href="#dashboard" class="help-link">📊 Dashboard</a>
+        <a href="#consejos" class="help-link">🔧 Consejos</a>
+    </div>
+    
+    <div class="help-content">
+        <section id="inicio">
+            <h3>🏠 Bienvenido a Licitarte</h3>
+            <p>Licitarte es una aplicación profesional para gestionar licitaciones farmacéuticas.</p>
+            <h4>Características Principales:</h4>
+            <ul>
+                <li>Registrar licitaciones con múltiples productos</li>
+                <li>Gestionar y editar información</li>
+                <li>Dashboard con estadísticas en tiempo real</li>
+                <li>Consultar histórico de precios</li>
+            </ul>
+        </section>
+
+        <section id="ingreso">
+            <h3>➕ Nueva Licitación</h3>
+            <h4>Campos de Licitación:</h4>
+            <ul>
+                <li><strong>N° Licitación:</strong> Número único (obligatorio)</li>
+                <li><strong>Fecha:</strong> Fecha de la licitación (obligatorio)</li>
+                <li><strong>Lab. Ganador:</strong> Laboratorio ganador general (opcional)</li>
+            </ul>
+            <h4>Pasos:</h4>
+            <ol>
+                <li>Complete los datos de la licitación</li>
+                <li>Clic en "+ Agregar Producto"</li>
+                <li>Complete información de cada producto</li>
+                <li>Clic en "Guardar Licitación"</li>
+            </ol>
+        </section>
+
+        <section id="gestion">
+            <h3>📋 Gestión de Licitaciones</h3>
+            <h4>Funciones:</h4>
+            <ul>
+                <li>Ver todas las licitaciones</li>
+                <li>Buscar por N° o laboratorio</li>
+                <li>Ver detalle de productos</li>
+                <li>Editar productos</li>
+                <li>Eliminar licitaciones</li>
+            </ul>
+        </section>
+
+        <section id="dashboard">
+            <h3>📊 Dashboard</h3>
+            <h4>Estadísticas:</h4>
+            <ul>
+                <li><strong>Total Licitaciones:</strong> Todas las registradas</li>
+                <li><strong>Licitaciones Ganadas:</strong> Con productos adjudicados</li>
+                <li><strong>Total Unidades:</strong> Suma de cantidades</li>
+                <li><strong>Precio Promedio Ponderado:</strong> Promedio de precios ganados</li>
+            </ul>
+        </section>
+
+        <section id="consejos">
+            <h3>🔧 Consejos</h3>
+            <ul>
+                <li>Use formato de fecha consistente</li>
+                <li>Verifique datos antes de guardar</li>
+                <li>Haga respaldos periódicos</li>
+                <li>Use el histórico para consultar precios anteriores</li>
+            </ul>
+        </section>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Licitarte{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>📊 Dashboard - Análisis de Licitaciones</h2>
+    <button onclick="actualizarDashboard()" class="btn-primary">🔄 Actualizar</button>
+</div>
+
+<div class="stats-container">
+    <div class="stat-card">
+        <h3>Total Licitaciones</h3>
+        <p class="stat-value" id="totalLicitaciones">0</p>
+    </div>
+    <div class="stat-card">
+        <h3>Licitaciones Ganadas</h3>
+        <p class="stat-value" id="licitacionesGanadas">0</p>
+    </div>
+    <div class="stat-card">
+        <h3>Total Unidades</h3>
+        <p class="stat-value" id="totalUnidades">0</p>
+    </div>
+    <div class="stat-card">
+        <h3>Precio Promedio Ponderado</h3>
+        <p class="stat-value" id="precioProm">$0.00</p>
+    </div>
+</div>
+
+<div class="section">
+    <h3>🔍 Histórico de Producto</h3>
+    <div class="search-box">
+        <input type="text" id="productoSearch" placeholder="Buscar producto...">
+        <button onclick="buscarHistorico()" class="btn-primary">Buscar</button>
+    </div>
+    <div id="historicoResult" class="result-box"></div>
+</div>
+
+<div class="section">
+    <h3>📋 Productos Adjudicados</h3>
+    <div class="table-container">
+        <table id="productosTable">
+            <thead>
+                <tr>
+                    <th>N° Licitación</th>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody id="productosBody"></tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

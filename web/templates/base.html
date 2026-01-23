@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Licitarte{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/Logo_licitarte.png') }}">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="logo-section">
+                <img src="{{ url_for('static', filename='img/Logo_licitarte.png') }}" alt="Licitarte" class="logo">
+                <h1>LICITARTE</h1>
+            </div>
+            
+            <nav class="menu">
+                <a href="{{ url_for('dashboard') }}" class="menu-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                    📊 Dashboard
+                </a>
+                <a href="{{ url_for('nueva_licitacion') }}" class="menu-item {% if request.endpoint == 'nueva_licitacion' %}active{% endif %}">
+                    ➕ Nueva Licitación
+                </a>
+                <a href="{{ url_for('gestion') }}" class="menu-item {% if request.endpoint == 'gestion' %}active{% endif %}">
+                    📋 Gestión
+                </a>
+                <a href="{{ url_for('ayuda') }}" class="menu-item {% if request.endpoint == 'ayuda' %}active{% endif %}">
+                    ❓ Ayuda
+                </a>
+            </nav>
+            
+            <div class="footer">
+                <label class="theme-switch">
+                    <input type="checkbox" id="themeToggle">
+                    <span>Modo Claro</span>
+                </label>
+                <p class="version">v1.0</p>
+            </div>
+        </aside>
+        
+        <main class="content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

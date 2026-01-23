@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Nueva Licitación - Licitarte{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>➕ Nueva Licitación</h2>
+</div>
+
+<form id="licitacionForm" class="form-container">
+    <div class="form-section">
+        <h3>Datos de Licitación</h3>
+        <div class="form-group">
+            <label>N° Licitación *</label>
+            <input type="text" id="numeroLicitacion" required>
+        </div>
+        <div class="form-group">
+            <label>Fecha *</label>
+            <input type="date" id="fecha" required>
+        </div>
+        <div class="form-group">
+            <label>Laboratorio Ganador</label>
+            <input type="text" id="laboratorioGanador">
+        </div>
+    </div>
+
+    <div class="form-section">
+        <div class="section-header">
+            <h3>Productos</h3>
+            <button type="button" onclick="agregarProducto()" class="btn-primary">+ Agregar Producto</button>
+        </div>
+        <div id="productosContainer"></div>
+    </div>
+
+    <button type="submit" class="btn-success">Guardar Licitación</button>
+</form>
+
+<div id="mensaje" class="mensaje"></div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/ingreso.js') }}"></script>
+{% endblock %}

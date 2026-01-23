@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Gestión - Licitarte{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>📋 Gestión de Licitaciones</h2>
+    <button onclick="cargarLicitaciones()" class="btn-primary">🔄 Actualizar</button>
+</div>
+
+<div class="search-box">
+    <input type="text" id="searchInput" placeholder="Buscar por N° o laboratorio..." onkeyup="filtrarLicitaciones()">
+</div>
+
+<div class="table-container">
+    <table id="licitacionesTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>N° Licitación</th>
+                <th>Fecha</th>
+                <th>Laboratorio Ganador</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="licitacionesBody"></tbody>
+    </table>
+</div>
+
+<div id="modalDetalle" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="cerrarModal()">&times;</span>
+        <h3>Productos de la Licitación</h3>
+        <div class="table-container">
+            <table id="productosTable">
+                <thead>
+                    <tr>
+                        <th>Ítem</th>
+                        <th>Cantidad</th>
+                        <th>Precio Ofertado</th>
+                        <th>Resultado</th>
+                        <th>Precio Ganador</th>
+                        <th>Lab. Ganador</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="productosBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="modalEditar" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="cerrarModalEditar()">&times;</span>
+        <h3>Editar Producto</h3>
+        <form id="editarForm">
+            <input type="hidden" id="editProductoId">
+            <div class="form-group">
+                <label>Ítem/Producto *</label>
+                <input type="text" id="editItem" required>
+            </div>
+            <div class="form-group">
+                <label>Cantidad *</label>
+                <input type="number" id="editCantidad" required>
+            </div>
+            <div class="form-group">
+                <label>Precio Ofertado *</label>
+                <input type="number" step="0.01" id="editPrecio" required>
+            </div>
+            <div class="form-group">
+                <label>Resultado *</label>
+                <select id="editResultado">
+                    <option value="Adjudicado">Adjudicado</option>
+                    <option value="Parcial">Parcial</option>
+                    <option value="No Adjudicado">No Adjudicado</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Precio Ganador</label>
+                <input type="number" step="0.01" id="editPrecioGanador">
+            </div>
+            <div class="form-group">
+                <label>Lab. Ganador</label>
+                <input type="text" id="editLaboratorio">
+            </div>
+            <button type="submit" class="btn-success">Guardar</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/gestion.js') }}"></script>
+{% endblock %}
