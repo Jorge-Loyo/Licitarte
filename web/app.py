@@ -191,9 +191,10 @@ def get_productos_adjudicados():
     with db.get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT l.numero_licitacion, p.monodroga, p.marca, p.presentacion, p.cantidad, p.precio_ofertado, l.fecha
+            SELECT l.numero_licitacion, p.monodroga, p.marca, p.presentacion, p.cantidad, p.precio_ofertado, l.fecha, c.nombre
             FROM productos p
             JOIN licitaciones l ON p.licitacion_id = l.id
+            LEFT JOIN clientes c ON l.cliente_id = c.id
             WHERE p.resultado = 'Adjudicado'
             ORDER BY l.fecha DESC
         """)
@@ -206,7 +207,8 @@ def get_productos_adjudicados():
         'presentacion': p[3],
         'cantidad': p[4],
         'precio': p[5],
-        'fecha': p[6]
+        'fecha': p[6],
+        'cliente': p[7] or '-'
     } for p in productos])
 
 # API Clientes

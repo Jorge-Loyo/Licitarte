@@ -24,6 +24,7 @@ async function cargarProductosAdjudicados() {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${p.numero_licitacion}</td>
+            <td>${p.cliente}</td>
             <td>${p.monodroga} - ${p.marca}</td>
             <td>${p.presentacion}</td>
             <td>${p.cantidad}</td>
