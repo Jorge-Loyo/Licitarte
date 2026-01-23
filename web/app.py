@@ -231,7 +231,10 @@ def get_clientes():
 @app.route('/api/clientes', methods=['POST'])
 def crear_cliente():
     data = request.json
+    print(f"DEBUG - Datos recibidos: {data}")
+    
     if not data or not data.get('nombre'):
+        print("DEBUG - Error: Nombre no proporcionado")
         return jsonify({'success': False, 'error': 'Nombre es obligatorio'}), 400
     
     try:
@@ -243,10 +246,15 @@ def crear_cliente():
             data.get('telefono', ''),
             data.get('email', '')
         )
+        print(f"DEBUG - Cliente creado con ID: {cliente_id}")
         return jsonify({'success': True, 'id': cliente_id})
     except ValueError as e:
+        print(f"DEBUG - ValueError: {e}")
         return jsonify({'success': False, 'error': str(e)}), 400
     except Exception as e:
+        print(f"DEBUG - Exception: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'success': False, 'error': 'Error interno del servidor'}), 500
 
 @app.route('/api/clientes/<int:id>', methods=['PUT'])

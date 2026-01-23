@@ -422,16 +422,29 @@ class DatabaseManager:
             raise ValueError("Nombre es obligatorio")
         if len(nombre.strip()) > 200:
             raise ValueError("Nombre demasiado largo")
+        
+        print(f"DEBUG - Creando cliente: {nombre}")
+        
         with self.get_connection() as conn:
             cursor = conn.cursor()
-            if USE_POSTGRES:
-                cursor.execute("INSERT INTO clientes (nombre, razon_social, cuit, direccion, telefono, email) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
-                              (nombre.strip(), razon_social.strip(), cuit.strip(), direccion.strip(), telefono.strip(), email.strip()))
-                return cursor.fetchone()[0]
-            else:
-                cursor.execute("INSERT INTO clientes (nombre, razon_social, cuit, direccion, telefono, email) VALUES (?, ?, ?, ?, ?, ?)",
-                              (nombre.strip(), razon_social.strip(), cuit.strip(), direccion.strip(), telefono.strip(), email.strip()))
-                return cursor.lastrowid
+            try:
+                if USE_POSTGRES:
+                    cursor.execute("INSERT INTO clientes (nombre, razon_social, cuit, direccion, telefono, email) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
+                                  (nombre.strip(), razon_social.strip(), cuit.strip(), direccion.strip(), telefono.strip(), email.strip()))
+                    result = cursor.fetchone()[0]
+                    print(f"DEBUG - Cliente creado en PostgreSQL con ID: {result}")
+                    return result
+                else:
+                    cursor.execute("INSERT INTO clientes (nombre, razon_social, cuit, direccion, telefono, email) VALUES (?, ?, ?, ?, ?, ?)",
+                                  (nombre.strip(), razon_social.strip(), cuit.strip(), direccion.strip(), telefono.strip(), email.strip()))
+                    result = cursor.lastrowid
+                    print(f"DEBUG - Cliente creado en SQLite con ID: {result}")
+                    return result
+            except Exception as e:
+                print(f"DEBUG - Error en crear_cliente: {e}")
+                import traceback
+                traceback.print_exc()
+                raise
     
     def obtener_clientes(self):
         with self.get_connection() as conn:
