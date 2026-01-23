@@ -105,6 +105,16 @@ class DatabaseManager:
                     )
                 ''')
                 
+                # Migración: Agregar marca_ganadora si no existe
+                cursor.execute("""
+                    SELECT column_name 
+                    FROM information_schema.columns 
+                    WHERE table_name='productos' AND column_name='marca_ganadora'
+                """)
+                if cursor.fetchone() is None:
+                    cursor.execute("ALTER TABLE productos ADD COLUMN marca_ganadora TEXT")
+                    print("✓ Columna marca_ganadora agregada")
+                
                 # Tabla Celty con todas las columnas del Excel
                 cursor.execute('''
                     CREATE TABLE IF NOT EXISTS celty (
@@ -165,6 +175,13 @@ class DatabaseManager:
                         FOREIGN KEY (licitacion_id) REFERENCES licitaciones (id) ON DELETE CASCADE
                     )
                 ''')
+                
+                # Migración: Agregar marca_ganadora si no existe
+                cursor.execute("PRAGMA table_info(productos)")
+                columns = [col[1] for col in cursor.fetchall()]
+                if 'marca_ganadora' not in columns:
+                    cursor.execute("ALTER TABLE productos ADD COLUMN marca_ganadora TEXT")
+                    print("✓ Columna marca_ganadora agregada")
                 
                 # Tabla Celty con todas las columnas del Excel
                 cursor.execute('''
