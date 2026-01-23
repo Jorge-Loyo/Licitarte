@@ -1,6 +1,8 @@
 let productoCount = 0;
 let catalogoProductos = [];
 let clientes = [];
+let oferentes = [];
+let marcas = [];
 
 // Cargar catálogo y clientes al iniciar
 async function cargarCatalogo() {
@@ -23,6 +25,24 @@ async function cargarClientes() {
         });
     } catch (error) {
         console.error('Error cargando clientes:', error);
+    }
+}
+
+async function cargarOferentes() {
+    try {
+        const response = await fetch('/api/oferentes');
+        oferentes = await response.json();
+    } catch (error) {
+        console.error('Error cargando oferentes:', error);
+    }
+}
+
+async function cargarMarcas() {
+    try {
+        const response = await fetch('/api/marcas');
+        marcas = await response.json();
+    } catch (error) {
+        console.error('Error cargando marcas:', error);
     }
 }
 
@@ -87,11 +107,19 @@ function agregarProducto() {
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
             <div class="form-group">
                 <label>Oferente Ganador</label>
-                <input type="text" class="producto-oferente-ganador">
+                <select class="producto-oferente-ganador">
+                    <option value="">Seleccione...</option>
+                    ${oferentes.map(o => `<option value="${o.nombre}">${o.nombre}</option>`).join('')}
+                </select>
+                <button type="button" onclick="nuevoOferente(this)" class="btn-secondary" style="margin-top: 5px; font-size: 12px;">+ Nuevo</button>
             </div>
             <div class="form-group">
                 <label>Marca Ganadora</label>
-                <input type="text" class="producto-marca-ganadora">
+                <select class="producto-marca-ganadora">
+                    <option value="">Seleccione...</option>
+                    ${marcas.map(m => `<option value="${m.nombre}">${m.nombre}</option>`).join('')}
+                </select>
+                <button type="button" onclick="nuevaMarca(this)" class="btn-secondary" style="margin-top: 5px; font-size: 12px;">+ Nuevo</button>
             </div>
             <div class="form-group">
                 <label>Precio Ganador</label>
@@ -197,9 +225,63 @@ function mostrarMensaje(texto, tipo) {
     setTimeout(() => mensaje.style.display = 'none', 5000);
 }
 
+async function nuevoOferente(btn) {
+    const nombre = prompt('Nombre del oferente:');
+    if (!nombre) return;
+    
+    try {
+        const response = await fetch('/api/oferentes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nombre: nombre })
+        });
+        const result = await response.json();
+        if (result.success) {
+            await cargarOferentes();
+            const select = btn.previousElementSibling;
+            select.innerHTML = '<option value="">Seleccione...</option>' + 
+                oferentes.map(o => `<option value="${o.nombre}">${o.nombre}</option>`).join('');
+            select.value = nombre;
+            mostrarMensaje('Oferente agregado', 'success');
+        } else {
+            alert('Error: ' + result.error);
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+async function nuevaMarca(btn) {
+    const nombre = prompt('Nombre de la marca:');
+    if (!nombre) return;
+    
+    try {
+        const response = await fetch('/api/marcas', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nombre: nombre })
+        });
+        const result = await response.json();
+        if (result.success) {
+            await cargarMarcas();
+            const select = btn.previousElementSibling;
+            select.innerHTML = '<option value="">Seleccione...</option>' + 
+                marcas.map(m => `<option value="${m.nombre}">${m.nombre}</option>`).join('');
+            select.value = nombre;
+            mostrarMensaje('Marca agregada', 'success');
+        } else {
+            alert('Error: ' + result.error);
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('fecha').valueAsDate = new Date();
     await cargarCatalogo();
     await cargarClientes();
+    await cargarOferentes();
+    await cargarMarcas();
     agregarProducto();
 });

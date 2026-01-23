@@ -73,6 +73,24 @@ class DatabaseManager:
                     )
                 ''')
                 
+                # Tabla Oferentes
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS oferentes (
+                        id SERIAL PRIMARY KEY,
+                        nombre TEXT UNIQUE NOT NULL,
+                        activo BOOLEAN DEFAULT TRUE
+                    )
+                ''')
+                
+                # Tabla Marcas
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS marcas (
+                        id SERIAL PRIMARY KEY,
+                        nombre TEXT UNIQUE NOT NULL,
+                        activo BOOLEAN DEFAULT TRUE
+                    )
+                ''')
+                
                 cursor.execute('''
                     CREATE TABLE IF NOT EXISTS licitaciones (
                         id SERIAL PRIMARY KEY,
@@ -144,6 +162,24 @@ class DatabaseManager:
                     )
                 ''')
                 
+                # Tabla Oferentes
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS oferentes (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        nombre TEXT UNIQUE NOT NULL,
+                        activo INTEGER DEFAULT 1
+                    )
+                ''')
+                
+                # Tabla Marcas
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS marcas (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        nombre TEXT UNIQUE NOT NULL,
+                        activo INTEGER DEFAULT 1
+                    )
+                ''')
+                
                 cursor.execute('''
                     CREATE TABLE IF NOT EXISTS licitaciones (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -204,6 +240,8 @@ class DatabaseManager:
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_producto_resultado ON productos(resultado)')
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_celty_numero_registro ON celty(numero_registro)')
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_celty_monodroga ON celty(monodroga)')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_oferentes_nombre ON oferentes(nombre)')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_marcas_nombre ON marcas(nombre)')
     
     def cargar_catalogo_desde_excel(self, excel_path='Data/Celty.xlsx'):
         """Carga productos desde Excel a tabla celty"""
@@ -474,3 +512,83 @@ class DatabaseManager:
                 cursor.execute("UPDATE clientes SET activo = FALSE WHERE id = %s", (cliente_id,))
             else:
                 cursor.execute("UPDATE clientes SET activo = 0 WHERE id = ?", (cliente_id,))
+    
+    # CRUD Oferentes
+    def crear_oferente(self, nombre):
+        if not nombre or len(nombre.strip()) == 0:
+            raise ValueError("Nombre es obligatorio")
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("INSERT INTO oferentes (nombre) VALUES (%s) RETURNING id", (nombre.strip(),))
+                return cursor.fetchone()[0]
+            else:
+                cursor.execute("INSERT INTO oferentes (nombre) VALUES (?)", (nombre.strip(),))
+                return cursor.lastrowid
+    
+    def obtener_oferentes(self):
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("SELECT * FROM oferentes WHERE activo = TRUE ORDER BY nombre")
+            else:
+                cursor.execute("SELECT * FROM oferentes WHERE activo = 1 ORDER BY nombre")
+            return cursor.fetchall()
+    
+    def actualizar_oferente(self, oferente_id, nombre):
+        if not nombre:
+            raise ValueError("Nombre es obligatorio")
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("UPDATE oferentes SET nombre=%s WHERE id=%s", (nombre.strip(), oferente_id))
+            else:
+                cursor.execute("UPDATE oferentes SET nombre=? WHERE id=?", (nombre.strip(), oferente_id))
+    
+    def eliminar_oferente(self, oferente_id):
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("UPDATE oferentes SET activo = FALSE WHERE id = %s", (oferente_id,))
+            else:
+                cursor.execute("UPDATE oferentes SET activo = 0 WHERE id = ?", (oferente_id,))
+    
+    # CRUD Marcas
+    def crear_marca(self, nombre):
+        if not nombre or len(nombre.strip()) == 0:
+            raise ValueError("Nombre es obligatorio")
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("INSERT INTO marcas (nombre) VALUES (%s) RETURNING id", (nombre.strip(),))
+                return cursor.fetchone()[0]
+            else:
+                cursor.execute("INSERT INTO marcas (nombre) VALUES (?)", (nombre.strip(),))
+                return cursor.lastrowid
+    
+    def obtener_marcas(self):
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("SELECT * FROM marcas WHERE activo = TRUE ORDER BY nombre")
+            else:
+                cursor.execute("SELECT * FROM marcas WHERE activo = 1 ORDER BY nombre")
+            return cursor.fetchall()
+    
+    def actualizar_marca(self, marca_id, nombre):
+        if not nombre:
+            raise ValueError("Nombre es obligatorio")
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("UPDATE marcas SET nombre=%s WHERE id=%s", (nombre.strip(), marca_id))
+            else:
+                cursor.execute("UPDATE marcas SET nombre=? WHERE id=?", (nombre.strip(), marca_id))
+    
+    def eliminar_marca(self, marca_id):
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("UPDATE marcas SET activo = FALSE WHERE id = %s", (marca_id,))
+            else:
+                cursor.execute("UPDATE marcas SET activo = 0 WHERE id = ?", (marca_id,))

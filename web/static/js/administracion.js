@@ -1,4 +1,6 @@
 let clientes = [];
+let oferentes = [];
+let marcas = [];
 let catalogoCompleto = [];
 
 function mostrarTab(tab) {
@@ -9,6 +11,8 @@ function mostrarTab(tab) {
     event.target.classList.add('active');
     
     if (tab === 'clientes') cargarClientes();
+    if (tab === 'oferentes') cargarOferentes();
+    if (tab === 'marcas') cargarMarcas();
     if (tab === 'catalogo') cargarCatalogo();
 }
 
@@ -125,6 +129,170 @@ async function eliminarCliente(id) {
     if (result.success) {
         alert('Cliente eliminado');
         cargarClientes();
+    } else {
+        alert('Error: ' + result.error);
+    }
+}
+
+// Gestión Oferentes
+async function cargarOferentes() {
+    const response = await fetch('/api/oferentes');
+    oferentes = await response.json();
+    mostrarOferentes(oferentes);
+}
+
+function mostrarOferentes(data) {
+    const tbody = document.getElementById('oferentesBody');
+    tbody.innerHTML = '';
+    
+    data.forEach(o => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${o.id}</td>
+            <td>${o.nombre}</td>
+            <td>
+                <button onclick="editarOferente(${o.id})" class="btn-primary">Editar</button>
+                <button onclick="eliminarOferente(${o.id})" class="btn-danger">Eliminar</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function nuevoOferente() {
+    const nombre = prompt('Nombre del oferente:');
+    if (!nombre) return;
+    
+    fetch('/api/oferentes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre: nombre })
+    })
+    .then(res => res.json())
+    .then(result => {
+        if (result.success) {
+            alert('Oferente creado');
+            cargarOferentes();
+        } else {
+            alert('Error: ' + result.error);
+        }
+    });
+}
+
+function editarOferente(id) {
+    const oferente = oferentes.find(o => o.id === id);
+    if (!oferente) return;
+    
+    const nombre = prompt('Nombre del oferente:', oferente.nombre);
+    if (!nombre) return;
+    
+    fetch(`/api/oferentes/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre: nombre })
+    })
+    .then(res => res.json())
+    .then(result => {
+        if (result.success) {
+            alert('Oferente actualizado');
+            cargarOferentes();
+        } else {
+            alert('Error: ' + result.error);
+        }
+    });
+}
+
+async function eliminarOferente(id) {
+    if (!confirm('¿Eliminar este oferente?')) return;
+    
+    const response = await fetch(`/api/oferentes/${id}`, { method: 'DELETE' });
+    const result = await response.json();
+    
+    if (result.success) {
+        alert('Oferente eliminado');
+        cargarOferentes();
+    } else {
+        alert('Error: ' + result.error);
+    }
+}
+
+// Gestión Marcas
+async function cargarMarcas() {
+    const response = await fetch('/api/marcas');
+    marcas = await response.json();
+    mostrarMarcas(marcas);
+}
+
+function mostrarMarcas(data) {
+    const tbody = document.getElementById('marcasBody');
+    tbody.innerHTML = '';
+    
+    data.forEach(m => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${m.id}</td>
+            <td>${m.nombre}</td>
+            <td>
+                <button onclick="editarMarca(${m.id})" class="btn-primary">Editar</button>
+                <button onclick="eliminarMarca(${m.id})" class="btn-danger">Eliminar</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function nuevaMarca() {
+    const nombre = prompt('Nombre de la marca:');
+    if (!nombre) return;
+    
+    fetch('/api/marcas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre: nombre })
+    })
+    .then(res => res.json())
+    .then(result => {
+        if (result.success) {
+            alert('Marca creada');
+            cargarMarcas();
+        } else {
+            alert('Error: ' + result.error);
+        }
+    });
+}
+
+function editarMarca(id) {
+    const marca = marcas.find(m => m.id === id);
+    if (!marca) return;
+    
+    const nombre = prompt('Nombre de la marca:', marca.nombre);
+    if (!nombre) return;
+    
+    fetch(`/api/marcas/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre: nombre })
+    })
+    .then(res => res.json())
+    .then(result => {
+        if (result.success) {
+            alert('Marca actualizada');
+            cargarMarcas();
+        } else {
+            alert('Error: ' + result.error);
+        }
+    });
+}
+
+async function eliminarMarca(id) {
+    if (!confirm('¿Eliminar esta marca?')) return;
+    
+    const response = await fetch(`/api/marcas/${id}`, { method: 'DELETE' });
+    const result = await response.json();
+    
+    if (result.success) {
+        alert('Marca eliminada');
+        cargarMarcas();
     } else {
         alert('Error: ' + result.error);
     }

@@ -9,6 +9,8 @@
 
 <div class="admin-tabs">
     <button class="tab-btn active" onclick="mostrarTab('clientes')">Clientes</button>
+    <button class="tab-btn" onclick="mostrarTab('oferentes')">Oferentes</button>
+    <button class="tab-btn" onclick="mostrarTab('marcas')">Marcas</button>
     <button class="tab-btn" onclick="mostrarTab('catalogo')">Catálogo Productos</button>
 </div>
 
@@ -66,6 +68,48 @@
                 </tr>
             </thead>
             <tbody id="catalogoBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Tab Oferentes -->
+<div id="tab-oferentes" class="tab-content">
+    <div class="page-header">
+        <h3>Gestión de Oferentes</h3>
+        <button onclick="nuevoOferente()" class="btn-primary">+ Nuevo Oferente</button>
+    </div>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="oferentesBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Tab Marcas -->
+<div id="tab-marcas" class="tab-content">
+    <div class="page-header">
+        <h3>Gestión de Marcas</h3>
+        <button onclick="nuevaMarca()" class="btn-primary">+ Nueva Marca</button>
+    </div>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="marcasBody"></tbody>
         </table>
     </div>
 </div>

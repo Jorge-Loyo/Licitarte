@@ -282,6 +282,74 @@ def eliminar_cliente(id):
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400
 
+# API Oferentes
+@app.route('/api/oferentes', methods=['GET'])
+def get_oferentes():
+    oferentes = db.obtener_oferentes()
+    return jsonify([{'id': o[0], 'nombre': o[1]} for o in oferentes])
+
+@app.route('/api/oferentes', methods=['POST'])
+def crear_oferente():
+    data = request.json
+    if not data or not data.get('nombre'):
+        return jsonify({'success': False, 'error': 'Nombre es obligatorio'}), 400
+    try:
+        oferente_id = db.crear_oferente(data['nombre'])
+        return jsonify({'success': True, 'id': oferente_id})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/oferentes/<int:id>', methods=['PUT'])
+def actualizar_oferente(id):
+    data = request.json
+    try:
+        db.actualizar_oferente(id, data['nombre'])
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/oferentes/<int:id>', methods=['DELETE'])
+def eliminar_oferente(id):
+    try:
+        db.eliminar_oferente(id)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+# API Marcas
+@app.route('/api/marcas', methods=['GET'])
+def get_marcas():
+    marcas = db.obtener_marcas()
+    return jsonify([{'id': m[0], 'nombre': m[1]} for m in marcas])
+
+@app.route('/api/marcas', methods=['POST'])
+def crear_marca():
+    data = request.json
+    if not data or not data.get('nombre'):
+        return jsonify({'success': False, 'error': 'Nombre es obligatorio'}), 400
+    try:
+        marca_id = db.crear_marca(data['nombre'])
+        return jsonify({'success': True, 'id': marca_id})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/marcas/<int:id>', methods=['PUT'])
+def actualizar_marca(id):
+    data = request.json
+    try:
+        db.actualizar_marca(id, data['nombre'])
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/marcas/<int:id>', methods=['DELETE'])
+def eliminar_marca(id):
+    try:
+        db.eliminar_marca(id)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
 @app.route('/api/cargar-catalogo', methods=['POST'])
 def cargar_catalogo():
     if 'file' not in request.files:
