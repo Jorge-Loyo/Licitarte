@@ -33,7 +33,7 @@ function filtrarLicitaciones() {
     
     licitacionesFiltradas = licitaciones.filter(l => {
         const matchSearch = l.numero.toLowerCase().includes(search) || 
-                           (l.oferente && l.oferente.toLowerCase().includes(search));
+                           (l.cliente && l.cliente.toLowerCase().includes(search));
         const matchTipo = !filtroTipo || l.tipo_licitacion === filtroTipo;
         
         return matchSearch && matchTipo;
