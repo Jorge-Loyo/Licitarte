@@ -72,15 +72,26 @@ def get_catalogo():
 
 @app.route('/api/licitaciones', methods=['GET'])
 def get_licitaciones():
-    licitaciones = db.obtener_licitaciones()
+    with db.get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT l.id, l.numero_licitacion, l.fecha, l.oferente_ganador, l.marca_ganadora, l.precio_ganador,
+                   c.nombre as cliente, t.nombre as tipo_licitacion
+            FROM licitaciones l
+            LEFT JOIN clientes c ON l.cliente_id = c.id
+            LEFT JOIN tipos_licitacion t ON l.tipo_licitacion_id = t.id
+            ORDER BY l.fecha DESC
+        """)
+        licitaciones = cursor.fetchall()
     return jsonify([{
         'id': l[0],
         'numero': l[1],
-        'cliente_id': l[2],
-        'fecha': l[3],
-        'oferente': l[4],
-        'marca_ganadora': l[5],
-        'precio_ganador': l[6]
+        'fecha': l[2],
+        'oferente': l[3],
+        'marca_ganadora': l[4],
+        'precio_ganador': l[5],
+        'cliente': l[6] or '-',
+        'tipo_licitacion': l[7] or '-'
     } for l in licitaciones])
 
 @app.route('/api/licitaciones', methods=['POST'])

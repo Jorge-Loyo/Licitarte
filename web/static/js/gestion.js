@@ -16,6 +16,8 @@ function mostrarLicitaciones(data) {
         tr.innerHTML = `
             <td>${l.id}</td>
             <td>${l.numero}</td>
+            <td>${l.cliente}</td>
+            <td>${l.tipo_licitacion}</td>
             <td>${l.fecha}</td>
             <td>${l.oferente || '-'}</td>
             <td>
@@ -45,10 +47,11 @@ async function verDetalle(id) {
     
     document.getElementById('detalleTitle').textContent = `Licitación N° ${licitacion.numero}`;
     document.getElementById('detalleInfo').innerHTML = `
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
             <div><strong>N° Licitación:</strong> ${licitacion.numero}</div>
+            <div><strong>Cliente:</strong> ${licitacion.cliente}</div>
+            <div><strong>Tipo:</strong> ${licitacion.tipo_licitacion}</div>
             <div><strong>Fecha:</strong> ${licitacion.fecha}</div>
-            <div><strong>Cliente:</strong> ${licitacion.cliente_id || '-'}</div>
         </div>
     `;
     
