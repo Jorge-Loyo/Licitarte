@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, jsonify, redirect, url_for
 import sys
 import os
 sys.path.insert(0, os.path.abspath('..'))
-from database.db_manager import DatabaseManager
+from database.db_manager import DatabaseManager, USE_POSTGRES
 from werkzeug.utils import secure_filename
 
 import os
@@ -147,15 +147,18 @@ def get_licitaciones():
         # Calcular ganancia para cada licitación
         resultado = []
         for l in licitaciones:
-            cursor.execute("""
-                SELECT COUNT(*) as total,
-                       SUM(CASE WHEN resultado = 'Adjudicado' THEN 1 ELSE 0 END) as adjudicados
-                FROM productos WHERE licitacion_id = %s
-            """ if db.USE_POSTGRES else """
-                SELECT COUNT(*) as total,
-                       SUM(CASE WHEN resultado = 'Adjudicado' THEN 1 ELSE 0 END) as adjudicados
-                FROM productos WHERE licitacion_id = ?
-            """, (l[0],))
+            if USE_POSTGRES:
+                cursor.execute("""
+                    SELECT COUNT(*) as total,
+                           SUM(CASE WHEN resultado = 'Adjudicado' THEN 1 ELSE 0 END) as adjudicados
+                    FROM productos WHERE licitacion_id = %s
+                """, (l[0],))
+            else:
+                cursor.execute("""
+                    SELECT COUNT(*) as total,
+                           SUM(CASE WHEN resultado = 'Adjudicado' THEN 1 ELSE 0 END) as adjudicados
+                    FROM productos WHERE licitacion_id = ?
+                """, (l[0],))
             stats = cursor.fetchone()
             total = stats[0] or 0
             adjudicados = stats[1] or 0
