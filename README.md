@@ -1,6 +1,11 @@
 # Licitarte - Sistema de Gestión de Licitaciones Farmacéuticas
 
-Sistema profesional para gestionar licitaciones farmacéuticas con catálogo integrado de productos Celty.
+**Versión 1.0.0** - Sistema profesional para gestionar licitaciones farmacéuticas con catálogo integrado de productos Celty.
+
+[![Versión](https://img.shields.io/badge/versión-1.0.0-blue.svg)](https://github.com/Jorge-Loyo/Licitarte)
+[![Python](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/flask-3.0.0-green.svg)](https://flask.palletsprojects.com/)
+[![Licencia](https://img.shields.io/badge/licencia-Propietario-red.svg)](LICENSE)
 
 ## Características
 
@@ -121,11 +126,12 @@ Licitarte/
 - Agregar nuevos oferentes/marcas/tipos sobre la marcha
 
 ### 3. Gestión
-- Listar todas las licitaciones con paginación
+- Listar todas las licitaciones con paginación (10 por página)
 - Buscar por N° o oferente
 - Filtrar por tipo de licitación
-- Filtrar por resultado (Adjudicado/Parcial/No Adjudicado)
+- Columna "Ganancia" muestra items adjudicados/total (ej: 3/5)
 - Ver detalle completo de productos
+- Editar licitación (N°, Cliente, Tipo, Fecha)
 - Editar productos (monodroga, marca, presentación, cantidad, precios, resultado, oferente, marca ganadora, marca ofrecida)
 - Eliminar licitaciones
 
@@ -207,6 +213,19 @@ pg_dump $DATABASE_URL > backup_$(date +%Y%m%d).sql
 
 Propietario - Todos los derechos reservados
 
+## Versión
+
+**1.0.0** - Enero 2025
+
+Ver [CHANGELOG.md](CHANGELOG.md) para historial completo de cambios.
+
 ## Autor
 
 Jorge - Licitarte 2025
+
+## Enlaces Útiles
+
+- [Guía de Instalación](INSTALL.md)
+- [Guía de Despliegue](DEPLOY.md)
+- [Historial de Cambios](CHANGELOG.md)
+- [Manual de Usuario](web/templates/ayuda.html) (disponible en la aplicación)

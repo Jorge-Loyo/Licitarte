@@ -50,3 +50,12 @@ Thumbs.db
 # Archivos temporales
 *.tmp
 *.bak
+
+# Uploads
+web/uploads/
+
+# Distribución
+Licitarte_v*_Instalador/
+*.rar
+*.zip
+*.exe
