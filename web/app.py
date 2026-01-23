@@ -3,14 +3,25 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath('..'))
 from database.db_manager import DatabaseManager
+from werkzeug.utils import secure_filename
 
 import os
 import secrets
 
+UPLOAD_FOLDER = 'uploads'
+ALLOWED_EXTENSIONS = {'xlsx', 'xls'}
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', secrets.token_hex(32))
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 db = DatabaseManager('../database/licitaciones.db')
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/favicon.ico')
 def favicon():
@@ -257,6 +268,34 @@ def eliminar_cliente(id):
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/cargar-catalogo', methods=['POST'])
+def cargar_catalogo():
+    if 'file' not in request.files:
+        return jsonify({'success': False, 'error': 'No se envió archivo'}), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'success': False, 'error': 'No se seleccionó archivo'}), 400
+    
+    if not allowed_file(file.filename):
+        return jsonify({'success': False, 'error': 'Solo se permiten archivos .xlsx o .xls'}), 400
+    
+    try:
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+        
+        result = db.cargar_catalogo_desde_excel(filepath)
+        
+        os.remove(filepath)
+        
+        if result:
+            return jsonify({'success': True, 'message': 'Catálogo cargado exitosamente'})
+        else:
+            return jsonify({'success': False, 'error': 'Error al procesar el archivo'}), 500
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

@@ -41,7 +41,10 @@
 <div id="tab-catalogo" class="tab-content">
     <div class="page-header">
         <h3>Catálogo de Productos</h3>
-        <button onclick="recargarCatalogo()" class="btn-primary">🔄 Recargar desde Excel</button>
+        <div>
+            <input type="file" id="excelFile" accept=".xlsx,.xls" style="display:none" onchange="subirExcel()">
+            <button onclick="document.getElementById('excelFile').click()" class="btn-primary">📄 Cargar Excel</button>
+        </div>
     </div>
     
     <div class="search-box">

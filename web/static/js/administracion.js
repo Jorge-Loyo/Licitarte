@@ -157,6 +157,36 @@ async function recargarCatalogo() {
     alert('Función de recarga desde servidor. Implementar endpoint si es necesario.');
 }
 
+async function subirExcel() {
+    const fileInput = document.getElementById('excelFile');
+    const file = fileInput.files[0];
+    
+    if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const response = await fetch('/api/cargar-catalogo', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('✓ Catálogo cargado exitosamente');
+            cargarCatalogo();
+        } else {
+            alert('✗ Error: ' + result.error);
+        }
+    } catch (error) {
+        alert('✗ Error al cargar archivo: ' + error.message);
+    }
+    
+    fileInput.value = '';
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     cargarClientes();
 });
