@@ -96,9 +96,9 @@ def crear_licitacion():
         licitacion_id = db.crear_licitacion(
             data['numero'],
             data['fecha'],
-            data.get('oferente', ''),
-            data.get('marca_ganadora', ''),
-            float(data['precio_ganador']) if data.get('precio_ganador') else None,
+            '',
+            '',
+            None,
             int(data['cliente_id']) if data.get('cliente_id') else None
         )
         
@@ -111,9 +111,10 @@ def crear_licitacion():
                 int(producto['cantidad']),
                 float(producto['precio']),
                 producto['resultado'],
-                None,
-                '',
-                producto.get('marca_ofrecida', '')
+                float(producto['precio_ganador']) if producto.get('precio_ganador') else None,
+                producto.get('oferente_ganador', ''),
+                producto.get('marca_ofrecida', ''),
+                producto.get('marca_ganadora', '')
             )
         
         return jsonify({'success': True, 'id': licitacion_id})
@@ -144,7 +145,8 @@ def get_productos(licitacion_id):
         'resultado': p[7],
         'precio_ganador': p[8],
         'oferente': p[9],
-        'marca_ofrecida': p[10]
+        'marca_ofrecida': p[10],
+        'marca_ganadora': p[11] if len(p) > 11 else ''
     } for p in productos])
 
 @app.route('/api/productos/<int:id>', methods=['PUT'])
@@ -161,7 +163,8 @@ def actualizar_producto(id):
             data['resultado'],
             float(data['precio_ganador']) if data.get('precio_ganador') else None,
             data.get('oferente', ''),
-            data.get('marca_ofrecida', '')
+            data.get('marca_ofrecida', ''),
+            data.get('marca_ganadora', '')
         )
         return jsonify({'success': True})
     except Exception as e:

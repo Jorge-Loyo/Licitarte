@@ -104,6 +104,20 @@ function agregarProducto() {
                 <input type="text" class="producto-marca-ofrecida">
             </div>
         </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+            <div class="form-group">
+                <label>Oferente Ganador</label>
+                <input type="text" class="producto-oferente-ganador">
+            </div>
+            <div class="form-group">
+                <label>Marca Ganadora</label>
+                <input type="text" class="producto-marca-ganadora">
+            </div>
+            <div class="form-group">
+                <label>Precio Ganador</label>
+                <input type="number" step="0.01" class="producto-precio-ganador">
+            </div>
+        </div>
     `;
     
     container.appendChild(div);
@@ -153,7 +167,10 @@ document.getElementById('licitacionForm').addEventListener('submit', async (e) =
             cantidad: item.querySelector('.producto-cantidad').value,
             precio: item.querySelector('.producto-precio').value,
             resultado: item.querySelector('.producto-resultado').value,
-            marca_ofrecida: item.querySelector('.producto-marca-ofrecida').value
+            marca_ofrecida: item.querySelector('.producto-marca-ofrecida').value,
+            oferente_ganador: item.querySelector('.producto-oferente-ganador').value,
+            marca_ganadora: item.querySelector('.producto-marca-ganadora').value,
+            precio_ganador: item.querySelector('.producto-precio-ganador').value
         });
     });
     
@@ -166,9 +183,6 @@ document.getElementById('licitacionForm').addEventListener('submit', async (e) =
         numero: document.getElementById('numeroLicitacion').value,
         cliente_id: document.getElementById('clienteSelect').value,
         fecha: document.getElementById('fecha').value,
-        oferente: document.getElementById('oferenteGanador').value,
-        marca_ganadora: document.getElementById('marcaGanadora').value,
-        precio_ganador: document.getElementById('precioGanador').value,
         productos: productos
     };
     

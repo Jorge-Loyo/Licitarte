@@ -100,6 +100,7 @@ class DatabaseManager:
                         precio_ganador REAL CHECK(precio_ganador >= 0),
                         oferente_ganador TEXT,
                         marca_ofrecida TEXT,
+                        marca_ganadora TEXT,
                         FOREIGN KEY (licitacion_id) REFERENCES licitaciones (id) ON DELETE CASCADE
                     )
                 ''')
@@ -160,6 +161,7 @@ class DatabaseManager:
                         precio_ganador REAL CHECK(precio_ganador >= 0),
                         oferente_ganador TEXT,
                         marca_ofrecida TEXT,
+                        marca_ganadora TEXT,
                         FOREIGN KEY (licitacion_id) REFERENCES licitaciones (id) ON DELETE CASCADE
                     )
                 ''')
@@ -277,7 +279,7 @@ class DatabaseManager:
                               (numero.strip(), cliente_id, fecha.strip(), oferente_ganador.strip(), marca_ganadora.strip(), precio_ganador))
                 return cursor.lastrowid
     
-    def agregar_producto(self, licitacion_id, monodroga, marca, presentacion, cantidad, precio_ofertado, resultado, precio_ganador=None, oferente_ganador="", marca_ofrecida=""):
+    def agregar_producto(self, licitacion_id, monodroga, marca, presentacion, cantidad, precio_ofertado, resultado, precio_ganador=None, oferente_ganador="", marca_ofrecida="", marca_ganadora=""):
         if not monodroga or not marca or not presentacion or cantidad <= 0 or precio_ofertado < 0:
             raise ValueError("Datos de producto inválidos")
         if resultado == "Adjudicado":
@@ -286,12 +288,12 @@ class DatabaseManager:
             cursor = conn.cursor()
             if USE_POSTGRES:
                 cursor.execute("""INSERT INTO productos (licitacion_id, monodroga, marca, presentacion, cantidad, precio_ofertado, 
-                                 resultado, precio_ganador, oferente_ganador, marca_ofrecida) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-                              (licitacion_id, monodroga.strip(), marca.strip(), presentacion.strip(), cantidad, precio_ofertado, resultado, precio_ganador, oferente_ganador.strip(), marca_ofrecida.strip()))
+                                 resultado, precio_ganador, oferente_ganador, marca_ofrecida, marca_ganadora) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                              (licitacion_id, monodroga.strip(), marca.strip(), presentacion.strip(), cantidad, precio_ofertado, resultado, precio_ganador, oferente_ganador.strip(), marca_ofrecida.strip(), marca_ganadora.strip()))
             else:
                 cursor.execute("""INSERT INTO productos (licitacion_id, monodroga, marca, presentacion, cantidad, precio_ofertado, 
-                                 resultado, precio_ganador, oferente_ganador, marca_ofrecida) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                              (licitacion_id, monodroga.strip(), marca.strip(), presentacion.strip(), cantidad, precio_ofertado, resultado, precio_ganador, oferente_ganador.strip(), marca_ofrecida.strip()))
+                                 resultado, precio_ganador, oferente_ganador, marca_ofrecida, marca_ganadora) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                              (licitacion_id, monodroga.strip(), marca.strip(), presentacion.strip(), cantidad, precio_ofertado, resultado, precio_ganador, oferente_ganador.strip(), marca_ofrecida.strip(), marca_ganadora.strip()))
     
     def obtener_licitaciones(self):
         with self.get_connection() as conn:
@@ -320,7 +322,7 @@ class DatabaseManager:
                 cursor.execute("UPDATE licitaciones SET numero_licitacion=?, cliente_id=?, fecha=?, oferente_ganador=?, marca_ganadora=?, precio_ganador=? WHERE id=?",
                               (numero.strip(), cliente_id, fecha.strip(), oferente_ganador.strip(), marca_ganadora.strip(), precio_ganador, licitacion_id))
     
-    def actualizar_producto(self, producto_id, monodroga, marca, presentacion, cantidad, precio_ofertado, resultado, precio_ganador, oferente_ganador, marca_ofrecida):
+    def actualizar_producto(self, producto_id, monodroga, marca, presentacion, cantidad, precio_ofertado, resultado, precio_ganador, oferente_ganador, marca_ofrecida, marca_ganadora=""):
         if not monodroga or not marca or not presentacion or cantidad <= 0 or precio_ofertado < 0:
             raise ValueError("Datos de producto inválidos")
         if resultado == "Adjudicado":
@@ -329,12 +331,12 @@ class DatabaseManager:
             cursor = conn.cursor()
             if USE_POSTGRES:
                 cursor.execute("""UPDATE productos SET monodroga=%s, marca=%s, presentacion=%s, cantidad=%s, precio_ofertado=%s, 
-                                 resultado=%s, precio_ganador=%s, oferente_ganador=%s, marca_ofrecida=%s WHERE id=%s""",
-                              (monodroga.strip(), marca.strip(), presentacion.strip(), cantidad, precio_ofertado, resultado, precio_ganador, oferente_ganador.strip(), marca_ofrecida.strip(), producto_id))
+                                 resultado=%s, precio_ganador=%s, oferente_ganador=%s, marca_ofrecida=%s, marca_ganadora=%s WHERE id=%s""",
+                              (monodroga.strip(), marca.strip(), presentacion.strip(), cantidad, precio_ofertado, resultado, precio_ganador, oferente_ganador.strip(), marca_ofrecida.strip(), marca_ganadora.strip(), producto_id))
             else:
                 cursor.execute("""UPDATE productos SET monodroga=?, marca=?, presentacion=?, cantidad=?, precio_ofertado=?, 
-                                 resultado=?, precio_ganador=?, oferente_ganador=?, marca_ofrecida=? WHERE id=?""",
-                              (monodroga.strip(), marca.strip(), presentacion.strip(), cantidad, precio_ofertado, resultado, precio_ganador, oferente_ganador.strip(), marca_ofrecida.strip(), producto_id))
+                                 resultado=?, precio_ganador=?, oferente_ganador=?, marca_ofrecida=?, marca_ganadora=? WHERE id=?""",
+                              (monodroga.strip(), marca.strip(), presentacion.strip(), cantidad, precio_ofertado, resultado, precio_ganador, oferente_ganador.strip(), marca_ofrecida.strip(), marca_ganadora.strip(), producto_id))
     
     def eliminar_licitacion(self, licitacion_id):
         with self.get_connection() as conn:
