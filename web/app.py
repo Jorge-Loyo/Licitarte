@@ -24,7 +24,10 @@ db = DatabaseManager('../database/licitaciones.db')
 try:
     with db.get_connection() as conn:
         cursor = conn.cursor()
-        if db.USE_POSTGRES:
+        # Verificar si estamos en PostgreSQL
+        cursor.execute("SELECT version()")
+        version = cursor.fetchone()[0]
+        if 'PostgreSQL' in version:
             cursor.execute("""
                 SELECT column_name 
                 FROM information_schema.columns 
