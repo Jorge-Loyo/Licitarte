@@ -49,6 +49,7 @@
         <span class="close" onclick="cerrarModal()">&times;</span>
         <h3 id="detalleTitle">Detalle de Licitación</h3>
         <div id="detalleInfo" style="background: #2a2a2a; padding: 15px; border-radius: 5px; margin-bottom: 20px;"></div>
+        <button onclick="editarLicitacion()" class="btn-primary" style="margin-bottom: 15px;">✏️ Editar Licitación</button>
         <h4>Productos</h4>
         <div class="table-container">
             <table id="productosTable">
@@ -121,6 +122,37 @@
             <div class="form-group">
                 <label>Marca Ofrecida</label>
                 <input type="text" id="editMarcaOfrecida">
+            </div>
+            <button type="submit" class="btn-success">Guardar</button>
+        </form>
+    </div>
+</div>
+
+<div id="modalEditarLicitacion" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="cerrarModalEditarLicitacion()">&times;</span>
+        <h3>Editar Licitación</h3>
+        <form id="editarLicitacionForm">
+            <input type="hidden" id="editLicitacionId">
+            <div class="form-group">
+                <label>N° Licitación *</label>
+                <input type="text" id="editNumeroLicitacion" required>
+            </div>
+            <div class="form-group">
+                <label>Cliente *</label>
+                <select id="editClienteSelect" required>
+                    <option value="">Seleccione cliente...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Tipo de Licitación</label>
+                <select id="editTipoLicitacionSelect">
+                    <option value="">Seleccione tipo...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Fecha *</label>
+                <input type="date" id="editFecha" required>
             </div>
             <button type="submit" class="btn-success">Guardar</button>
         </form>

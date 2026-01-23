@@ -203,6 +203,34 @@ def eliminar_licitacion(id):
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400
 
+@app.route('/api/licitaciones/<int:id>', methods=['PUT'])
+def actualizar_licitacion(id):
+    data = request.json
+    try:
+        db.actualizar_licitacion(
+            id,
+            data['numero'],
+            data['fecha'],
+            '',
+            '',
+            None,
+            int(data['cliente_id']) if data.get('cliente_id') else None
+        )
+        
+        # Actualizar tipo_licitacion_id si se proporciona
+        if 'tipo_licitacion_id' in data:
+            with db.get_connection() as conn:
+                cursor = conn.cursor()
+                tipo_id = int(data['tipo_licitacion_id']) if data['tipo_licitacion_id'] else None
+                if db.USE_POSTGRES:
+                    cursor.execute("UPDATE licitaciones SET tipo_licitacion_id = %s WHERE id = %s", (tipo_id, id))
+                else:
+                    cursor.execute("UPDATE licitaciones SET tipo_licitacion_id = ? WHERE id = ?", (tipo_id, id))
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
 @app.route('/api/productos/<int:licitacion_id>', methods=['GET'])
 def get_productos(licitacion_id):
     productos = db.obtener_productos_licitacion(licitacion_id)

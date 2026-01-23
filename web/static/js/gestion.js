@@ -4,6 +4,7 @@ let licitacionActual = null;
 let paginaGestion = 1;
 const porPaginaGestion = 10;
 let tiposLicitacion = [];
+let clientes = [];
 
 async function cargarLicitaciones() {
     const response = await fetch('/api/licitaciones');
@@ -12,6 +13,10 @@ async function cargarLicitaciones() {
     // Cargar tipos de licitación para el filtro
     const responseTipos = await fetch('/api/tipos-licitacion');
     tiposLicitacion = await responseTipos.json();
+    
+    // Cargar clientes
+    const responseClientes = await fetch('/api/clientes');
+    clientes = await responseClientes.json();
     
     const selectTipo = document.getElementById('filtroTipo');
     selectTipo.innerHTML = '<option value="">Todos los tipos</option>';
@@ -195,3 +200,62 @@ async function eliminar(id) {
 }
 
 document.addEventListener('DOMContentLoaded', cargarLicitaciones);
+
+function editarLicitacion() {
+    const licitacion = licitaciones.find(l => l.id === licitacionActual);
+    if (!licitacion) return;
+    
+    document.getElementById('editLicitacionId').value = licitacion.id;
+    document.getElementById('editNumeroLicitacion').value = licitacion.numero;
+    document.getElementById('editFecha').value = licitacion.fecha;
+    
+    // Llenar select de clientes
+    const selectCliente = document.getElementById('editClienteSelect');
+    selectCliente.innerHTML = '<option value="">Seleccione cliente...</option>';
+    clientes.forEach(c => {
+        const selected = c.nombre === licitacion.cliente ? 'selected' : '';
+        selectCliente.innerHTML += `<option value="${c.id}" ${selected}>${c.nombre}</option>`;
+    });
+    
+    // Llenar select de tipos
+    const selectTipo = document.getElementById('editTipoLicitacionSelect');
+    selectTipo.innerHTML = '<option value="">Seleccione tipo...</option>';
+    tiposLicitacion.forEach(t => {
+        const selected = t.nombre === licitacion.tipo_licitacion ? 'selected' : '';
+        selectTipo.innerHTML += `<option value="${t.id}" ${selected}>${t.nombre}</option>`;
+    });
+    
+    document.getElementById('modalEditarLicitacion').style.display = 'block';
+}
+
+function cerrarModalEditarLicitacion() {
+    document.getElementById('modalEditarLicitacion').style.display = 'none';
+}
+
+document.getElementById('editarLicitacionForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const id = document.getElementById('editLicitacionId').value;
+    const data = {
+        numero: document.getElementById('editNumeroLicitacion').value,
+        cliente_id: document.getElementById('editClienteSelect').value,
+        tipo_licitacion_id: document.getElementById('editTipoLicitacionSelect').value || null,
+        fecha: document.getElementById('editFecha').value
+    };
+    
+    const response = await fetch(`/api/licitaciones/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    
+    const result = await response.json();
+    if (result.success) {
+        alert('Licitación actualizada');
+        cerrarModalEditarLicitacion();
+        await cargarLicitaciones();
+        verDetalle(licitacionActual);
+    } else {
+        alert('Error: ' + result.error);
+    }
+});
