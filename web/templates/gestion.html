@@ -28,9 +28,11 @@
 </div>
 
 <div id="modalDetalle" class="modal">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 90%;">
         <span class="close" onclick="cerrarModal()">&times;</span>
-        <h3>Productos de la Licitación</h3>
+        <h3 id="detalleTitle">Detalle de Licitación</h3>
+        <div id="detalleInfo" style="background: #2a2a2a; padding: 15px; border-radius: 5px; margin-bottom: 20px;"></div>
+        <h4>Productos</h4>
         <div class="table-container">
             <table id="productosTable">
                 <thead>
@@ -40,6 +42,8 @@
                         <th>Cantidad</th>
                         <th>Precio Ofertado</th>
                         <th>Resultado</th>
+                        <th>Oferente Ganador</th>
+                        <th>Marca Ganadora</th>
                         <th>Precio Ganador</th>
                         <th>Marca Ofrecida</th>
                         <th>Acciones</th>
@@ -84,6 +88,14 @@
                     <option value="Parcial">Parcial</option>
                     <option value="No Adjudicado">No Adjudicado</option>
                 </select>
+            </div>
+            <div class="form-group">
+                <label>Oferente Ganador</label>
+                <input type="text" id="editOferenteGanador">
+            </div>
+            <div class="form-group">
+                <label>Marca Ganadora</label>
+                <input type="text" id="editMarcaGanadora">
             </div>
             <div class="form-group">
                 <label>Precio Ganador</label>

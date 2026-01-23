@@ -38,8 +38,19 @@ function filtrarLicitaciones() {
 
 async function verDetalle(id) {
     licitacionActual = id;
+    
+    const licitacion = licitaciones.find(l => l.id === id);
     const response = await fetch(`/api/productos/${id}`);
     const productos = await response.json();
+    
+    document.getElementById('detalleTitle').textContent = `Licitación N° ${licitacion.numero}`;
+    document.getElementById('detalleInfo').innerHTML = `
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
+            <div><strong>N° Licitación:</strong> ${licitacion.numero}</div>
+            <div><strong>Fecha:</strong> ${licitacion.fecha}</div>
+            <div><strong>Cliente:</strong> ${licitacion.cliente_id || '-'}</div>
+        </div>
+    `;
     
     const tbody = document.getElementById('productosBody');
     tbody.innerHTML = '';
@@ -50,9 +61,11 @@ async function verDetalle(id) {
             <td>${p.monodroga}</td>
             <td>${p.marca} - ${p.presentacion}</td>
             <td>${p.cantidad}</td>
-            <td>$${p.precio_ofertado.toFixed(2)}</td>
+            <td>$${p.precio_ofertado.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
             <td>${p.resultado}</td>
-            <td>${p.precio_ganador ? '$' + p.precio_ganador.toFixed(2) : '-'}</td>
+            <td>${p.oferente || '-'}</td>
+            <td>${p.marca_ganadora || '-'}</td>
+            <td>${p.precio_ganador ? '$' + p.precio_ganador.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '-'}</td>
             <td>${p.marca_ofrecida || '-'}</td>
             <td>
                 <button onclick="editarProducto(${p.id}, ${JSON.stringify(p).replace(/"/g, '&quot;')})" class="btn-primary">Editar</button>
@@ -76,6 +89,8 @@ function editarProducto(id, producto) {
     document.getElementById('editCantidad').value = producto.cantidad;
     document.getElementById('editPrecio').value = producto.precio_ofertado;
     document.getElementById('editResultado').value = producto.resultado;
+    document.getElementById('editOferenteGanador').value = producto.oferente || '';
+    document.getElementById('editMarcaGanadora').value = producto.marca_ganadora || '';
     document.getElementById('editPrecioGanador').value = producto.precio_ganador || '';
     document.getElementById('editMarcaOfrecida').value = producto.marca_ofrecida || '';
     
@@ -97,8 +112,9 @@ document.getElementById('editarForm').addEventListener('submit', async (e) => {
         cantidad: document.getElementById('editCantidad').value,
         precio_ofertado: document.getElementById('editPrecio').value,
         resultado: document.getElementById('editResultado').value,
+        oferente: document.getElementById('editOferenteGanador').value,
+        marca_ganadora: document.getElementById('editMarcaGanadora').value,
         precio_ganador: document.getElementById('editPrecioGanador').value,
-        oferente: '',
         marca_ofrecida: document.getElementById('editMarcaOfrecida').value
     };
     

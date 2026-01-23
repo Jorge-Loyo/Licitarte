@@ -99,7 +99,8 @@ def crear_licitacion():
             '',
             '',
             None,
-            int(data['cliente_id']) if data.get('cliente_id') else None
+            int(data['cliente_id']) if data.get('cliente_id') else None,
+            int(data['tipo_licitacion_id']) if data.get('tipo_licitacion_id') else None
         )
         
         for producto in data.get('productos', []):
@@ -346,6 +347,40 @@ def actualizar_marca(id):
 def eliminar_marca(id):
     try:
         db.eliminar_marca(id)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+# API Tipos de Licitación
+@app.route('/api/tipos-licitacion', methods=['GET'])
+def get_tipos_licitacion():
+    tipos = db.obtener_tipos_licitacion()
+    return jsonify([{'id': t[0], 'nombre': t[1]} for t in tipos])
+
+@app.route('/api/tipos-licitacion', methods=['POST'])
+def crear_tipo_licitacion():
+    data = request.json
+    if not data or not data.get('nombre'):
+        return jsonify({'success': False, 'error': 'Nombre es obligatorio'}), 400
+    try:
+        tipo_id = db.crear_tipo_licitacion(data['nombre'])
+        return jsonify({'success': True, 'id': tipo_id})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/tipos-licitacion/<int:id>', methods=['PUT'])
+def actualizar_tipo_licitacion(id):
+    data = request.json
+    try:
+        db.actualizar_tipo_licitacion(id, data['nombre'])
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/tipos-licitacion/<int:id>', methods=['DELETE'])
+def eliminar_tipo_licitacion(id):
+    try:
+        db.eliminar_tipo_licitacion(id)
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 400

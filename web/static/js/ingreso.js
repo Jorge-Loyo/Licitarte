@@ -3,6 +3,7 @@ let catalogoProductos = [];
 let clientes = [];
 let oferentes = [];
 let marcas = [];
+let tiposLicitacion = [];
 
 // Cargar catálogo y clientes al iniciar
 async function cargarCatalogo() {
@@ -43,6 +44,20 @@ async function cargarMarcas() {
         marcas = await response.json();
     } catch (error) {
         console.error('Error cargando marcas:', error);
+    }
+}
+
+async function cargarTiposLicitacion() {
+    try {
+        const response = await fetch('/api/tipos-licitacion');
+        tiposLicitacion = await response.json();
+        const select = document.getElementById('tipoLicitacionSelect');
+        select.innerHTML = '<option value="">Seleccione tipo...</option>';
+        tiposLicitacion.forEach(t => {
+            select.innerHTML += `<option value="${t.id}">${t.nombre}</option>`;
+        });
+    } catch (error) {
+        console.error('Error cargando tipos de licitación:', error);
     }
 }
 
@@ -190,6 +205,7 @@ document.getElementById('licitacionForm').addEventListener('submit', async (e) =
     const data = {
         numero: document.getElementById('numeroLicitacion').value,
         cliente_id: document.getElementById('clienteSelect').value,
+        tipo_licitacion_id: document.getElementById('tipoLicitacionSelect').value,
         fecha: document.getElementById('fecha').value,
         productos: productos
     };
@@ -277,11 +293,35 @@ async function nuevaMarca(btn) {
     }
 }
 
+async function nuevoTipoLicitacion() {
+    const nombre = prompt('Nombre del tipo de licitación:');
+    if (!nombre) return;
+    
+    try {
+        const response = await fetch('/api/tipos-licitacion', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nombre: nombre })
+        });
+        const result = await response.json();
+        if (result.success) {
+            await cargarTiposLicitacion();
+            document.getElementById('tipoLicitacionSelect').value = result.id;
+            mostrarMensaje('Tipo de licitación agregado', 'success');
+        } else {
+            alert('Error: ' + result.error);
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('fecha').valueAsDate = new Date();
     await cargarCatalogo();
     await cargarClientes();
     await cargarOferentes();
     await cargarMarcas();
+    await cargarTiposLicitacion();
     agregarProducto();
 });

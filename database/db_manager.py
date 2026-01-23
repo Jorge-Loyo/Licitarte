@@ -91,17 +91,28 @@ class DatabaseManager:
                     )
                 ''')
                 
+                # Tabla Tipos de Licitación
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS tipos_licitacion (
+                        id SERIAL PRIMARY KEY,
+                        nombre TEXT UNIQUE NOT NULL,
+                        activo BOOLEAN DEFAULT TRUE
+                    )
+                ''')
+                
                 cursor.execute('''
                     CREATE TABLE IF NOT EXISTS licitaciones (
                         id SERIAL PRIMARY KEY,
                         numero_licitacion TEXT UNIQUE NOT NULL,
                         cliente_id INTEGER,
+                        tipo_licitacion_id INTEGER,
                         fecha TEXT NOT NULL,
                         oferente_ganador TEXT,
                         marca_ganadora TEXT,
                         precio_ganador REAL,
                         CHECK(length(numero_licitacion) > 0),
-                        FOREIGN KEY (cliente_id) REFERENCES clientes (id)
+                        FOREIGN KEY (cliente_id) REFERENCES clientes (id),
+                        FOREIGN KEY (tipo_licitacion_id) REFERENCES tipos_licitacion (id)
                     )
                 ''')
                 
@@ -180,17 +191,28 @@ class DatabaseManager:
                     )
                 ''')
                 
+                # Tabla Tipos de Licitación
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS tipos_licitacion (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        nombre TEXT UNIQUE NOT NULL,
+                        activo INTEGER DEFAULT 1
+                    )
+                ''')
+                
                 cursor.execute('''
                     CREATE TABLE IF NOT EXISTS licitaciones (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         numero_licitacion TEXT UNIQUE NOT NULL,
                         cliente_id INTEGER,
+                        tipo_licitacion_id INTEGER,
                         fecha TEXT NOT NULL,
                         oferente_ganador TEXT,
                         marca_ganadora TEXT,
                         precio_ganador REAL,
                         CHECK(length(numero_licitacion) > 0),
-                        FOREIGN KEY (cliente_id) REFERENCES clientes (id)
+                        FOREIGN KEY (cliente_id) REFERENCES clientes (id),
+                        FOREIGN KEY (tipo_licitacion_id) REFERENCES tipos_licitacion (id)
                     )
                 ''')
                 
@@ -318,7 +340,7 @@ class DatabaseManager:
                 cursor.execute("SELECT * FROM celty WHERE numero_registro = ?", (numero_registro,))
             return cursor.fetchone()
     
-    def crear_licitacion(self, numero, fecha, oferente_ganador="", marca_ganadora="", precio_ganador=None, cliente_id=None):
+    def crear_licitacion(self, numero, fecha, oferente_ganador="", marca_ganadora="", precio_ganador=None, cliente_id=None, tipo_licitacion_id=None):
         if not numero or not fecha:
             raise ValueError("Número y fecha son obligatorios")
         if len(numero.strip()) > 100:
@@ -326,12 +348,12 @@ class DatabaseManager:
         with self.get_connection() as conn:
             cursor = conn.cursor()
             if USE_POSTGRES:
-                cursor.execute("INSERT INTO licitaciones (numero_licitacion, cliente_id, fecha, oferente_ganador, marca_ganadora, precio_ganador) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
-                              (numero.strip(), cliente_id, fecha.strip(), oferente_ganador.strip(), marca_ganadora.strip(), precio_ganador))
+                cursor.execute("INSERT INTO licitaciones (numero_licitacion, cliente_id, tipo_licitacion_id, fecha, oferente_ganador, marca_ganadora, precio_ganador) VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id",
+                              (numero.strip(), cliente_id, tipo_licitacion_id, fecha.strip(), oferente_ganador.strip(), marca_ganadora.strip(), precio_ganador))
                 return cursor.fetchone()[0]
             else:
-                cursor.execute("INSERT INTO licitaciones (numero_licitacion, cliente_id, fecha, oferente_ganador, marca_ganadora, precio_ganador) VALUES (?, ?, ?, ?, ?, ?)",
-                              (numero.strip(), cliente_id, fecha.strip(), oferente_ganador.strip(), marca_ganadora.strip(), precio_ganador))
+                cursor.execute("INSERT INTO licitaciones (numero_licitacion, cliente_id, tipo_licitacion_id, fecha, oferente_ganador, marca_ganadora, precio_ganador) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                              (numero.strip(), cliente_id, tipo_licitacion_id, fecha.strip(), oferente_ganador.strip(), marca_ganadora.strip(), precio_ganador))
                 return cursor.lastrowid
     
     def agregar_producto(self, licitacion_id, monodroga, marca, presentacion, cantidad, precio_ofertado, resultado, precio_ganador=None, oferente_ganador="", marca_ofrecida="", marca_ganadora=""):
@@ -592,3 +614,43 @@ class DatabaseManager:
                 cursor.execute("UPDATE marcas SET activo = FALSE WHERE id = %s", (marca_id,))
             else:
                 cursor.execute("UPDATE marcas SET activo = 0 WHERE id = ?", (marca_id,))
+    
+    # CRUD Tipos de Licitación
+    def crear_tipo_licitacion(self, nombre):
+        if not nombre or len(nombre.strip()) == 0:
+            raise ValueError("Nombre es obligatorio")
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("INSERT INTO tipos_licitacion (nombre) VALUES (%s) RETURNING id", (nombre.strip(),))
+                return cursor.fetchone()[0]
+            else:
+                cursor.execute("INSERT INTO tipos_licitacion (nombre) VALUES (?)", (nombre.strip(),))
+                return cursor.lastrowid
+    
+    def obtener_tipos_licitacion(self):
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("SELECT * FROM tipos_licitacion WHERE activo = TRUE ORDER BY nombre")
+            else:
+                cursor.execute("SELECT * FROM tipos_licitacion WHERE activo = 1 ORDER BY nombre")
+            return cursor.fetchall()
+    
+    def actualizar_tipo_licitacion(self, tipo_id, nombre):
+        if not nombre:
+            raise ValueError("Nombre es obligatorio")
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("UPDATE tipos_licitacion SET nombre=%s WHERE id=%s", (nombre.strip(), tipo_id))
+            else:
+                cursor.execute("UPDATE tipos_licitacion SET nombre=? WHERE id=?", (nombre.strip(), tipo_id))
+    
+    def eliminar_tipo_licitacion(self, tipo_id):
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("UPDATE tipos_licitacion SET activo = FALSE WHERE id = %s", (tipo_id,))
+            else:
+                cursor.execute("UPDATE tipos_licitacion SET activo = 0 WHERE id = ?", (tipo_id,))

@@ -1,6 +1,7 @@
 let clientes = [];
 let oferentes = [];
 let marcas = [];
+let tiposLicitacion = [];
 let catalogoCompleto = [];
 
 function mostrarTab(tab) {
@@ -13,6 +14,7 @@ function mostrarTab(tab) {
     if (tab === 'clientes') cargarClientes();
     if (tab === 'oferentes') cargarOferentes();
     if (tab === 'marcas') cargarMarcas();
+    if (tab === 'tipos') cargarTipos();
     if (tab === 'catalogo') cargarCatalogo();
 }
 
@@ -293,6 +295,88 @@ async function eliminarMarca(id) {
     if (result.success) {
         alert('Marca eliminada');
         cargarMarcas();
+    } else {
+        alert('Error: ' + result.error);
+    }
+}
+
+// Gestión Tipos de Licitación
+async function cargarTipos() {
+    const response = await fetch('/api/tipos-licitacion');
+    tiposLicitacion = await response.json();
+    mostrarTipos(tiposLicitacion);
+}
+
+function mostrarTipos(data) {
+    const tbody = document.getElementById('tiposBody');
+    tbody.innerHTML = '';
+    
+    data.forEach(t => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${t.id}</td>
+            <td>${t.nombre}</td>
+            <td>
+                <button onclick="editarTipo(${t.id})" class="btn-primary">Editar</button>
+                <button onclick="eliminarTipo(${t.id})" class="btn-danger">Eliminar</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function nuevoTipo() {
+    const nombre = prompt('Nombre del tipo de licitación:');
+    if (!nombre) return;
+    
+    fetch('/api/tipos-licitacion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre: nombre })
+    })
+    .then(res => res.json())
+    .then(result => {
+        if (result.success) {
+            alert('Tipo creado');
+            cargarTipos();
+        } else {
+            alert('Error: ' + result.error);
+        }
+    });
+}
+
+function editarTipo(id) {
+    const tipo = tiposLicitacion.find(t => t.id === id);
+    if (!tipo) return;
+    
+    const nombre = prompt('Nombre del tipo de licitación:', tipo.nombre);
+    if (!nombre) return;
+    
+    fetch(`/api/tipos-licitacion/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre: nombre })
+    })
+    .then(res => res.json())
+    .then(result => {
+        if (result.success) {
+            alert('Tipo actualizado');
+            cargarTipos();
+        } else {
+            alert('Error: ' + result.error);
+        }
+    });
+}
+
+async function eliminarTipo(id) {
+    if (!confirm('¿Eliminar este tipo de licitación?')) return;
+    
+    const response = await fetch(`/api/tipos-licitacion/${id}`, { method: 'DELETE' });
+    const result = await response.json();
+    
+    if (result.success) {
+        alert('Tipo eliminado');
+        cargarTipos();
     } else {
         alert('Error: ' + result.error);
     }

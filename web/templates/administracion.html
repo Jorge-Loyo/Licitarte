@@ -11,6 +11,7 @@
     <button class="tab-btn active" onclick="mostrarTab('clientes')">Clientes</button>
     <button class="tab-btn" onclick="mostrarTab('oferentes')">Oferentes</button>
     <button class="tab-btn" onclick="mostrarTab('marcas')">Marcas</button>
+    <button class="tab-btn" onclick="mostrarTab('tipos')">Tipos Licitación</button>
     <button class="tab-btn" onclick="mostrarTab('catalogo')">Catálogo Productos</button>
 </div>
 
@@ -110,6 +111,27 @@
                 </tr>
             </thead>
             <tbody id="marcasBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Tab Tipos Licitación -->
+<div id="tab-tipos" class="tab-content">
+    <div class="page-header">
+        <h3>Gestión de Tipos de Licitación</h3>
+        <button onclick="nuevoTipo()" class="btn-primary">+ Nuevo Tipo</button>
+    </div>
+    
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tiposBody"></tbody>
         </table>
     </div>
 </div>

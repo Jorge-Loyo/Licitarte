@@ -10,9 +10,18 @@
 <form id="licitacionForm" class="form-container">
     <div class="form-section">
         <h3>Datos de Licitación</h3>
-        <div class="form-group">
-            <label>N° Licitación *</label>
-            <input type="text" id="numeroLicitacion" required>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-group">
+                <label>N° Licitación *</label>
+                <input type="text" id="numeroLicitacion" required>
+            </div>
+            <div class="form-group">
+                <label>Tipo de Licitación</label>
+                <select id="tipoLicitacionSelect">
+                    <option value="">Seleccione tipo...</option>
+                </select>
+                <button type="button" onclick="nuevoTipoLicitacion()" class="btn-secondary" style="margin-top: 5px;">+ Nuevo Tipo</button>
+            </div>
         </div>
         <div class="form-group">
             <label>Cliente *</label>
