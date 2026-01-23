@@ -10,6 +10,15 @@
 
 <div class="search-box">
     <input type="text" id="searchInput" placeholder="Buscar por N° o oferente..." onkeyup="filtrarLicitaciones()">
+    <select id="filtroTipo" onchange="filtrarLicitaciones()">
+        <option value="">Todos los tipos</option>
+    </select>
+    <select id="filtroResultado" onchange="filtrarLicitaciones()">
+        <option value="">Todos los resultados</option>
+        <option value="Adjudicado">Adjudicado</option>
+        <option value="Parcial">Parcial</option>
+        <option value="No Adjudicado">No Adjudicado</option>
+    </select>
 </div>
 
 <div class="table-container">
@@ -27,6 +36,12 @@
         </thead>
         <tbody id="licitacionesBody"></tbody>
     </table>
+</div>
+
+<div style="display: flex; justify-content: center; gap: 10px; margin-top: 15px;">
+    <button onclick="cambiarPaginaGestion(-1)" class="btn-secondary" id="btnAnteriorGestion">Anterior</button>
+    <span id="paginaInfoGestion" style="padding: 10px;">Página 1</span>
+    <button onclick="cambiarPaginaGestion(1)" class="btn-secondary" id="btnSiguienteGestion">Siguiente</button>
 </div>
 
 <div id="modalDetalle" class="modal">

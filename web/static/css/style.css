@@ -193,6 +193,7 @@ th, td {
     padding: 12px;
     text-align: left;
     border-bottom: 1px solid var(--border);
+    white-space: nowrap;
 }
 
 th {
@@ -227,6 +228,25 @@ th {
     border-radius: 5px;
     background: var(--bg-dark);
     color: var(--text);
+}
+
+select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><path fill="%234dd0e1" d="M6 9L1 4h10z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 30px;
+}
+
+select:hover {
+    border-color: var(--primary);
+}
+
+select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(77, 208, 225, 0.2);
 }
 
 .producto-item {

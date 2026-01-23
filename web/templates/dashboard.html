@@ -28,31 +28,56 @@
 </div>
 
 <div class="section">
-    <h3>🔍 Histórico de Producto</h3>
+    <h3>🔍 Histórico de Productos</h3>
     <div class="search-box">
-        <input type="text" id="productoSearch" placeholder="Buscar producto...">
+        <input type="text" id="productoSearch" placeholder="Buscar por monodroga...">
         <button onclick="buscarHistorico()" class="btn-primary">Buscar</button>
+        <button onclick="limpiarBusqueda()" class="btn-secondary">Limpiar</button>
     </div>
-    <div id="historicoResult" class="result-box"></div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>N° Licitación</th>
+                    <th>Tipo Licitación</th>
+                    <th>Marca - Presentación</th>
+                    <th>Cantidad</th>
+                    <th>Precio Ofertado</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody id="historicoBody"></tbody>
+        </table>
+    </div>
+    <div style="display: flex; justify-content: center; gap: 10px; margin-top: 15px;">
+        <button onclick="cambiarPagina(-1)" class="btn-secondary" id="btnAnterior">Anterior</button>
+        <span id="paginaInfo" style="padding: 10px;">Página 1</span>
+        <button onclick="cambiarPagina(1)" class="btn-secondary" id="btnSiguiente">Siguiente</button>
+    </div>
 </div>
 
 <div class="section">
-    <h3>📋 Productos Adjudicados</h3>
+    <h3>📋 Últimos Productos Adjudicados</h3>
     <div class="table-container">
         <table id="productosTable">
             <thead>
                 <tr>
                     <th>N° Licitación</th>
+                    <th>Tipo Licitación</th>
                     <th>Cliente</th>
-                    <th>Monodroga - Marca</th>
-                    <th>Presentación</th>
+                    <th>Marca - Presentación</th>
                     <th>Cantidad</th>
-                    <th>Precio</th>
+                    <th>Precio Ofertado</th>
                     <th>Fecha</th>
                 </tr>
             </thead>
             <tbody id="productosBody"></tbody>
         </table>
+    </div>
+    <div style="display: flex; justify-content: center; gap: 10px; margin-top: 15px;">
+        <button onclick="cambiarPaginaAdjudicados(-1)" class="btn-secondary" id="btnAnteriorAdj">Anterior</button>
+        <span id="paginaInfoAdj" style="padding: 10px;">Página 1</span>
+        <button onclick="cambiarPaginaAdjudicados(1)" class="btn-secondary" id="btnSiguienteAdj">Siguiente</button>
     </div>
 </div>
 {% endblock %}

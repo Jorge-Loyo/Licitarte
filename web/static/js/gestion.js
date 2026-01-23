@@ -1,17 +1,59 @@
 let licitaciones = [];
+let licitacionesFiltradas = [];
 let licitacionActual = null;
+let paginaGestion = 1;
+const porPaginaGestion = 10;
+let tiposLicitacion = [];
 
 async function cargarLicitaciones() {
     const response = await fetch('/api/licitaciones');
     licitaciones = await response.json();
-    mostrarLicitaciones(licitaciones);
+    
+    // Cargar tipos de licitación para el filtro
+    const responseTipos = await fetch('/api/tipos-licitacion');
+    tiposLicitacion = await responseTipos.json();
+    
+    const selectTipo = document.getElementById('filtroTipo');
+    selectTipo.innerHTML = '<option value="">Todos los tipos</option>';
+    tiposLicitacion.forEach(t => {
+        selectTipo.innerHTML += `<option value="${t.nombre}">${t.nombre}</option>`;
+    });
+    
+    filtrarLicitaciones();
 }
 
-function mostrarLicitaciones(data) {
+function filtrarLicitaciones() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const filtroTipo = document.getElementById('filtroTipo').value;
+    const filtroResultado = document.getElementById('filtroResultado').value;
+    
+    licitacionesFiltradas = licitaciones.filter(l => {
+        const matchSearch = l.numero.toLowerCase().includes(search) || 
+                           (l.oferente && l.oferente.toLowerCase().includes(search));
+        const matchTipo = !filtroTipo || l.tipo_licitacion === filtroTipo;
+        
+        // Para filtrar por resultado, necesitamos verificar si tiene productos con ese resultado
+        let matchResultado = !filtroResultado;
+        if (filtroResultado && l.tiene_resultado) {
+            matchResultado = l.tiene_resultado.includes(filtroResultado);
+        }
+        
+        return matchSearch && matchTipo;
+    });
+    
+    paginaGestion = 1;
+    mostrarLicitaciones();
+}
+
+function mostrarLicitaciones() {
     const tbody = document.getElementById('licitacionesBody');
     tbody.innerHTML = '';
     
-    data.forEach(l => {
+    const inicio = (paginaGestion - 1) * porPaginaGestion;
+    const fin = inicio + porPaginaGestion;
+    const licitacionesPagina = licitacionesFiltradas.slice(inicio, fin);
+    
+    licitacionesPagina.forEach(l => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${l.id}</td>
@@ -27,15 +69,16 @@ function mostrarLicitaciones(data) {
         `;
         tbody.appendChild(tr);
     });
+    
+    const totalPaginas = Math.ceil(licitacionesFiltradas.length / porPaginaGestion);
+    document.getElementById('paginaInfoGestion').textContent = `Página ${paginaGestion} de ${totalPaginas || 1}`;
+    document.getElementById('btnAnteriorGestion').disabled = paginaGestion === 1;
+    document.getElementById('btnSiguienteGestion').disabled = paginaGestion >= totalPaginas;
 }
 
-function filtrarLicitaciones() {
-    const search = document.getElementById('searchInput').value.toLowerCase();
-    const filtradas = licitaciones.filter(l => 
-        l.numero.toLowerCase().includes(search) || 
-        (l.oferente && l.oferente.toLowerCase().includes(search))
-    );
-    mostrarLicitaciones(filtradas);
+function cambiarPaginaGestion(direccion) {
+    paginaGestion += direccion;
+    mostrarLicitaciones();
 }
 
 async function verDetalle(id) {
