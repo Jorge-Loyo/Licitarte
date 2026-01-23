@@ -70,6 +70,47 @@ def get_catalogo():
         'fecha': p[8]
     } for p in productos])
 
+@app.route('/api/catalogo', methods=['POST'])
+def crear_producto_catalogo():
+    data = request.json
+    if not data or not data.get('numero_registro'):
+        return jsonify({'success': False, 'error': 'Número de registro es obligatorio'}), 400
+    
+    try:
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            if db.USE_POSTGRES:
+                cursor.execute("""
+                    INSERT INTO celty (numero_registro, monodroga, marca, presentacion, laboratorio, precio_caja, precio_unitario, fecha)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """, (
+                    data['numero_registro'],
+                    data.get('monodroga', ''),
+                    data.get('marca', ''),
+                    data.get('presentacion', ''),
+                    data.get('laboratorio', ''),
+                    float(data['precio_caja']) if data.get('precio_caja') else None,
+                    float(data['precio_unitario']) if data.get('precio_unitario') else None,
+                    data.get('fecha', '')
+                ))
+            else:
+                cursor.execute("""
+                    INSERT INTO celty (numero_registro, monodroga, marca, presentacion, laboratorio, precio_caja, precio_unitario, fecha)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    data['numero_registro'],
+                    data.get('monodroga', ''),
+                    data.get('marca', ''),
+                    data.get('presentacion', ''),
+                    data.get('laboratorio', ''),
+                    float(data['precio_caja']) if data.get('precio_caja') else None,
+                    float(data['precio_unitario']) if data.get('precio_unitario') else None,
+                    data.get('fecha', '')
+                ))
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route('/api/licitaciones', methods=['GET'])
 def get_licitaciones():
     with db.get_connection() as conn:
@@ -463,6 +504,105 @@ def cargar_catalogo():
             return jsonify({'success': True, 'message': 'Catálogo cargado exitosamente'})
         else:
             return jsonify({'success': False, 'error': 'Error al procesar el archivo'}), 500
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/cargar-clientes', methods=['POST'])
+def cargar_clientes():
+    if 'file' not in request.files:
+        return jsonify({'success': False, 'error': 'No se envió archivo'}), 400
+    
+    file = request.files['file']
+    if not allowed_file(file.filename):
+        return jsonify({'success': False, 'error': 'Solo se permiten archivos .xlsx o .xls'}), 400
+    
+    try:
+        import pandas as pd
+        df = pd.read_excel(file)
+        count = 0
+        for _, row in df.iterrows():
+            try:
+                db.crear_cliente(
+                    str(row.get('nombre', row.get('Nombre', ''))),
+                    str(row.get('razon_social', row.get('Razon Social', ''))),
+                    str(row.get('cuit', row.get('CUIT', ''))),
+                    str(row.get('direccion', row.get('Direccion', ''))),
+                    str(row.get('telefono', row.get('Telefono', ''))),
+                    str(row.get('email', row.get('Email', '')))
+                )
+                count += 1
+            except:
+                continue
+        return jsonify({'success': True, 'message': f'{count} clientes cargados'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/cargar-oferentes', methods=['POST'])
+def cargar_oferentes():
+    if 'file' not in request.files:
+        return jsonify({'success': False, 'error': 'No se envió archivo'}), 400
+    
+    file = request.files['file']
+    if not allowed_file(file.filename):
+        return jsonify({'success': False, 'error': 'Solo se permiten archivos .xlsx o .xls'}), 400
+    
+    try:
+        import pandas as pd
+        df = pd.read_excel(file)
+        count = 0
+        for _, row in df.iterrows():
+            try:
+                db.crear_oferente(str(row.get('nombre', row.get('Nombre', ''))))
+                count += 1
+            except:
+                continue
+        return jsonify({'success': True, 'message': f'{count} oferentes cargados'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/cargar-marcas', methods=['POST'])
+def cargar_marcas():
+    if 'file' not in request.files:
+        return jsonify({'success': False, 'error': 'No se envió archivo'}), 400
+    
+    file = request.files['file']
+    if not allowed_file(file.filename):
+        return jsonify({'success': False, 'error': 'Solo se permiten archivos .xlsx o .xls'}), 400
+    
+    try:
+        import pandas as pd
+        df = pd.read_excel(file)
+        count = 0
+        for _, row in df.iterrows():
+            try:
+                db.crear_marca(str(row.get('nombre', row.get('Nombre', ''))))
+                count += 1
+            except:
+                continue
+        return jsonify({'success': True, 'message': f'{count} marcas cargadas'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/cargar-tipos-licitacion', methods=['POST'])
+def cargar_tipos_licitacion():
+    if 'file' not in request.files:
+        return jsonify({'success': False, 'error': 'No se envió archivo'}), 400
+    
+    file = request.files['file']
+    if not allowed_file(file.filename):
+        return jsonify({'success': False, 'error': 'Solo se permiten archivos .xlsx o .xls'}), 400
+    
+    try:
+        import pandas as pd
+        df = pd.read_excel(file)
+        count = 0
+        for _, row in df.iterrows():
+            try:
+                db.crear_tipo_licitacion(str(row.get('nombre', row.get('Nombre', ''))))
+                count += 1
+            except:
+                continue
+        return jsonify({'success': True, 'message': f'{count} tipos cargados'})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 

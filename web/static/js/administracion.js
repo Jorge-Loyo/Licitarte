@@ -456,6 +456,153 @@ async function subirExcel() {
     fileInput.value = '';
 }
 
+async function subirExcelClientes() {
+    const fileInput = document.getElementById('excelClientes');
+    const file = fileInput.files[0];
+    if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const response = await fetch('/api/cargar-clientes', {
+            method: 'POST',
+            body: formData
+        });
+        const result = await response.json();
+        if (result.success) {
+            alert('✓ ' + result.message);
+            cargarClientes();
+        } else {
+            alert('✗ Error: ' + result.error);
+        }
+    } catch (error) {
+        alert('✗ Error: ' + error.message);
+    }
+    fileInput.value = '';
+}
+
+async function subirExcelOferentes() {
+    const fileInput = document.getElementById('excelOferentes');
+    const file = fileInput.files[0];
+    if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const response = await fetch('/api/cargar-oferentes', {
+            method: 'POST',
+            body: formData
+        });
+        const result = await response.json();
+        if (result.success) {
+            alert('✓ ' + result.message);
+            cargarOferentes();
+        } else {
+            alert('✗ Error: ' + result.error);
+        }
+    } catch (error) {
+        alert('✗ Error: ' + error.message);
+    }
+    fileInput.value = '';
+}
+
+async function subirExcelMarcas() {
+    const fileInput = document.getElementById('excelMarcas');
+    const file = fileInput.files[0];
+    if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const response = await fetch('/api/cargar-marcas', {
+            method: 'POST',
+            body: formData
+        });
+        const result = await response.json();
+        if (result.success) {
+            alert('✓ ' + result.message);
+            cargarMarcas();
+        } else {
+            alert('✗ Error: ' + result.error);
+        }
+    } catch (error) {
+        alert('✗ Error: ' + error.message);
+    }
+    fileInput.value = '';
+}
+
+async function subirExcelTipos() {
+    const fileInput = document.getElementById('excelTipos');
+    const file = fileInput.files[0];
+    if (!file) return;
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const response = await fetch('/api/cargar-tipos-licitacion', {
+            method: 'POST',
+            body: formData
+        });
+        const result = await response.json();
+        if (result.success) {
+            alert('✓ ' + result.message);
+            cargarTipos();
+        } else {
+            alert('✗ Error: ' + result.error);
+        }
+    } catch (error) {
+        alert('✗ Error: ' + error.message);
+    }
+    fileInput.value = '';
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     cargarClientes();
+});
+
+function nuevoProductoCatalogo() {
+    document.getElementById('productoCatalogoForm').reset();
+    document.getElementById('modalProductoCatalogo').style.display = 'block';
+}
+
+function cerrarModalProductoCatalogo() {
+    document.getElementById('modalProductoCatalogo').style.display = 'none';
+}
+
+document.getElementById('productoCatalogoForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const data = {
+        numero_registro: document.getElementById('productoNumeroRegistro').value,
+        monodroga: document.getElementById('productoMonodroga').value,
+        marca: document.getElementById('productoMarca').value,
+        presentacion: document.getElementById('productoPresentacion').value,
+        laboratorio: document.getElementById('productoLaboratorio').value,
+        precio_caja: document.getElementById('productoPrecioCaja').value,
+        precio_unitario: document.getElementById('productoPrecioUnitario').value,
+        fecha: document.getElementById('productoFecha').value
+    };
+    
+    try {
+        const response = await fetch('/api/catalogo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            alert('Producto agregado');
+            cerrarModalProductoCatalogo();
+            cargarCatalogo();
+        } else {
+            alert('Error: ' + result.error);
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
 });

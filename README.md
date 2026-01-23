@@ -5,13 +5,18 @@ Sistema profesional para gestionar licitaciones farmacéuticas con catálogo int
 ## Características
 
 - ✅ Gestión completa de licitaciones y productos
-- ✅ Catálogo integrado de productos farmacéuticos
-- ✅ Gestión de clientes
+- ✅ Catálogo integrado de productos farmacéuticos Celty
+- ✅ Gestión de clientes (CRUD completo)
+- ✅ Gestión de oferentes (CRUD completo)
+- ✅ Gestión de marcas (CRUD completo)
+- ✅ Gestión de tipos de licitación (CRUD completo)
 - ✅ Dashboard con estadísticas en tiempo real
-- ✅ Histórico de precios
+- ✅ Histórico de precios con filtros avanzados
 - ✅ Interfaz web responsive
 - ✅ Soporte SQLite (local) y PostgreSQL (producción)
 - ✅ Formato argentino de precios (punto miles, coma decimal)
+- ✅ Carga masiva desde Excel (clientes, oferentes, marcas, tipos, catálogo)
+- ✅ Paginación en todas las tablas
 
 ## Tecnologías
 
@@ -99,31 +104,45 @@ Licitarte/
 ## Módulos
 
 ### 1. Dashboard
-- Estadísticas en tiempo real
-- Productos adjudicados
-- Histórico de precios
+- Estadísticas en tiempo real (total licitaciones, ganadas, unidades, precio promedio)
+- Productos adjudicados con paginación
+- Histórico de precios con búsqueda y filtros
+- Filtros por monodroga
 
 ### 2. Nueva Licitación
-- Datos de licitación (N°, Cliente, Fecha, Oferente, Marca, Precio)
-- Selección de productos desde catálogo Celty
-- Auto-completado de monodroga y marca ofrecida
+- Datos de licitación (N°, Cliente, Tipo, Fecha)
+- Selección de cliente desde lista desplegable
+- Selección de tipo de licitación
+- Selección de productos desde catálogo Celty (Marca - Presentación)
+- Auto-completado de monodroga capitalizada
+- Auto-completado de marca ofrecida desde laboratorio
+- Campos: Oferente Ganador, Marca Ganadora, Precio Ganador
 - Múltiples productos por licitación
+- Agregar nuevos oferentes/marcas/tipos sobre la marcha
 
 ### 3. Gestión
-- Listar todas las licitaciones
-- Buscar y filtrar
-- Ver detalle de productos
-- Editar productos
+- Listar todas las licitaciones con paginación
+- Buscar por N° o oferente
+- Filtrar por tipo de licitación
+- Filtrar por resultado (Adjudicado/Parcial/No Adjudicado)
+- Ver detalle completo de productos
+- Editar productos (monodroga, marca, presentación, cantidad, precios, resultado, oferente, marca ganadora, marca ofrecida)
 - Eliminar licitaciones
 
 ### 4. Administración
-- **Clientes**: CRUD completo
-- **Catálogo**: Visualización de productos Celty con precios y fechas
+- **Clientes**: CRUD completo (nombre, razón social, CUIT, dirección, teléfono, email)
+- **Oferentes**: CRUD completo con carga masiva desde Excel
+- **Marcas**: CRUD completo con carga masiva desde Excel
+- **Tipos de Licitación**: CRUD completo con carga masiva desde Excel
+- **Catálogo Celty**: Visualización completa con búsqueda (N° Registro, Monodroga, Marca, Presentación, Laboratorio, Precio Caja, Precio Unitario, Fecha)
+- **Carga Masiva**: Importar desde Excel para todas las entidades
+- **Formato de Precios**: Argentino (punto miles, coma decimal)
 
 ### 5. Ayuda
-- Manual de usuario completo
-- Guías paso a paso
+- Manual de usuario completo actualizado
+- Guías paso a paso para cada módulo
 - Consejos y buenas prácticas
+- Documentación de nuevas funcionalidades
 
 ## Base de Datos
 
@@ -132,11 +151,20 @@ Licitarte/
 #### clientes
 - id, nombre, razon_social, cuit, direccion, telefono, email, activo
 
+#### oferentes
+- id, nombre, activo
+
+#### marcas
+- id, nombre, activo
+
+#### tipos_licitacion
+- id, nombre, activo
+
 #### licitaciones
-- id, numero_licitacion, cliente_id, fecha, oferente_ganador, marca_ganadora, precio_ganador
+- id, numero_licitacion, cliente_id, tipo_licitacion_id, fecha, oferente_ganador, marca_ganadora, precio_ganador
 
 #### productos
-- id, licitacion_id, monodroga, marca, presentacion, cantidad, precio_ofertado, resultado, precio_ganador, oferente_ganador, marca_ofrecida
+- id, licitacion_id, monodroga, marca, presentacion, cantidad, precio_ofertado, resultado, precio_ganador, oferente_ganador, marca_ofrecida, marca_ganadora
 
 #### celty (catálogo)
 - id, numero_registro, monodroga, marca, presentacion, laboratorio, precio_caja, precio_unitario, fecha

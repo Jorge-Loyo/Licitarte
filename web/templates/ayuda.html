@@ -25,10 +25,11 @@
             <ul>
                 <li>Registrar licitaciones con múltiples productos</li>
                 <li>Selección de productos desde catálogo Celty</li>
-                <li>Gestión de clientes</li>
+                <li>Gestión completa de clientes, oferentes, marcas y tipos de licitación</li>
                 <li>Dashboard con estadísticas en tiempo real</li>
-                <li>Consultar histórico de precios</li>
-                <li>Módulo de administración completo</li>
+                <li>Consultar histórico de precios con filtros</li>
+                <li>Carga masiva desde Excel</li>
+                <li>Paginación en todas las tablas</li>
             </ul>
         </section>
 
@@ -37,38 +38,37 @@
             <h4>Datos de Licitación:</h4>
             <ul>
                 <li><strong>N° Licitación:</strong> Número único identificador (obligatorio)</li>
-                <li><strong>Cliente:</strong> Seleccione de la lista o agregue nuevo (obligatorio)</li>
+                <li><strong>Cliente:</strong> Seleccione de la lista (obligatorio)</li>
+                <li><strong>Tipo de Licitación:</strong> Seleccione el tipo o cree uno nuevo</li>
                 <li><strong>Fecha:</strong> Fecha de la licitación (obligatorio)</li>
-                <li><strong>Oferente Ganador:</strong> Empresa que ganó la licitación (opcional)</li>
-                <li><strong>Marca Ganadora:</strong> Marca del producto ganador (opcional)</li>
-                <li><strong>Precio Ganador:</strong> Precio total de la licitación (opcional)</li>
             </ul>
             <h4>Agregar Productos:</h4>
             <ol>
                 <li>Clic en "+ Agregar Producto"</li>
-                <li><strong>Marca - Presentación:</strong> Seleccione del catálogo (auto-completa Monodroga)</li>
-                <li><strong>Monodroga:</strong> Se completa automáticamente en formato capitalizado</li>
-                <li><strong>Cantidad:</strong> Unidades ofertadas</li>
-                <li><strong>Precio Ofertado:</strong> Precio por unidad</li>
+                <li><strong>Marca - Presentación:</strong> Seleccione del catálogo (auto-completa Monodroga y Marca Ofrecida)</li>
+                <li><strong>Monodroga:</strong> Se completa automáticamente capitalizada</li>
+                <li><strong>Cantidad:</strong> Unidades ofertadas (obligatorio)</li>
+                <li><strong>Precio Ofertado:</strong> Precio por unidad (obligatorio)</li>
                 <li><strong>Resultado:</strong> Adjudicado / Parcial / No Adjudicado</li>
                 <li><strong>Marca Ofrecida:</strong> Se completa con el laboratorio del catálogo</li>
+                <li><strong>Oferente Ganador:</strong> Seleccione o agregue nuevo</li>
+                <li><strong>Marca Ganadora:</strong> Seleccione o agregue nueva</li>
+                <li><strong>Precio Ganador:</strong> Precio del ganador</li>
             </ol>
-            <h4>Guardar:</h4>
-            <p>Clic en "Guardar Licitación" para registrar todos los datos.</p>
         </section>
 
         <section id="gestion">
             <h3>📋 Gestión de Licitaciones</h3>
             <h4>Funciones Disponibles:</h4>
             <ul>
-                <li><strong>Listar:</strong> Ver todas las licitaciones registradas</li>
-                <li><strong>Buscar:</strong> Filtrar por N° de licitación u oferente</li>
-                <li><strong>Ver Detalle:</strong> Consultar productos de cada licitación</li>
-                <li><strong>Editar:</strong> Modificar datos de productos (monodroga, marca, presentación, cantidad, precios, resultado, marca ofrecida)</li>
+                <li><strong>Listar:</strong> Ver todas las licitaciones con paginación (10 por página)</li>
+                <li><strong>Buscar:</strong> Filtrar por N° o oferente</li>
+                <li><strong>Filtrar por Tipo:</strong> Seleccione tipo específico</li>
+                <li><strong>Filtrar por Resultado:</strong> Adjudicado/Parcial/No Adjudicado</li>
+                <li><strong>Ver Detalle:</strong> Consultar todos los productos</li>
+                <li><strong>Editar:</strong> Modificar monodroga, marca, presentación, cantidad, precios, resultado, oferente ganador, marca ganadora, marca ofrecida</li>
                 <li><strong>Eliminar:</strong> Borrar licitaciones completas</li>
             </ul>
-            <h4>Tabla de Productos:</h4>
-            <p>Muestra: Monodroga, Marca-Presentación, Cantidad, Precio Ofertado, Resultado, Precio Ganador, Marca Ofrecida</p>
         </section>
 
         <section id="dashboard">
@@ -81,26 +81,45 @@
                 <li><strong>Precio Promedio Ponderado:</strong> Promedio de precios adjudicados</li>
             </ul>
             <h4>Productos Adjudicados:</h4>
-            <p>Tabla con todos los productos ganados ordenados por fecha.</p>
+            <p>Tabla con productos ganados con paginación (5 por página). Muestra: N° Licitación, Tipo, Cliente, Marca-Presentación, Cantidad, Precio, Fecha.</p>
             <h4>Histórico de Precios:</h4>
-            <p>Consulte el último precio ganador de cualquier producto con oferente y marca ofrecida.</p>
+            <p>Consulte histórico con búsqueda por monodroga y paginación (5 por página). Muestra: N° Licitación, Tipo, Marca-Presentación, Cantidad, Precio, Fecha.</p>
         </section>
 
         <section id="administracion">
             <h3>⚙️ Administración</h3>
             <h4>Gestión de Clientes:</h4>
             <ul>
-                <li><strong>Crear:</strong> Agregar nuevos clientes con nombre, razón social, CUIT, dirección, teléfono y email</li>
-                <li><strong>Editar:</strong> Modificar datos de clientes existentes</li>
-                <li><strong>Eliminar:</strong> Desactivar clientes (no se borran, solo se ocultan)</li>
+                <li><strong>Crear:</strong> nombre*, razón social, CUIT, dirección, teléfono, email</li>
+                <li><strong>Editar/Eliminar:</strong> Modificar o desactivar</li>
+                <li><strong>Carga Excel:</strong> Columnas: nombre, razon_social, cuit, direccion, telefono, email</li>
             </ul>
-            <h4>Catálogo de Productos:</h4>
+            <h4>Gestión de Oferentes:</h4>
             <ul>
-                <li><strong>Visualizar:</strong> Ver todos los productos del catálogo Celty</li>
+                <li><strong>Crear:</strong> nombre*</li>
+                <li><strong>Editar/Eliminar:</strong> Modificar o desactivar</li>
+                <li><strong>Carga Excel:</strong> Columna: nombre</li>
+            </ul>
+            <h4>Gestión de Marcas:</h4>
+            <ul>
+                <li><strong>Crear:</strong> nombre*</li>
+                <li><strong>Editar/Eliminar:</strong> Modificar o desactivar</li>
+                <li><strong>Carga Excel:</strong> Columna: nombre</li>
+            </ul>
+            <h4>Gestión de Tipos de Licitación:</h4>
+            <ul>
+                <li><strong>Crear:</strong> nombre*</li>
+                <li><strong>Editar/Eliminar:</strong> Modificar o desactivar</li>
+                <li><strong>Carga Excel:</strong> Columna: nombre</li>
+            </ul>
+            <h4>Catálogo de Productos Celty:</h4>
+            <ul>
+                <li><strong>Visualizar:</strong> Ver todos los productos</li>
                 <li><strong>Buscar:</strong> Filtrar por monodroga, marca, presentación o laboratorio</li>
                 <li><strong>Campos:</strong> N° Registro, Monodroga, Marca, Presentación, Laboratorio, Precio Caja, Precio Unitario, Fecha</li>
-                <li><strong>Formato:</strong> Precios con punto como separador de miles y coma decimal (ej: $1.234,56)</li>
-                <li><strong>Recargar:</strong> Actualizar desde archivo Excel Data/Celty.xlsx</li>
+                <li><strong>Formato:</strong> Precios argentinos ($1.234,56)</li>
+                <li><strong>Carga Excel:</strong> Columnas: Numero de Registro, Monodroga, Marca, Presentacion, Laboratorio, Precio por Caja, Presio unitario, Fecha</li>
+                <li><strong>Agregar:</strong> Crear productos manualmente</li>
             </ul>
         </section>
 
@@ -108,28 +127,29 @@
             <h3>🔧 Consejos y Buenas Prácticas</h3>
             <h4>Ingreso de Datos:</h4>
             <ul>
-                <li>Siempre seleccione el cliente antes de guardar</li>
-                <li>Use el catálogo para evitar errores de tipeo</li>
-                <li>Verifique que la Monodroga se auto-complete correctamente</li>
-                <li>Complete el Oferente Ganador y Marca Ganadora para mejor seguimiento</li>
+                <li>Seleccione cliente y tipo antes de guardar</li>
+                <li>Use el catálogo para evitar errores</li>
+                <li>Verifique auto-completado de monodroga</li>
+                <li>Use botones "+ Nuevo" para agregar oferentes/marcas rápidamente</li>
             </ul>
             <h4>Gestión:</h4>
             <ul>
-                <li>Use la búsqueda para encontrar licitaciones rápidamente</li>
-                <li>Revise el detalle antes de eliminar</li>
-                <li>Actualice precios ganadores cuando se confirmen</li>
+                <li>Use búsqueda y filtros para análisis específicos</li>
+                <li>Revise detalle antes de eliminar</li>
+                <li>Use paginación para grandes volúmenes</li>
             </ul>
             <h4>Administración:</h4>
             <ul>
                 <li>Mantenga actualizado el catálogo Celty</li>
-                <li>Agregue clientes nuevos antes de crear licitaciones</li>
-                <li>Revise periódicamente los precios del catálogo</li>
+                <li>Use carga masiva Excel para múltiples registros</li>
+                <li>Verifique columnas exactas en Excel</li>
+                <li>Haga backup antes de cargas masivas</li>
             </ul>
             <h4>Respaldos:</h4>
             <ul>
-                <li>La base de datos se encuentra en database/licitaciones.db</li>
-                <li>Haga copias de seguridad periódicas</li>
-                <li>El catálogo se carga desde Data/Celty.xlsx</li>
+                <li>Base de datos: database/licitaciones.db</li>
+                <li>Catálogo: Data/Celty.xlsx</li>
+                <li>Haga copias periódicas</li>
             </ul>
         </section>
     </div>
