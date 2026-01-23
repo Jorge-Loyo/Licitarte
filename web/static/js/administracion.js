@@ -14,9 +14,16 @@ function mostrarTab(tab) {
 
 // Gestión Clientes
 async function cargarClientes() {
-    const response = await fetch('/api/clientes');
-    clientes = await response.json();
-    mostrarClientes(clientes);
+    try {
+        const response = await fetch('/api/clientes');
+        console.log('Clientes response status:', response.status);
+        clientes = await response.json();
+        console.log('Clientes cargados:', clientes.length);
+        mostrarClientes(clientes);
+    } catch (error) {
+        console.error('Error cargando clientes:', error);
+        alert('Error al cargar clientes: ' + error.message);
+    }
 }
 
 function mostrarClientes(data) {
@@ -80,22 +87,32 @@ document.getElementById('clienteForm').addEventListener('submit', async (e) => {
         email: document.getElementById('clienteEmail').value
     };
     
+    console.log('Enviando datos:', data);
+    
     const url = id ? `/api/clientes/${id}` : '/api/clientes';
     const method = id ? 'PUT' : 'POST';
     
-    const response = await fetch(url, {
-        method: method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    });
-    
-    const result = await response.json();
-    if (result.success) {
-        alert(id ? 'Cliente actualizado' : 'Cliente creado');
-        cerrarModalCliente();
-        cargarClientes();
-    } else {
-        alert('Error: ' + result.error);
+    try {
+        const response = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        
+        console.log('Response status:', response.status);
+        const result = await response.json();
+        console.log('Response data:', result);
+        
+        if (result.success) {
+            alert(id ? 'Cliente actualizado' : 'Cliente creado');
+            cerrarModalCliente();
+            cargarClientes();
+        } else {
+            alert('Error: ' + result.error);
+        }
+    } catch (error) {
+        console.error('Error en fetch:', error);
+        alert('Error de conexión: ' + error.message);
     }
 });
 
