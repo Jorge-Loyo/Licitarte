@@ -449,7 +449,10 @@ class DatabaseManager:
     def obtener_clientes(self):
         with self.get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT * FROM clientes WHERE activo = TRUE OR activo = 1 ORDER BY nombre")
+            if USE_POSTGRES:
+                cursor.execute("SELECT * FROM clientes WHERE activo = TRUE ORDER BY nombre")
+            else:
+                cursor.execute("SELECT * FROM clientes WHERE activo = 1 ORDER BY nombre")
             return cursor.fetchall()
     
     def actualizar_cliente(self, cliente_id, nombre, razon_social, cuit, direccion, telefono, email):
