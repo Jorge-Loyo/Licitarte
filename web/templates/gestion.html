@@ -9,7 +9,7 @@
 </div>
 
 <div class="search-box">
-    <input type="text" id="searchInput" placeholder="Buscar por N° o laboratorio..." onkeyup="filtrarLicitaciones()">
+    <input type="text" id="searchInput" placeholder="Buscar por N° o oferente..." onkeyup="filtrarLicitaciones()">
 </div>
 
 <div class="table-container">
@@ -19,7 +19,7 @@
                 <th>ID</th>
                 <th>N° Licitación</th>
                 <th>Fecha</th>
-                <th>Laboratorio Ganador</th>
+                <th>Oferente Ganador</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -35,12 +35,13 @@
             <table id="productosTable">
                 <thead>
                     <tr>
-                        <th>Ítem</th>
+                        <th>Monodroga</th>
+                        <th>Marca - Presentación</th>
                         <th>Cantidad</th>
                         <th>Precio Ofertado</th>
                         <th>Resultado</th>
                         <th>Precio Ganador</th>
-                        <th>Lab. Ganador</th>
+                        <th>Marca Ofrecida</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -57,8 +58,16 @@
         <form id="editarForm">
             <input type="hidden" id="editProductoId">
             <div class="form-group">
-                <label>Ítem/Producto *</label>
-                <input type="text" id="editItem" required>
+                <label>Monodroga *</label>
+                <input type="text" id="editMonodroga" required>
+            </div>
+            <div class="form-group">
+                <label>Marca *</label>
+                <input type="text" id="editMarca" required>
+            </div>
+            <div class="form-group">
+                <label>Presentación *</label>
+                <input type="text" id="editPresentacion" required>
             </div>
             <div class="form-group">
                 <label>Cantidad *</label>
@@ -81,8 +90,8 @@
                 <input type="number" step="0.01" id="editPrecioGanador">
             </div>
             <div class="form-group">
-                <label>Lab. Ganador</label>
-                <input type="text" id="editLaboratorio">
+                <label>Marca Ofrecida</label>
+                <input type="text" id="editMarcaOfrecida">
             </div>
             <button type="submit" class="btn-success">Guardar</button>
         </form>

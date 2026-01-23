@@ -25,6 +25,9 @@
                 <a href="{{ url_for('gestion') }}" class="menu-item {% if request.endpoint == 'gestion' %}active{% endif %}">
                     📋 Gestión
                 </a>
+                <a href="{{ url_for('administracion') }}" class="menu-item {% if request.endpoint == 'administracion' %}active{% endif %}">
+                    ⚙️ Administración
+                </a>
                 <a href="{{ url_for('ayuda') }}" class="menu-item {% if request.endpoint == 'ayuda' %}active{% endif %}">
                     ❓ Ayuda
                 </a>

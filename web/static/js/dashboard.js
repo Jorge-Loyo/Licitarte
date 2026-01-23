@@ -24,7 +24,8 @@ async function cargarProductosAdjudicados() {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${p.numero_licitacion}</td>
-            <td>${p.producto}</td>
+            <td>${p.monodroga} - ${p.marca}</td>
+            <td>${p.presentacion}</td>
             <td>${p.cantidad}</td>
             <td>$${p.precio.toFixed(2)}</td>
             <td>${p.fecha}</td>
@@ -46,7 +47,8 @@ async function buscarHistorico() {
             <strong>Última licitación ganada de "${producto}":</strong><br>
             • N° Licitación: ${data.numero_licitacion}<br>
             • Precio Ganador: $${data.precio.toFixed(2)}<br>
-            • Laboratorio: ${data.laboratorio}<br>
+            • Oferente: ${data.oferente}<br>
+            • Marca Ofrecida: ${data.marca_ofrecida || '-'}<br>
             • Fecha: ${data.fecha}
         `;
     } else {
