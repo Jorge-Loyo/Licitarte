@@ -8,9 +8,13 @@ DATABASE_URL = os.environ.get('DATABASE_URL')
 
 if DATABASE_URL:
     # Usar PostgreSQL en producción
-    import psycopg2
-    from psycopg2.extras import RealDictCursor
-    USE_POSTGRES = True
+    try:
+        import psycopg2
+        from psycopg2.extras import RealDictCursor
+        USE_POSTGRES = True
+    except ImportError:
+        print("Warning: psycopg2 not installed, using SQLite")
+        USE_POSTGRES = False
 else:
     # Usar SQLite en local
     USE_POSTGRES = False
