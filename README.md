@@ -4,9 +4,12 @@
 
 ![Version](https://img.shields.io/badge/version-1.0-blue)
 ![Python](https://img.shields.io/badge/python-3.8+-green)
+![Flask](https://img.shields.io/badge/flask-3.0-red)
 ![License](https://img.shields.io/badge/license-MIT-orange)
 
-**Aplicación profesional de escritorio para gestionar y analizar licitaciones farmacéuticas**
+**Aplicación profesional de escritorio y web para gestionar y analizar licitaciones farmacéuticas**
+
+[Demo Web](https://licitarte.onrender.com) | [Documentación](Doc/MANUAL_USUARIO.md) | [Despliegue](Doc/DEPLOY_RENDER.md)
 
 </div>
 
@@ -14,7 +17,17 @@
 
 ## 📋 Descripción
 
-Licitarte es una aplicación de escritorio moderna desarrollada en Python con CustomTkinter que permite gestionar licitaciones farmacéuticas de manera eficiente, con seguimiento de productos, análisis estadístico y consulta de históricos.
+Licitarte es una aplicación completa (escritorio y web) desarrollada en Python que permite gestionar licitaciones farmacéuticas de manera eficiente, con seguimiento de productos, análisis estadístico y consulta de históricos.
+
+### 🖥️ Versión Desktop
+- Aplicación nativa con CustomTkinter
+- Instalable en Windows/Mac/Linux
+- Base de datos SQLite local
+
+### 🌐 Versión Web
+- Aplicación Flask responsive
+- Accesible desde cualquier navegador
+- Desplegable en Render/Heroku/AWS
 
 ## ✨ Características Principales
 
@@ -44,20 +57,18 @@ Licitarte es una aplicación de escritorio moderna desarrollada en Python con Cu
   - Integridad referencial
   - Datos locales seguros
 
-## 🚀 Instalación
+## 🚀 Instalación y Uso
 
-### Requisitos
+### 🖥️ Aplicación Desktop
 
-- Python 3.8 o superior
-- Windows 10/11, macOS o Linux
-
-### Instalación desde Código Fuente
+#### Opción 1: Desde Código Fuente
 
 ```bash
-# Clonar o descargar el repositorio
-cd C:\git\Licitarte
+# Clonar repositorio
+git clone https://github.com/TU_USUARIO/licitarte.git
+cd licitarte
 
-# Crear entorno virtual (recomendado)
+# Crear entorno virtual
 python -m venv venv
 venv\Scripts\activate  # Windows
 # source venv/bin/activate  # Linux/Mac
@@ -65,19 +76,53 @@ venv\Scripts\activate  # Windows
 # Instalar dependencias
 pip install -r requirements.txt
 
-# Ejecutar aplicación
+# Ejecutar aplicación desktop
 python main.py
 ```
 
-### Instalación desde Ejecutable (Windows)
+#### Opción 2: Ejecutable Windows
 
 1. Descargar `Licitarte_v1.0_Instalador.zip`
 2. Descomprimir
-3. Ejecutar `Licitarte.exe` (versión portable)
-   
-   O usar instalador:
-4. Clic derecho en `installer.bat` → Ejecutar como administrador
-5. Seguir instrucciones
+3. Ejecutar `Licitarte.exe` (portable)
+4. O usar `installer.bat` como administrador
+
+---
+
+### 🌐 Aplicación Web
+
+#### Ejecutar Localmente
+
+```bash
+# Desde la raíz del proyecto
+cd web
+
+# Instalar dependencias web
+pip install -r requirements.txt
+
+# Iniciar servidor
+python app.py
+
+# Abrir navegador en: http://localhost:5000
+```
+
+#### Script Rápido (Windows)
+
+```bash
+run_web.bat
+```
+
+#### Desplegar en Render
+
+1. Subir código a GitHub
+2. Crear cuenta en [Render.com](https://render.com)
+3. Conectar repositorio
+4. Configurar:
+   - **Build Command:** `pip install -r web/requirements.txt`
+   - **Start Command:** `cd web && gunicorn app:app`
+5. Deploy automático
+
+**Guía completa:** [DEPLOY_RENDER.md](Doc/DEPLOY_RENDER.md)
 
 ## 📖 Uso Rápido
 
@@ -121,26 +166,46 @@ Licitarte/
 │   ├── gestion.py             # Módulo de gestión
 │   ├── dashboard.py           # Módulo de análisis
 │   └── ayuda.py               # Manual integrado
+├── web/                       # 🌐 APLICACIÓN WEB
+│   ├── app.py                 # Backend Flask
+│   ├── requirements.txt       # Dependencias web
+│   ├── static/
+│   │   ├── css/style.css
+│   │   ├── js/
+│   │   └── img/
+│   └── templates/
+│       ├── base.html
+│       ├── dashboard.html
+│       ├── ingreso.html
+│       ├── gestion.html
+│       └── ayuda.html
+├── Doc/
+│   ├── MANUAL_USUARIO.md      # Manual completo
+│   ├── DISTRIBUCION.md        # Guía distribución desktop
+│   └── DEPLOY_RENDER.md       # Guía despliegue web
 ├── Img/
-│   └── Logo_licitarte.png     # Logo de la aplicación
-├── main.py                    # Aplicación principal
-├── requirements.txt           # Dependencias
-├── Licitarte.spec            # Configuración PyInstaller
-├── build_exe.bat             # Script para generar ejecutable
-├── installer.bat             # Instalador para usuarios
-├── README.md                 # Este archivo
-├── MANUAL_USUARIO.md         # Manual completo
-├── DISTRIBUCION.md           # Guía de distribución
-└── LEEME.txt                 # Instrucciones básicas
+│   └── Logo_licitarte.png
+├── main.py                    # 🖥️ App Desktop
+├── requirements.txt           # Dependencias desktop
+├── Procfile                   # Config Render
+├── runtime.txt                # Python version
+└── README.md
 ```
 
 ## 🛠️ Tecnologías Utilizadas
 
+### Desktop
 - **Python 3.8+**
 - **CustomTkinter** - Interfaz gráfica moderna
 - **SQLite3** - Base de datos local
 - **Pillow** - Manejo de imágenes
 - **PyInstaller** - Generación de ejecutables
+
+### Web
+- **Flask 3.0** - Framework web
+- **Gunicorn** - Servidor WSGI
+- **HTML5/CSS3/JavaScript** - Frontend
+- **SQLite3** - Base de datos compartida
 
 ## 💾 Respaldo de Datos
 
@@ -224,29 +289,58 @@ Las contribuciones son bienvenidas. Por favor:
 
 Para soporte técnico o reportar problemas:
 
-- Consultar `MANUAL_USUARIO.md` para instrucciones detalladas
-- Usar la ayuda integrada en la aplicación (menú "❓ Ayuda")
-- Contactar al desarrollador
+- 📖 Consultar [Manual de Usuario](Doc/MANUAL_USUARIO.md)
+- 🌐 Guía de [Despliegue Web](Doc/DEPLOY_RENDER.md)
+- 💻 Guía de [Distribución Desktop](Doc/DISTRIBUCION.md)
+- ❓ Usar ayuda integrada en la aplicación
+- 🐛 Reportar issues en GitHub
+
+## 🌐 Demo en Línea
+
+**URL:** https://licitarte.onrender.com
+
+⚠️ **Nota:** Plan gratuito se duerme después de 15 min de inactividad. Primera carga puede tardar ~30 segundos.
 
 ## 🗺️ Roadmap
 
+### v1.0 (Actual)
+- ✅ Aplicación desktop completa
+- ✅ Aplicación web completa
+- ✅ Dashboard con estadísticas
+- ✅ Modo claro/oscuro
+- ✅ Manual integrado
+
+### v1.1 (Próximo)
 - [ ] Exportación a Excel/CSV
 - [ ] Gráficos estadísticos
 - [ ] Reportes PDF
 - [ ] Filtros avanzados
+
+### v2.0 (Futuro)
 - [ ] Importación masiva de datos
 - [ ] Modo multi-usuario
+- [ ] API REST completa
+- [ ] Aplicación móvil
 
 ## 📜 Changelog
 
-### v1.0 (2024-01-15)
+### v1.0 (2024-01-23)
 
+**Desktop:**
 - ✅ Lanzamiento inicial
 - ✅ Gestión completa de licitaciones
 - ✅ Dashboard con estadísticas
 - ✅ Modo claro/oscuro
 - ✅ Manual de usuario integrado
 - ✅ Ejecutable standalone
+- ✅ Instalador/Desinstalador
+
+**Web:**
+- ✅ Aplicación Flask completa
+- ✅ API REST
+- ✅ Interfaz responsive
+- ✅ Mismo diseño que desktop
+- ✅ Desplegable en Render
 
 ---
 

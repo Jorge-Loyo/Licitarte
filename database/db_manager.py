@@ -1,7 +1,19 @@
 import sqlite3
+import os
 from datetime import datetime
 from contextlib import contextmanager
-import os
+
+# Detectar si estamos en producción (Render)
+DATABASE_URL = os.environ.get('DATABASE_URL')
+
+if DATABASE_URL:
+    # Usar PostgreSQL en producción
+    import psycopg2
+    from psycopg2.extras import RealDictCursor
+    USE_POSTGRES = True
+else:
+    # Usar SQLite en local
+    USE_POSTGRES = False
 
 class DatabaseManager:
     def __init__(self, db_path="database/licitaciones.db"):
@@ -11,8 +23,12 @@ class DatabaseManager:
     
     @contextmanager
     def get_connection(self):
-        conn = sqlite3.connect(self.db_path)
-        conn.execute("PRAGMA foreign_keys = ON")
+        if USE_POSTGRES:
+            conn = psycopg2.connect(DATABASE_URL)
+        else:
+            conn = sqlite3.connect(self.db_path)
+            conn.execute("PRAGMA foreign_keys = ON")
+        
         try:
             yield conn
             conn.commit()
@@ -26,29 +42,54 @@ class DatabaseManager:
         with self.get_connection() as conn:
             cursor = conn.cursor()
             
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS licitaciones (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    numero_licitacion TEXT UNIQUE NOT NULL,
-                    fecha TEXT NOT NULL,
-                    laboratorio_ganador TEXT,
-                    CHECK(length(numero_licitacion) > 0)
-                )
-            ''')
-            
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS productos (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    licitacion_id INTEGER NOT NULL,
-                    item_producto TEXT NOT NULL,
-                    cantidad INTEGER NOT NULL CHECK(cantidad > 0),
-                    precio_ofertado REAL NOT NULL CHECK(precio_ofertado >= 0),
-                    resultado TEXT NOT NULL CHECK(resultado IN ('Adjudicado', 'Parcial', 'No Adjudicado')),
-                    precio_ganador REAL CHECK(precio_ganador >= 0),
-                    laboratorio_ganador TEXT,
-                    FOREIGN KEY (licitacion_id) REFERENCES licitaciones (id) ON DELETE CASCADE
-                )
-            ''')
+            if USE_POSTGRES:
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS licitaciones (
+                        id SERIAL PRIMARY KEY,
+                        numero_licitacion TEXT UNIQUE NOT NULL,
+                        fecha TEXT NOT NULL,
+                        laboratorio_ganador TEXT,
+                        CHECK(length(numero_licitacion) > 0)
+                    )
+                ''')
+                
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS productos (
+                        id SERIAL PRIMARY KEY,
+                        licitacion_id INTEGER NOT NULL,
+                        item_producto TEXT NOT NULL,
+                        cantidad INTEGER NOT NULL CHECK(cantidad > 0),
+                        precio_ofertado REAL NOT NULL CHECK(precio_ofertado >= 0),
+                        resultado TEXT NOT NULL CHECK(resultado IN ('Adjudicado', 'Parcial', 'No Adjudicado')),
+                        precio_ganador REAL CHECK(precio_ganador >= 0),
+                        laboratorio_ganador TEXT,
+                        FOREIGN KEY (licitacion_id) REFERENCES licitaciones (id) ON DELETE CASCADE
+                    )
+                ''')
+            else:
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS licitaciones (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        numero_licitacion TEXT UNIQUE NOT NULL,
+                        fecha TEXT NOT NULL,
+                        laboratorio_ganador TEXT,
+                        CHECK(length(numero_licitacion) > 0)
+                    )
+                ''')
+                
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS productos (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        licitacion_id INTEGER NOT NULL,
+                        item_producto TEXT NOT NULL,
+                        cantidad INTEGER NOT NULL CHECK(cantidad > 0),
+                        precio_ofertado REAL NOT NULL CHECK(precio_ofertado >= 0),
+                        resultado TEXT NOT NULL CHECK(resultado IN ('Adjudicado', 'Parcial', 'No Adjudicado')),
+                        precio_ganador REAL CHECK(precio_ganador >= 0),
+                        laboratorio_ganador TEXT,
+                        FOREIGN KEY (licitacion_id) REFERENCES licitaciones (id) ON DELETE CASCADE
+                    )
+                ''')
             
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_licitacion_numero ON licitaciones(numero_licitacion)')
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_producto_licitacion ON productos(licitacion_id)')
