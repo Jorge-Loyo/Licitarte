@@ -26,26 +26,6 @@ async function cargarClientes() {
     }
 }
 
-function nuevoCliente() {
-    const nombre = prompt('Nombre del cliente:');
-    if (!nombre) return;
-    
-    fetch('/api/clientes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre: nombre })
-    })
-    .then(res => res.json())
-    .then(result => {
-        if (result.success) {
-            cargarClientes();
-            mostrarMensaje('Cliente agregado', 'success');
-        } else {
-            mostrarMensaje('Error: ' + result.error, 'error');
-        }
-    });
-}
-
 function capitalizarTexto(texto) {
     if (!texto) return '';
     return texto.toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
