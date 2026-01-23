@@ -236,7 +236,7 @@ def get_historico():
     with db.get_connection() as conn:
         cursor = conn.cursor()
         if filtro:
-            if USE_POSTGRES:
+            if db.USE_POSTGRES:
                 cursor.execute("""
                     SELECT l.numero_licitacion, t.nombre as tipo_licitacion, p.marca, p.presentacion, 
                            p.cantidad, p.precio_ofertado, l.fecha
