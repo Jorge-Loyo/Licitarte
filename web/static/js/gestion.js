@@ -30,18 +30,11 @@ async function cargarLicitaciones() {
 function filtrarLicitaciones() {
     const search = document.getElementById('searchInput').value.toLowerCase();
     const filtroTipo = document.getElementById('filtroTipo').value;
-    const filtroResultado = document.getElementById('filtroResultado').value;
     
     licitacionesFiltradas = licitaciones.filter(l => {
         const matchSearch = l.numero.toLowerCase().includes(search) || 
                            (l.oferente && l.oferente.toLowerCase().includes(search));
         const matchTipo = !filtroTipo || l.tipo_licitacion === filtroTipo;
-        
-        // Para filtrar por resultado, necesitamos verificar si tiene productos con ese resultado
-        let matchResultado = !filtroResultado;
-        if (filtroResultado && l.tiene_resultado) {
-            matchResultado = l.tiene_resultado.includes(filtroResultado);
-        }
         
         return matchSearch && matchTipo;
     });
