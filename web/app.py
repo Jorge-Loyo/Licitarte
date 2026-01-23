@@ -143,16 +143,37 @@ def get_licitaciones():
             ORDER BY l.fecha DESC
         """)
         licitaciones = cursor.fetchall()
-    return jsonify([{
-        'id': l[0],
-        'numero': l[1],
-        'fecha': l[2],
-        'oferente': l[3],
-        'marca_ganadora': l[4],
-        'precio_ganador': l[5],
-        'cliente': l[6] or '-',
-        'tipo_licitacion': l[7] or '-'
-    } for l in licitaciones])
+        
+        # Calcular ganancia para cada licitación
+        resultado = []
+        for l in licitaciones:
+            cursor.execute("""
+                SELECT COUNT(*) as total,
+                       SUM(CASE WHEN resultado = 'Adjudicado' THEN 1 ELSE 0 END) as adjudicados
+                FROM productos WHERE licitacion_id = %s
+            """ if db.USE_POSTGRES else """
+                SELECT COUNT(*) as total,
+                       SUM(CASE WHEN resultado = 'Adjudicado' THEN 1 ELSE 0 END) as adjudicados
+                FROM productos WHERE licitacion_id = ?
+            """, (l[0],))
+            stats = cursor.fetchone()
+            total = stats[0] or 0
+            adjudicados = stats[1] or 0
+            ganancia = f"{adjudicados}/{total}" if total > 0 else "-"
+            
+            resultado.append({
+                'id': l[0],
+                'numero': l[1],
+                'fecha': l[2],
+                'oferente': l[3],
+                'marca_ganadora': l[4],
+                'precio_ganador': l[5],
+                'cliente': l[6] or '-',
+                'tipo_licitacion': l[7] or '-',
+                'ganancia': ganancia
+            })
+    
+    return jsonify(resultado)
 
 @app.route('/api/licitaciones', methods=['POST'])
 def crear_licitacion():

@@ -66,7 +66,7 @@ function mostrarLicitaciones() {
             <td>${l.cliente}</td>
             <td>${l.tipo_licitacion}</td>
             <td>${l.fecha}</td>
-            <td>${l.oferente || '-'}</td>
+            <td>${l.ganancia || '-'}</td>
             <td>
                 <button onclick="verDetalle(${l.id})" class="btn-primary">Ver Detalle</button>
                 <button onclick="eliminar(${l.id})" class="btn-danger">Eliminar</button>
