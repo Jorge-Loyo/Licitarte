@@ -22,86 +22,109 @@ db = DatabaseManager('../database/licitaciones.db')
 
 # Ejecutar migraciones v1.1.0 automáticamente
 if USE_POSTGRES:
+    print("🚀 Iniciando migraciones v1.1.0...")
     try:
         with db.get_connection() as conn:
             cursor = conn.cursor()
-            print("🚀 Ejecutando migraciones v1.1.0...")
             
             # 1. costo_unitario en celty
-            cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name='celty' AND column_name='costo_unitario'")
-            if not cursor.fetchone():
+            try:
                 cursor.execute("ALTER TABLE celty ADD COLUMN costo_unitario REAL")
+                conn.commit()
                 print("✓ costo_unitario agregado")
+            except:
+                pass
             
             # 2. portales_origen
-            cursor.execute("SELECT to_regclass('public.portales_origen')")
-            if cursor.fetchone()[0] is None:
+            try:
                 cursor.execute("CREATE TABLE portales_origen (id SERIAL PRIMARY KEY, nombre TEXT UNIQUE NOT NULL, activo BOOLEAN DEFAULT TRUE)")
                 for v in ['Comprar', 'BAC', 'Otro']:
                     cursor.execute("INSERT INTO portales_origen (nombre) VALUES (%s)", (v,))
+                conn.commit()
                 print("✓ portales_origen creada")
+            except:
+                pass
             
             # 3. modalidades_entrega
-            cursor.execute("SELECT to_regclass('public.modalidades_entrega')")
-            if cursor.fetchone()[0] is None:
+            try:
                 cursor.execute("CREATE TABLE modalidades_entrega (id SERIAL PRIMARY KEY, nombre TEXT UNIQUE NOT NULL, activo BOOLEAN DEFAULT TRUE)")
                 for v in ['Única', 'Múltiple', 'Programada']:
                     cursor.execute("INSERT INTO modalidades_entrega (nombre) VALUES (%s)", (v,))
+                conn.commit()
                 print("✓ modalidades_entrega creada")
+            except:
+                pass
             
             # 4. formas_pago
-            cursor.execute("SELECT to_regclass('public.formas_pago')")
-            if cursor.fetchone()[0] is None:
+            try:
                 cursor.execute("CREATE TABLE formas_pago (id SERIAL PRIMARY KEY, nombre TEXT UNIQUE NOT NULL, activo BOOLEAN DEFAULT TRUE)")
                 for v in ['Contado', '30 días', '60 días']:
                     cursor.execute("INSERT INTO formas_pago (nombre) VALUES (%s)", (v,))
+                conn.commit()
                 print("✓ formas_pago creada")
+            except:
+                pass
             
             # 5. organismos_jurisdiccion
-            cursor.execute("SELECT to_regclass('public.organismos_jurisdiccion')")
-            if cursor.fetchone()[0] is None:
+            try:
                 cursor.execute("CREATE TABLE organismos_jurisdiccion (id SERIAL PRIMARY KEY, nombre TEXT UNIQUE NOT NULL, activo BOOLEAN DEFAULT TRUE)")
                 for v in ['Nacional', 'Provincial', 'Municipal', 'CABA', 'Privado']:
                     cursor.execute("INSERT INTO organismos_jurisdiccion (nombre) VALUES (%s)", (v,))
+                conn.commit()
                 print("✓ organismos_jurisdiccion creada")
+            except:
+                pass
             
             # 6. motivos_perdida
-            cursor.execute("SELECT to_regclass('public.motivos_perdida')")
-            if cursor.fetchone()[0] is None:
+            try:
                 cursor.execute("CREATE TABLE motivos_perdida (id SERIAL PRIMARY KEY, nombre TEXT UNIQUE NOT NULL, activo BOOLEAN DEFAULT TRUE)")
                 for v in ['Precio más alto', 'Marca no priorizada', 'No cumplía especificación', 'Error administrativo', 'Otro']:
                     cursor.execute("INSERT INTO motivos_perdida (nombre) VALUES (%s)", (v,))
+                conn.commit()
                 print("✓ motivos_perdida creada")
+            except:
+                pass
             
             # 7. Columnas en licitaciones
             for col in ['portal_origen', 'modalidad_entrega', 'forma_pago', 'observaciones']:
-                cursor.execute(f"SELECT column_name FROM information_schema.columns WHERE table_name='licitaciones' AND column_name='{col}'")
-                if not cursor.fetchone():
+                try:
                     cursor.execute(f"ALTER TABLE licitaciones ADD COLUMN {col} TEXT")
+                    conn.commit()
+                except:
+                    pass
             
-            cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name='licitaciones' AND column_name='requiere_poliza'")
-            if not cursor.fetchone():
+            try:
                 cursor.execute("ALTER TABLE licitaciones ADD COLUMN requiere_poliza BOOLEAN")
+                conn.commit()
+            except:
+                pass
             
-            cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name='licitaciones' AND column_name='monto_poliza'")
-            if not cursor.fetchone():
+            try:
                 cursor.execute("ALTER TABLE licitaciones ADD COLUMN monto_poliza REAL")
+                conn.commit()
+            except:
+                pass
             
-            cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name='licitaciones' AND column_name='tipo_licitacion_id'")
-            if not cursor.fetchone():
+            try:
                 cursor.execute("ALTER TABLE licitaciones ADD COLUMN tipo_licitacion_id INTEGER")
+                conn.commit()
+            except:
+                pass
             
             # 8. organismo_jurisdiccion en clientes
-            cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name='clientes' AND column_name='organismo_jurisdiccion'")
-            if not cursor.fetchone():
+            try:
                 cursor.execute("ALTER TABLE clientes ADD COLUMN organismo_jurisdiccion TEXT")
+                conn.commit()
+            except:
+                pass
             
             # 9. motivo_perdida en productos
-            cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name='productos' AND column_name='motivo_perdida'")
-            if not cursor.fetchone():
+            try:
                 cursor.execute("ALTER TABLE productos ADD COLUMN motivo_perdida TEXT")
+                conn.commit()
+            except:
+                pass
             
-            conn.commit()
             print("✅ Migraciones v1.1.0 completadas")
     except Exception as e:
         print(f"❌ Error en migraciones: {e}")
