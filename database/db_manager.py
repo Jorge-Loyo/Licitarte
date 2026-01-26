@@ -427,25 +427,29 @@ class DatabaseManager:
         with self.get_connection() as conn:
             cursor = conn.cursor()
             
-            cursor.execute("SELECT COUNT(*) FROM licitaciones")
-            total_licitaciones = cursor.fetchone()[0]
-            
-            cursor.execute("SELECT COUNT(DISTINCT licitacion_id) FROM productos WHERE resultado = 'Adjudicado'")
-            licitaciones_ganadas = cursor.fetchone()[0]
-            
             cursor.execute("SELECT SUM(cantidad) FROM productos")
-            total_unidades = cursor.fetchone()[0] or 0
+            unidades_cotizadas = cursor.fetchone()[0] or 0
             
-            cursor.execute("""SELECT SUM(precio_ofertado * cantidad), SUM(cantidad) 
-                             FROM productos WHERE resultado = 'Adjudicado'""")
-            resultado = cursor.fetchone()
-            precio_promedio = (resultado[0] / resultado[1]) if resultado[1] else 0
+            cursor.execute("SELECT SUM(cantidad) FROM productos WHERE resultado = 'Adjudicado'")
+            unidades_ganadas = cursor.fetchone()[0] or 0
+            
+            porcentaje_unidades = (unidades_ganadas / unidades_cotizadas * 100) if unidades_cotizadas > 0 else 0
+            
+            cursor.execute("SELECT SUM(precio_ofertado * cantidad) FROM productos")
+            total_cotizado = cursor.fetchone()[0] or 0
+            
+            cursor.execute("SELECT SUM(precio_ofertado * cantidad) FROM productos WHERE resultado = 'Adjudicado'")
+            total_ganado = cursor.fetchone()[0] or 0
+            
+            porcentaje_dinero = (total_ganado / total_cotizado * 100) if total_cotizado > 0 else 0
             
             return {
-                'total_licitaciones': total_licitaciones,
-                'licitaciones_ganadas': licitaciones_ganadas,
-                'total_unidades': total_unidades,
-                'precio_promedio_ponderado': precio_promedio
+                'unidades_cotizadas': unidades_cotizadas,
+                'unidades_ganadas': unidades_ganadas,
+                'porcentaje_unidades': porcentaje_unidades,
+                'total_cotizado': total_cotizado,
+                'total_ganado': total_ganado,
+                'porcentaje_dinero': porcentaje_dinero
             }
     
     def obtener_historico_producto(self, monodroga, marca, presentacion):

@@ -44,6 +44,7 @@
         <h3 id="detalleTitle">Detalle de Licitación</h3>
         <div id="detalleInfo" style="background: #2a2a2a; padding: 15px; border-radius: 5px; margin-bottom: 20px;"></div>
         <button onclick="editarLicitacion()" class="btn-primary" style="margin-bottom: 15px;">✏️ Editar Licitación</button>
+        <button onclick="agregarNuevoProducto()" class="btn-success" style="margin-bottom: 15px; margin-left: 10px;">➕ Agregar Producto</button>
         <h4>Productos</h4>
         <div class="table-container">
             <table id="productosTable">
@@ -70,7 +71,7 @@
 <div id="modalEditar" class="modal">
     <div class="modal-content">
         <span class="close" onclick="cerrarModalEditar()">&times;</span>
-        <h3>Editar Producto</h3>
+        <h3 id="modalEditarTitulo">Editar Producto</h3>
         <form id="editarForm">
             <input type="hidden" id="editProductoId">
             <div class="form-group">

@@ -5,6 +5,7 @@ let paginaGestion = 1;
 const porPaginaGestion = 10;
 let tiposLicitacion = [];
 let clientes = [];
+let modoEdicion = 'editar';
 
 async function cargarLicitaciones() {
     const response = await fetch('/api/licitaciones');
@@ -126,6 +127,8 @@ function cerrarModal() {
 }
 
 function editarProducto(id, producto) {
+    modoEdicion = 'editar';
+    document.getElementById('modalEditarTitulo').textContent = 'Editar Producto';
     document.getElementById('editProductoId').value = id;
     document.getElementById('editMonodroga').value = producto.monodroga;
     document.getElementById('editMarca').value = producto.marca;
@@ -141,6 +144,24 @@ function editarProducto(id, producto) {
     document.getElementById('modalEditar').style.display = 'block';
 }
 
+function agregarNuevoProducto() {
+    modoEdicion = 'crear';
+    document.getElementById('modalEditarTitulo').textContent = 'Agregar Producto';
+    document.getElementById('editProductoId').value = '';
+    document.getElementById('editMonodroga').value = '';
+    document.getElementById('editMarca').value = '';
+    document.getElementById('editPresentacion').value = '';
+    document.getElementById('editCantidad').value = '';
+    document.getElementById('editPrecio').value = '';
+    document.getElementById('editResultado').value = 'No Adjudicado';
+    document.getElementById('editOferenteGanador').value = '';
+    document.getElementById('editMarcaGanadora').value = '';
+    document.getElementById('editPrecioGanador').value = '';
+    document.getElementById('editMarcaOfrecida').value = '';
+    
+    document.getElementById('modalEditar').style.display = 'block';
+}
+
 function cerrarModalEditar() {
     document.getElementById('modalEditar').style.display = 'none';
 }
@@ -148,7 +169,6 @@ function cerrarModalEditar() {
 document.getElementById('editarForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    const id = document.getElementById('editProductoId').value;
     const data = {
         monodroga: document.getElementById('editMonodroga').value,
         marca: document.getElementById('editMarca').value,
@@ -162,15 +182,26 @@ document.getElementById('editarForm').addEventListener('submit', async (e) => {
         marca_ofrecida: document.getElementById('editMarcaOfrecida').value
     };
     
-    const response = await fetch(`/api/productos/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    });
+    let response;
+    if (modoEdicion === 'crear') {
+        data.licitacion_id = licitacionActual;
+        response = await fetch('/api/productos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+    } else {
+        const id = document.getElementById('editProductoId').value;
+        response = await fetch(`/api/productos/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+    }
     
     const result = await response.json();
     if (result.success) {
-        alert('Producto actualizado');
+        alert(modoEdicion === 'crear' ? 'Producto agregado' : 'Producto actualizado');
         cerrarModalEditar();
         verDetalle(licitacionActual);
     } else {

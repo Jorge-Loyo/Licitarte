@@ -16,10 +16,12 @@ async function cargarEstadisticas() {
     const response = await fetch('/api/estadisticas');
     const stats = await response.json();
     
-    document.getElementById('totalLicitaciones').textContent = stats.total_licitaciones;
-    document.getElementById('licitacionesGanadas').textContent = stats.licitaciones_ganadas;
-    document.getElementById('totalUnidades').textContent = stats.total_unidades.toLocaleString();
-    document.getElementById('precioProm').textContent = '$' + stats.precio_promedio_ponderado.toFixed(2);
+    document.getElementById('unidadesCotizadas').textContent = stats.unidades_cotizadas.toLocaleString('es-AR');
+    document.getElementById('unidadesGanadas').textContent = stats.unidades_ganadas.toLocaleString('es-AR');
+    document.getElementById('porcentajeUnidades').textContent = stats.porcentaje_unidades.toFixed(2) + '%';
+    document.getElementById('totalCotizado').textContent = '$' + stats.total_cotizado.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('totalGanado').textContent = '$' + stats.total_ganado.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('porcentajeDinero').textContent = stats.porcentaje_dinero.toFixed(2) + '%';
 }
 
 async function cargarProductosAdjudicados() {

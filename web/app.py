@@ -273,6 +273,27 @@ def get_productos(licitacion_id):
         'marca_ganadora': p[11] if len(p) > 11 else ''
     } for p in productos])
 
+@app.route('/api/productos', methods=['POST'])
+def crear_producto():
+    data = request.json
+    try:
+        db.agregar_producto(
+            data['licitacion_id'],
+            data['monodroga'],
+            data['marca'],
+            data['presentacion'],
+            int(data['cantidad']),
+            float(data['precio_ofertado']),
+            data['resultado'],
+            float(data['precio_ganador']) if data.get('precio_ganador') else None,
+            data.get('oferente', ''),
+            data.get('marca_ofrecida', ''),
+            data.get('marca_ganadora', '')
+        )
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
 @app.route('/api/productos/<int:id>', methods=['PUT'])
 def actualizar_producto(id):
     data = request.json
