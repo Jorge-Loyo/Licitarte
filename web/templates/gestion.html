@@ -75,16 +75,22 @@
         <form id="editarForm">
             <input type="hidden" id="editProductoId">
             <div class="form-group">
+                <label>Producto (Marca - Presentación) *</label>
+                <select id="editProductoSelect" onchange="seleccionarProducto()">
+                    <option value="">Seleccione producto...</option>
+                </select>
+            </div>
+            <div class="form-group">
                 <label>Monodroga *</label>
-                <input type="text" id="editMonodroga" required>
+                <input type="text" id="editMonodroga" required readonly>
             </div>
             <div class="form-group">
                 <label>Marca *</label>
-                <input type="text" id="editMarca" required>
+                <input type="text" id="editMarca" required readonly>
             </div>
             <div class="form-group">
                 <label>Presentación *</label>
-                <input type="text" id="editPresentacion" required>
+                <input type="text" id="editPresentacion" required readonly>
             </div>
             <div class="form-group">
                 <label>Cantidad *</label>

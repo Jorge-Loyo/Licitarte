@@ -6,6 +6,7 @@ const porPaginaGestion = 10;
 let tiposLicitacion = [];
 let clientes = [];
 let modoEdicion = 'editar';
+let catalogo = [];
 
 async function cargarLicitaciones() {
     const response = await fetch('/api/licitaciones');
@@ -18,6 +19,10 @@ async function cargarLicitaciones() {
     // Cargar clientes
     const responseClientes = await fetch('/api/clientes');
     clientes = await responseClientes.json();
+    
+    // Cargar catálogo
+    const responseCatalogo = await fetch('/api/catalogo');
+    catalogo = await responseCatalogo.json();
     
     const selectTipo = document.getElementById('filtroTipo');
     selectTipo.innerHTML = '<option value="">Todos los tipos</option>';
@@ -130,6 +135,14 @@ function editarProducto(id, producto) {
     modoEdicion = 'editar';
     document.getElementById('modalEditarTitulo').textContent = 'Editar Producto';
     document.getElementById('editProductoId').value = id;
+    
+    // Cargar catálogo en select
+    const select = document.getElementById('editProductoSelect');
+    select.innerHTML = '<option value="">Seleccione producto...</option>';
+    catalogo.forEach(p => {
+        select.innerHTML += `<option value="${p.id}" data-monodroga="${p.monodroga}" data-marca="${p.marca}" data-presentacion="${p.presentacion}">${p.marca} - ${p.presentacion}</option>`;
+    });
+    
     document.getElementById('editMonodroga').value = producto.monodroga;
     document.getElementById('editMarca').value = producto.marca;
     document.getElementById('editPresentacion').value = producto.presentacion;
@@ -148,6 +161,14 @@ function agregarNuevoProducto() {
     modoEdicion = 'crear';
     document.getElementById('modalEditarTitulo').textContent = 'Agregar Producto';
     document.getElementById('editProductoId').value = '';
+    
+    // Cargar catálogo en select
+    const select = document.getElementById('editProductoSelect');
+    select.innerHTML = '<option value="">Seleccione producto...</option>';
+    catalogo.forEach(p => {
+        select.innerHTML += `<option value="${p.id}" data-monodroga="${p.monodroga}" data-marca="${p.marca}" data-presentacion="${p.presentacion}">${p.marca} - ${p.presentacion}</option>`;
+    });
+    
     document.getElementById('editMonodroga').value = '';
     document.getElementById('editMarca').value = '';
     document.getElementById('editPresentacion').value = '';
@@ -160,6 +181,17 @@ function agregarNuevoProducto() {
     document.getElementById('editMarcaOfrecida').value = '';
     
     document.getElementById('modalEditar').style.display = 'block';
+}
+
+function seleccionarProducto() {
+    const select = document.getElementById('editProductoSelect');
+    const option = select.options[select.selectedIndex];
+    
+    if (option.value) {
+        document.getElementById('editMonodroga').value = option.dataset.monodroga;
+        document.getElementById('editMarca').value = option.dataset.marca;
+        document.getElementById('editPresentacion').value = option.dataset.presentacion;
+    }
 }
 
 function cerrarModalEditar() {

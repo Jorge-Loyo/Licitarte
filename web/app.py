@@ -62,6 +62,14 @@ def nueva_licitacion():
 def gestion():
     return render_template('gestion.html')
 
+@app.route('/polizas')
+def polizas():
+    return render_template('polizas.html')
+
+@app.route('/documentacion')
+def documentacion():
+    return render_template('documentacion.html')
+
 @app.route('/administracion')
 def administracion():
     return render_template('administracion.html')
