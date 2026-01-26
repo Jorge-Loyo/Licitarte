@@ -74,6 +74,10 @@ def documentacion():
 def administracion():
     return render_template('administracion.html')
 
+@app.route('/metricas')
+def metricas():
+    return render_template('metricas.html')
+
 @app.route('/ayuda')
 def ayuda():
     return render_template('ayuda.html')
@@ -83,7 +87,7 @@ def ayuda():
 def get_catalogo():
     with db.get_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT id, numero_registro, monodroga, marca, presentacion, laboratorio, precio_caja, precio_unitario, fecha FROM celty ORDER BY monodroga, marca, presentacion")
+        cursor.execute("SELECT id, numero_registro, monodroga, marca, presentacion, laboratorio, precio_caja, precio_unitario, costo_unitario, fecha FROM celty ORDER BY monodroga, marca, presentacion")
         productos = cursor.fetchall()
     return jsonify([{
         'id': p[0],
@@ -94,7 +98,8 @@ def get_catalogo():
         'laboratorio': p[5],
         'precio_caja': p[6],
         'precio_unitario': p[7],
-        'fecha': p[8]
+        'costo_unitario': p[8],
+        'fecha': p[9]
     } for p in productos])
 
 @app.route('/api/catalogo', methods=['POST'])
@@ -106,10 +111,10 @@ def crear_producto_catalogo():
     try:
         with db.get_connection() as conn:
             cursor = conn.cursor()
-            if db.USE_POSTGRES:
+            if USE_POSTGRES:
                 cursor.execute("""
-                    INSERT INTO celty (numero_registro, monodroga, marca, presentacion, laboratorio, precio_caja, precio_unitario, fecha)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    INSERT INTO celty (numero_registro, monodroga, marca, presentacion, laboratorio, precio_caja, precio_unitario, costo_unitario, fecha)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """, (
                     data['numero_registro'],
                     data.get('monodroga', ''),
@@ -118,12 +123,13 @@ def crear_producto_catalogo():
                     data.get('laboratorio', ''),
                     float(data['precio_caja']) if data.get('precio_caja') else None,
                     float(data['precio_unitario']) if data.get('precio_unitario') else None,
+                    float(data['costo_unitario']) if data.get('costo_unitario') else None,
                     data.get('fecha', '')
                 ))
             else:
                 cursor.execute("""
-                    INSERT INTO celty (numero_registro, monodroga, marca, presentacion, laboratorio, precio_caja, precio_unitario, fecha)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO celty (numero_registro, monodroga, marca, presentacion, laboratorio, precio_caja, precio_unitario, costo_unitario, fecha)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
                     data['numero_registro'],
                     data.get('monodroga', ''),
@@ -132,7 +138,50 @@ def crear_producto_catalogo():
                     data.get('laboratorio', ''),
                     float(data['precio_caja']) if data.get('precio_caja') else None,
                     float(data['precio_unitario']) if data.get('precio_unitario') else None,
+                    float(data['costo_unitario']) if data.get('costo_unitario') else None,
                     data.get('fecha', '')
+                ))
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/catalogo/<int:id>', methods=['PUT'])
+def actualizar_producto_catalogo(id):
+    data = request.json
+    try:
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("""
+                    UPDATE celty SET numero_registro=%s, monodroga=%s, marca=%s, presentacion=%s, 
+                    laboratorio=%s, precio_caja=%s, precio_unitario=%s, costo_unitario=%s, fecha=%s WHERE id=%s
+                """, (
+                    data['numero_registro'],
+                    data.get('monodroga', ''),
+                    data.get('marca', ''),
+                    data.get('presentacion', ''),
+                    data.get('laboratorio', ''),
+                    float(data['precio_caja']) if data.get('precio_caja') else None,
+                    float(data['precio_unitario']) if data.get('precio_unitario') else None,
+                    float(data['costo_unitario']) if data.get('costo_unitario') else None,
+                    data.get('fecha', ''),
+                    id
+                ))
+            else:
+                cursor.execute("""
+                    UPDATE celty SET numero_registro=?, monodroga=?, marca=?, presentacion=?, 
+                    laboratorio=?, precio_caja=?, precio_unitario=?, costo_unitario=?, fecha=? WHERE id=?
+                """, (
+                    data['numero_registro'],
+                    data.get('monodroga', ''),
+                    data.get('marca', ''),
+                    data.get('presentacion', ''),
+                    data.get('laboratorio', ''),
+                    float(data['precio_caja']) if data.get('precio_caja') else None,
+                    float(data['precio_unitario']) if data.get('precio_unitario') else None,
+                    float(data['costo_unitario']) if data.get('costo_unitario') else None,
+                    data.get('fecha', ''),
+                    id
                 ))
         return jsonify({'success': True})
     except Exception as e:
@@ -152,24 +201,27 @@ def get_licitaciones():
         """)
         licitaciones = cursor.fetchall()
         
-        # Calcular ganancia para cada licitación
+        # Calcular ganancia y total cotizado para cada licitación
         resultado = []
         for l in licitaciones:
             if USE_POSTGRES:
                 cursor.execute("""
                     SELECT COUNT(*) as total,
-                           SUM(CASE WHEN resultado = 'Adjudicado' THEN 1 ELSE 0 END) as adjudicados
+                           SUM(CASE WHEN resultado = 'Adjudicado' THEN 1 ELSE 0 END) as adjudicados,
+                           COALESCE(SUM(precio_ofertado * cantidad), 0) as total_cotizado
                     FROM productos WHERE licitacion_id = %s
                 """, (l[0],))
             else:
                 cursor.execute("""
                     SELECT COUNT(*) as total,
-                           SUM(CASE WHEN resultado = 'Adjudicado' THEN 1 ELSE 0 END) as adjudicados
+                           SUM(CASE WHEN resultado = 'Adjudicado' THEN 1 ELSE 0 END) as adjudicados,
+                           COALESCE(SUM(precio_ofertado * cantidad), 0) as total_cotizado
                     FROM productos WHERE licitacion_id = ?
                 """, (l[0],))
             stats = cursor.fetchone()
             total = stats[0] or 0
             adjudicados = stats[1] or 0
+            total_cotizado = float(stats[2]) if stats[2] else 0.0
             ganancia = f"{adjudicados}/{total}" if total > 0 else "-"
             
             resultado.append({
@@ -181,6 +233,7 @@ def get_licitaciones():
                 'precio_ganador': l[5],
                 'cliente': l[6] or '-',
                 'tipo_licitacion': l[7] or '-',
+                'total_cotizado': total_cotizado,
                 'ganancia': ganancia
             })
     
@@ -203,7 +256,13 @@ def crear_licitacion():
             '',
             None,
             int(data['cliente_id']) if data.get('cliente_id') else None,
-            int(data['tipo_licitacion_id']) if data.get('tipo_licitacion_id') else None
+            int(data['tipo_licitacion_id']) if data.get('tipo_licitacion_id') else None,
+            data.get('portal_origen', ''),
+            data.get('modalidad_entrega', ''),
+            data.get('forma_pago', ''),
+            data.get('requiere_poliza', False),
+            float(data['monto_poliza']) if data.get('monto_poliza') else None,
+            data.get('observaciones', '')
         )
         
         for producto in data.get('productos', []):
@@ -278,7 +337,8 @@ def get_productos(licitacion_id):
         'precio_ganador': p[8],
         'oferente': p[9],
         'marca_ofrecida': p[10],
-        'marca_ganadora': p[11] if len(p) > 11 else ''
+        'marca_ganadora': p[11] if len(p) > 11 else '',
+        'motivo_perdida': p[12] if len(p) > 12 else ''
     } for p in productos])
 
 @app.route('/api/productos', methods=['POST'])
@@ -296,7 +356,8 @@ def crear_producto():
             float(data['precio_ganador']) if data.get('precio_ganador') else None,
             data.get('oferente', ''),
             data.get('marca_ofrecida', ''),
-            data.get('marca_ganadora', '')
+            data.get('marca_ganadora', ''),
+            data.get('motivo_perdida', '')
         )
         return jsonify({'success': True})
     except Exception as e:
@@ -317,7 +378,8 @@ def actualizar_producto(id):
             float(data['precio_ganador']) if data.get('precio_ganador') else None,
             data.get('oferente', ''),
             data.get('marca_ofrecida', ''),
-            data.get('marca_ganadora', '')
+            data.get('marca_ganadora', ''),
+            data.get('motivo_perdida', '')
         )
         return jsonify({'success': True})
     except Exception as e:
@@ -420,7 +482,8 @@ def get_clientes():
         'cuit': c[3],
         'direccion': c[4],
         'telefono': c[5],
-        'email': c[6]
+        'email': c[6],
+        'organismo_jurisdiccion': c[8] if len(c) > 8 else ''
     } for c in clientes])
 
 @app.route('/api/clientes', methods=['POST'])
@@ -439,7 +502,8 @@ def crear_cliente():
             data.get('cuit', ''),
             data.get('direccion', ''),
             data.get('telefono', ''),
-            data.get('email', '')
+            data.get('email', ''),
+            data.get('organismo_jurisdiccion', '')
         )
         print(f"DEBUG - Cliente creado con ID: {cliente_id}")
         return jsonify({'success': True, 'id': cliente_id})
@@ -463,7 +527,8 @@ def actualizar_cliente(id):
             data.get('cuit', ''),
             data.get('direccion', ''),
             data.get('telefono', ''),
-            data.get('email', '')
+            data.get('email', ''),
+            data.get('organismo_jurisdiccion', '')
         )
         return jsonify({'success': True})
     except Exception as e:
@@ -628,7 +693,8 @@ def cargar_clientes():
                     str(row.get('cuit', row.get('CUIT', ''))),
                     str(row.get('direccion', row.get('Direccion', ''))),
                     str(row.get('telefono', row.get('Telefono', ''))),
-                    str(row.get('email', row.get('Email', '')))
+                    str(row.get('email', row.get('Email', ''))),
+                    str(row.get('organismo_jurisdiccion', row.get('Organismo', '')))
                 )
                 count += 1
             except:
@@ -706,7 +772,213 @@ def cargar_tipos_licitacion():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+# API Portales Origen
+@app.route('/api/portales-origen', methods=['GET'])
+def get_portales_origen():
+    portales = db.obtener_portales_origen()
+    return jsonify([{'id': p[0], 'nombre': p[1]} for p in portales])
+
+@app.route('/api/portales-origen', methods=['POST'])
+def crear_portal_origen():
+    data = request.json
+    if not data or not data.get('nombre'):
+        return jsonify({'success': False, 'error': 'Nombre es obligatorio'}), 400
+    try:
+        portal_id = db.crear_portal_origen(data['nombre'])
+        return jsonify({'success': True, 'id': portal_id})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/portales-origen/<int:id>', methods=['PUT'])
+def actualizar_portal_origen(id):
+    data = request.json
+    try:
+        db.actualizar_portal_origen(id, data['nombre'])
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/portales-origen/<int:id>', methods=['DELETE'])
+def eliminar_portal_origen(id):
+    try:
+        db.eliminar_portal_origen(id)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+# API Modalidades Entrega
+@app.route('/api/modalidades-entrega', methods=['GET'])
+def get_modalidades_entrega():
+    modalidades = db.obtener_modalidades_entrega()
+    return jsonify([{'id': m[0], 'nombre': m[1]} for m in modalidades])
+
+@app.route('/api/modalidades-entrega', methods=['POST'])
+def crear_modalidad_entrega():
+    data = request.json
+    if not data or not data.get('nombre'):
+        return jsonify({'success': False, 'error': 'Nombre es obligatorio'}), 400
+    try:
+        modalidad_id = db.crear_modalidad_entrega(data['nombre'])
+        return jsonify({'success': True, 'id': modalidad_id})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/modalidades-entrega/<int:id>', methods=['PUT'])
+def actualizar_modalidad_entrega(id):
+    data = request.json
+    try:
+        db.actualizar_modalidad_entrega(id, data['nombre'])
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/modalidades-entrega/<int:id>', methods=['DELETE'])
+def eliminar_modalidad_entrega(id):
+    try:
+        db.eliminar_modalidad_entrega(id)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+# API Formas Pago
+@app.route('/api/formas-pago', methods=['GET'])
+def get_formas_pago():
+    formas = db.obtener_formas_pago()
+    return jsonify([{'id': f[0], 'nombre': f[1]} for f in formas])
+
+@app.route('/api/formas-pago', methods=['POST'])
+def crear_forma_pago():
+    data = request.json
+    if not data or not data.get('nombre'):
+        return jsonify({'success': False, 'error': 'Nombre es obligatorio'}), 400
+    try:
+        forma_id = db.crear_forma_pago(data['nombre'])
+        return jsonify({'success': True, 'id': forma_id})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/formas-pago/<int:id>', methods=['PUT'])
+def actualizar_forma_pago(id):
+    data = request.json
+    try:
+        db.actualizar_forma_pago(id, data['nombre'])
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/formas-pago/<int:id>', methods=['DELETE'])
+def eliminar_forma_pago(id):
+    try:
+        db.eliminar_forma_pago(id)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+# API Organismos Jurisdiccion
+@app.route('/api/organismos', methods=['GET'])
+def get_organismos():
+    organismos = db.obtener_organismos()
+    return jsonify([{'id': o[0], 'nombre': o[1]} for o in organismos])
+
+@app.route('/api/organismos', methods=['POST'])
+def crear_organismo():
+    data = request.json
+    if not data or not data.get('nombre'):
+        return jsonify({'success': False, 'error': 'Nombre es obligatorio'}), 400
+    try:
+        organismo_id = db.crear_organismo(data['nombre'])
+        return jsonify({'success': True, 'id': organismo_id})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/organismos/<int:id>', methods=['PUT'])
+def actualizar_organismo(id):
+    data = request.json
+    try:
+        db.actualizar_organismo(id, data['nombre'])
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/organismos/<int:id>', methods=['DELETE'])
+def eliminar_organismo(id):
+    try:
+        db.eliminar_organismo(id)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+# API Motivos Perdida
+@app.route('/api/motivos-perdida', methods=['GET'])
+def get_motivos_perdida():
+    motivos = db.obtener_motivos_perdida()
+    return jsonify([{'id': m[0], 'nombre': m[1]} for m in motivos])
+
+@app.route('/api/motivos-perdida', methods=['POST'])
+def crear_motivo_perdida():
+    data = request.json
+    if not data or not data.get('nombre'):
+        return jsonify({'success': False, 'error': 'Nombre es obligatorio'}), 400
+    try:
+        motivo_id = db.crear_motivo_perdida(data['nombre'])
+        return jsonify({'success': True, 'id': motivo_id})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/motivos-perdida/<int:id>', methods=['PUT'])
+def actualizar_motivo_perdida(id):
+    data = request.json
+    try:
+        db.actualizar_motivo_perdida(id, data['nombre'])
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/motivos-perdida/<int:id>', methods=['DELETE'])
+def eliminar_motivo_perdida(id):
+    try:
+        db.eliminar_motivo_perdida(id)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@app.route('/api/ranking-perdidas', methods=['GET'])
+def get_ranking_perdidas():
+    with db.get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT motivo_perdida, COUNT(*) as cantidad
+            FROM productos
+            WHERE motivo_perdida IS NOT NULL AND motivo_perdida != ''
+            GROUP BY motivo_perdida
+            ORDER BY cantidad DESC
+        """)
+        resultados = cursor.fetchall()
+    return jsonify([{'motivo': r[0], 'cantidad': r[1]} for r in resultados])
+
+@app.route('/api/diferencias-promedio', methods=['GET'])
+def get_diferencias_promedio():
+    with db.get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT AVG(precio_ofertado - precio_ganador) as dif_pesos,
+                   AVG(((precio_ofertado - precio_ganador) / precio_ganador) * 100) as dif_porcentaje
+            FROM productos
+            WHERE resultado = 'No Adjudicado' 
+              AND precio_ganador IS NOT NULL 
+              AND precio_ganador > 0
+        """)
+        resultado = cursor.fetchone()
+    return jsonify({
+        'diferencia_pesos': float(resultado[0]) if resultado[0] else 0,
+        'diferencia_porcentaje': float(resultado[1]) if resultado[1] else 0
+    })
+
 if __name__ == '__main__':
+    # Forzar SQLite en desarrollo
+    if 'DATABASE_URL' in os.environ:
+        del os.environ['DATABASE_URL']
+    
     port = int(os.environ.get('PORT', 5000))
     debug = os.environ.get('FLASK_ENV') != 'production'
-    app.run(host='0.0.0.0', port=port, debug=debug)
+    app.run(host='0.0.0.0', port=port, debug=debug, use_reloader=False)

@@ -419,3 +419,23 @@ select:focus {
 .btn-secondary:hover {
     background: #666;
 }
+
+/* Scrollbar moderno */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-dark);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #26c6da;
+}

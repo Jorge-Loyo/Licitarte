@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Métricas - Licitarte{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>📈 Métricas</h2>
+</div>
+
+<div class="stats-container" style="grid-template-columns: repeat(2, 1fr); margin-bottom: 30px;">
+    <div class="stat-card">
+        <h3>Diferencia Promedio $</h3>
+        <p class="stat-value" id="diferenciaPesos">$0.00</p>
+    </div>
+    <div class="stat-card">
+        <h3>Diferencia Promedio %</h3>
+        <p class="stat-value" id="diferenciaPorcentaje">0%</p>
+    </div>
+</div>
+
+<div class="section">
+    <h3 style="text-align: center; color: var(--primary-color); margin-bottom: 20px;">🏆 Ranking de Causas de Pérdidas</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 60px; text-align: center;">#</th>
+                    <th>Motivo</th>
+                    <th style="width: 120px; text-align: center;">Cantidad</th>
+                    <th style="width: 120px; text-align: center;">%</th>
+                </tr>
+            </thead>
+            <tbody id="rankingBody">
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 40px;">Cargando datos...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/metricas.js') }}"></script>
+{% endblock %}

@@ -24,6 +24,7 @@
                 <th>Cliente</th>
                 <th>Tipo</th>
                 <th>Fecha</th>
+                <th>Total Cotizado</th>
                 <th>Ganancia</th>
                 <th>Acciones</th>
             </tr>
@@ -54,10 +55,13 @@
                         <th>Marca - Presentación</th>
                         <th>Cantidad</th>
                         <th>Precio Ofertado</th>
+                        <th>Total $</th>
                         <th>Resultado</th>
                         <th>Oferente Ganador</th>
                         <th>Marca Ganadora</th>
                         <th>Precio Ganador</th>
+                        <th>Dif. $</th>
+                        <th>Dif. %</th>
                         <th>Marca Ofrecida</th>
                         <th>Acciones</th>
                     </tr>
@@ -69,62 +73,103 @@
 </div>
 
 <div id="modalEditar" class="modal">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 800px;">
         <span class="close" onclick="cerrarModalEditar()">&times;</span>
-        <h3 id="modalEditarTitulo">Editar Producto</h3>
+        <h3 id="modalEditarTitulo" style="color: var(--primary); margin-bottom: 25px; text-align: center;">Editar Producto</h3>
         <form id="editarForm">
             <input type="hidden" id="editProductoId">
-            <div class="form-group">
-                <label>Producto (Marca - Presentación) *</label>
-                <select id="editProductoSelect" onchange="seleccionarProducto()">
-                    <option value="">Seleccione producto...</option>
-                </select>
+            
+            <div style="background: var(--bg-dark); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h4 style="color: var(--primary); margin-bottom: 15px; font-size: 14px;">DATOS DEL PRODUCTO</h4>
+                <div class="form-group">
+                    <label>Producto (Marca - Presentación) *</label>
+                    <select id="editProductoSelect" onchange="seleccionarProducto()" style="font-size: 16px; padding: 12px;">
+                        <option value="">Seleccione producto...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Monodroga *</label>
+                    <input type="text" id="editMonodroga" required readonly style="font-size: 16px; padding: 12px; background: #333;">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="form-group">
+                        <label>Marca *</label>
+                        <input type="text" id="editMarca" required readonly style="font-size: 16px; padding: 12px; background: #333;">
+                    </div>
+                    <div class="form-group">
+                        <label>Presentación *</label>
+                        <input type="text" id="editPresentacion" required readonly style="font-size: 16px; padding: 12px; background: #333;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Marca Ofrecida</label>
+                    <input type="text" id="editMarcaOfrecida" style="font-size: 16px; padding: 12px;">
+                </div>
             </div>
-            <div class="form-group">
-                <label>Monodroga *</label>
-                <input type="text" id="editMonodroga" required readonly>
+            
+            <div style="background: var(--bg-dark); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h4 style="color: var(--primary); margin-bottom: 15px; font-size: 14px;">MI OFERTA</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                    <div class="form-group">
+                        <label>Cantidad *</label>
+                        <input type="number" id="editCantidad" required style="font-size: 16px; padding: 12px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Precio Ofertado *</label>
+                        <input type="number" step="0.01" id="editPrecio" required style="font-size: 16px; padding: 12px;" oninput="calcularMargen()">
+                    </div>
+                    <div class="form-group">
+                        <label>Resultado *</label>
+                        <select id="editResultado" onchange="manejarCambioResultadoEdicion()" style="font-size: 16px; padding: 12px;">
+                            <option value="Parcial">Parcial</option>
+                            <option value="Adjudicado">Adjudicado</option>
+                            <option value="No Adjudicado">No Adjudicado</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="alertaMargen" style="display: none; margin-top: 15px; padding: 15px; border-radius: 5px; text-align: center; font-weight: bold; font-size: 16px;"></div>
             </div>
-            <div class="form-group">
-                <label>Marca *</label>
-                <input type="text" id="editMarca" required readonly>
+            
+            <div style="background: var(--bg-dark); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h4 style="color: var(--primary); margin-bottom: 15px; font-size: 14px;">DATOS DEL GANADOR</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                    <div class="form-group">
+                        <label>Oferente Ganador</label>
+                        <input type="text" id="editOferenteGanador" style="font-size: 16px; padding: 12px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Marca Ganadora</label>
+                        <input type="text" id="editMarcaGanadora" style="font-size: 16px; padding: 12px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Precio Ganador</label>
+                        <input type="number" step="0.01" id="editPrecioGanador" style="font-size: 16px; padding: 12px;">
+                    </div>
+                </div>
+                <div id="diferenciasContainer" style="display: none; margin-top: 15px; padding: 15px; background: #1a1a1a; border-radius: 5px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div>
+                            <label style="font-size: 12px; color: #888;">Diferencia $</label>
+                            <div id="diferenciaPesos" style="font-size: 18px; font-weight: bold; color: var(--danger-color);">-</div>
+                        </div>
+                        <div>
+                            <label style="font-size: 12px; color: #888;">Diferencia %</label>
+                            <div id="diferenciaPorcentaje" style="font-size: 18px; font-weight: bold; color: var(--danger-color);">-</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group" id="motivoPerdidaContainer" style="display: none;">
+                    <label>Motivo de Pérdida *</label>
+                    <select id="editMotivoPerdida" style="font-size: 16px; padding: 12px;">
+                        <option value="">Seleccione...</option>
+                    </select>
+                </div>
             </div>
-            <div class="form-group">
-                <label>Presentación *</label>
-                <input type="text" id="editPresentacion" required readonly>
+            
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="button" onclick="cerrarModalEditar()" class="btn-secondary">Cancelar</button>
+                <button type="submit" class="btn-success" style="padding: 12px 30px; font-size: 16px;">✔ Guardar Producto</button>
             </div>
-            <div class="form-group">
-                <label>Cantidad *</label>
-                <input type="number" id="editCantidad" required>
-            </div>
-            <div class="form-group">
-                <label>Precio Ofertado *</label>
-                <input type="number" step="0.01" id="editPrecio" required>
-            </div>
-            <div class="form-group">
-                <label>Resultado *</label>
-                <select id="editResultado">
-                    <option value="Adjudicado">Adjudicado</option>
-                    <option value="Parcial">Parcial</option>
-                    <option value="No Adjudicado">No Adjudicado</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Oferente Ganador</label>
-                <input type="text" id="editOferenteGanador">
-            </div>
-            <div class="form-group">
-                <label>Marca Ganadora</label>
-                <input type="text" id="editMarcaGanadora">
-            </div>
-            <div class="form-group">
-                <label>Precio Ganador</label>
-                <input type="number" step="0.01" id="editPrecioGanador">
-            </div>
-            <div class="form-group">
-                <label>Marca Ofrecida</label>
-                <input type="text" id="editMarcaOfrecida">
-            </div>
-            <button type="submit" class="btn-success">Guardar</button>
         </form>
     </div>
 </div>
@@ -157,6 +202,14 @@
             </div>
             <button type="submit" class="btn-success">Guardar</button>
         </form>
+    </div>
+</div>
+
+<div id="modalNotificacion" class="modal">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <h3 id="notificacionTitulo" style="color: var(--primary); margin-bottom: 20px;"></h3>
+        <p id="notificacionMensaje" style="font-size: 16px; margin-bottom: 25px;"></p>
+        <button onclick="cerrarNotificacion()" class="btn-primary" style="padding: 12px 30px;">Aceptar</button>
     </div>
 </div>
 {% endblock %}

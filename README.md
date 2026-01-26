@@ -1,33 +1,63 @@
 # Licitarte - Sistema de Gestión de Licitaciones Farmacéuticas
 
-**Versión 1.0.0** - Sistema profesional para gestionar licitaciones farmacéuticas con catálogo integrado de productos Celty.
+**Versión 1.1.0** - Sistema profesional para gestionar licitaciones farmacéuticas con análisis de márgenes y métricas avanzadas.
 
-[![Versión](https://img.shields.io/badge/versión-1.0.0-blue.svg)](https://github.com/Jorge-Loyo/Licitarte)
+[![Versión](https://img.shields.io/badge/versión-1.1.0-blue.svg)](https://github.com/Jorge-Loyo/Licitarte)
 [![Python](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/flask-3.0.0-green.svg)](https://flask.palletsprojects.com/)
 [![Licencia](https://img.shields.io/badge/licencia-Propietario-red.svg)](LICENSE)
 
+## Novedades v1.1.0
+
+- ✨ **Análisis de Márgenes**: Alertas visuales (rojo/amarillo/verde) al cotizar productos según costo unitario
+- ✨ **Métricas Avanzadas**: Módulo de métricas con ranking de causas de pérdidas y diferencias promedio
+- ✨ **Motivos de Pérdida**: Catálogo configurable de motivos cuando no se adjudica
+- ✨ **Diferencias vs Ganador**: Cálculo automático de diferencia en $ y % para productos no adjudicados
+- ✨ **Catálogos Dinámicos**: Portales/Origen, Modalidades de Entrega, Formas de Pago, Organismos/Jurisdicción
+- ✨ **Gestión de Costos**: Campo costo unitario en catálogo de productos para análisis de rentabilidad
+- ✨ **Dashboard Mejorado**: 6 indicadores (unidades cotizadas/ganadas, porcentajes, totales en dinero)
+- ✨ **Formato MILL**: Montos ≥1M se muestran en formato millones (ej: $200,00 MILL)
+- ✨ **UI Modernizada**: Modales rediseñados, scrollbars personalizados, notificaciones custom
+
 ## Características
 
-- ✅ Gestión completa de licitaciones y productos
-- ✅ Catálogo integrado de productos farmacéuticos Celty
-- ✅ Gestión de clientes (CRUD completo)
-- ✅ Gestión de oferentes (CRUD completo)
-- ✅ Gestión de marcas (CRUD completo)
-- ✅ Gestión de tipos de licitación (CRUD completo)
-- ✅ Dashboard con estadísticas en tiempo real
-- ✅ Histórico de precios con filtros avanzados
-- ✅ Interfaz web responsive
-- ✅ Soporte SQLite (local) y PostgreSQL (producción)
-- ✅ Formato argentino de precios (punto miles, coma decimal)
-- ✅ Carga masiva desde Excel (clientes, oferentes, marcas, tipos, catálogo)
-- ✅ Paginación en todas las tablas
+### Gestión Completa
+- ✅ Licitaciones con datos completos (portal, modalidad, forma pago, pólizas)
+- ✅ Productos con análisis de margen en tiempo real
+- ✅ Catálogo Celty con costos unitarios
+- ✅ Clientes con organismo/jurisdicción
+- ✅ Oferentes, marcas, tipos de licitación
+- ✅ Catálogos configurables (portales, modalidades, formas pago, organismos, motivos pérdida)
+
+### Dashboard & Métricas
+- ✅ 6 indicadores clave (unidades, porcentajes, dinero)
+- ✅ Histórico de precios con filtros
+- ✅ Productos adjudicados paginados
+- ✅ Formato argentino con notación MILL
+
+### Módulo Métricas
+- ✅ Ranking de causas de pérdidas
+- ✅ Diferencia promedio $ y % vs ganador
+- ✅ Análisis de competitividad
+
+### Análisis de Rentabilidad
+- ✅ Alerta roja: Precio ≤ costo
+- ✅ Alerta amarilla: Margen < 8%
+- ✅ Alerta verde: Margen ≥ 8%
+- ✅ Cálculo automático al cotizar
+
+### Interfaz Moderna
+- ✅ Modales con secciones agrupadas
+- ✅ Inputs grandes (16px font, 12px padding)
+- ✅ Scrollbars personalizados
+- ✅ Notificaciones custom
+- ✅ Tema claro/oscuro
 
 ## Tecnologías
 
-- **Backend**: Python 3.11, Flask
-- **Base de Datos**: SQLite / PostgreSQL
-- **Frontend**: HTML5, CSS3, JavaScript (Vanilla)
+- **Backend**: Python 3.11, Flask 3.0
+- **Base de Datos**: SQLite (local) / PostgreSQL (producción)
+- **Frontend**: HTML5, CSS3, JavaScript Vanilla
 - **Despliegue**: Gunicorn, Render.com
 
 ## Instalación Local
@@ -73,125 +103,174 @@ http://localhost:5000
 Licitarte/
 ├── database/
 │   ├── db_manager.py          # Gestor de base de datos
-│   └── licitaciones.db        # Base de datos SQLite (local)
+│   ├── licitaciones.db        # Base de datos SQLite
+│   └── migrate_*.py           # Scripts de migración
 ├── web/
 │   ├── static/
-│   │   ├── css/
-│   │   │   └── style.css      # Estilos
+│   │   ├── css/style.css      # Estilos modernizados
 │   │   ├── js/
-│   │   │   ├── ingreso.js     # Nueva licitación
-│   │   │   ├── gestion.js     # Gestión
-│   │   │   ├── dashboard.js   # Dashboard
-│   │   │   ├── administracion.js  # Administración
+│   │   │   ├── ingreso.js     # Nueva licitación con análisis margen
+│   │   │   ├── gestion.js     # Gestión con diferencias
+│   │   │   ├── dashboard.js   # Dashboard 6 indicadores
+│   │   │   ├── metricas.js    # Módulo métricas
+│   │   │   ├── administracion.js  # CRUD catálogos
 │   │   │   └── theme.js       # Tema claro/oscuro
-│   │   └── img/
-│   │       └── Logo_licitarte.png
+│   │   └── img/Logo_licitarte.png
 │   ├── templates/
 │   │   ├── base.html          # Template base
-│   │   ├── dashboard.html     # Dashboard
-│   │   ├── ingreso.html       # Nueva licitación
-│   │   ├── gestion.html       # Gestión
-│   │   ├── administracion.html # Administración
-│   │   └── ayuda.html         # Manual de usuario
+│   │   ├── dashboard.html     # Dashboard mejorado
+│   │   ├── ingreso.html       # Formulario modernizado
+│   │   ├── gestion.html       # Gestión con diferencias
+│   │   ├── metricas.html      # Módulo métricas
+│   │   ├── administracion.html # 9 catálogos
+│   │   └── ayuda.html         # Manual actualizado
 │   ├── app.py                 # Aplicación Flask
-│   ├── requirements.txt       # Dependencias
-│   └── init_production.py     # Script de inicialización
-├── Data/
-│   └── Celty.xlsx             # Catálogo de productos
-├── .env.example               # Ejemplo de variables de entorno
-├── .gitignore                 # Archivos ignorados
-├── Procfile                   # Configuración Render
-├── runtime.txt                # Versión Python
-├── DEPLOY.md                  # Guía de despliegue
+│   └── requirements.txt       # Dependencias
+├── Data/Celty.xlsx            # Catálogo productos
 └── README.md                  # Este archivo
 ```
 
 ## Módulos
 
 ### 1. Dashboard
-- Estadísticas en tiempo real (total licitaciones, ganadas, unidades, precio promedio)
-- Productos adjudicados con paginación
-- Histórico de precios con búsqueda y filtros
-- Filtros por monodroga
+- 6 indicadores: Unidades cotizadas/ganadas, % unidades, Total cotizado/ganado, % dinero
+- Formato MILL para montos grandes
+- Histórico de precios con filtros
+- Productos adjudicados paginados
 
 ### 2. Nueva Licitación
-- Datos de licitación (N°, Cliente, Tipo, Fecha)
-- Selección de cliente desde lista desplegable
-- Selección de tipo de licitación
-- Selección de productos desde catálogo Celty (Marca - Presentación)
-- Auto-completado de monodroga capitalizada
-- Auto-completado de marca ofrecida desde laboratorio
-- Campos: Oferente Ganador, Marca Ganadora, Precio Ganador
+- Formulario modernizado con secciones agrupadas
+- Datos completos: Portal, Modalidad, Forma Pago, Póliza, Observaciones
+- Selección de productos con análisis de margen en tiempo real
+- Alertas visuales: Rojo (≤costo), Amarillo (<8%), Verde (≥8%)
+- Auto-completado de campos según resultado
 - Múltiples productos por licitación
-- Agregar nuevos oferentes/marcas/tipos sobre la marcha
 
 ### 3. Gestión
-- Listar todas las licitaciones con paginación (10 por página)
-- Buscar por N° o oferente
-- Filtrar por tipo de licitación
-- Columna "Ganancia" muestra items adjudicados/total (ej: 3/5)
-- Ver detalle completo de productos
-- Editar licitación (N°, Cliente, Tipo, Fecha)
-- Editar productos (monodroga, marca, presentación, cantidad, precios, resultado, oferente, marca ganadora, marca ofrecida)
-- Eliminar licitaciones
+- Listado con Total Cotizado por licitación
+- Búsqueda y filtros avanzados
+- Detalle con columnas Dif. $ y Dif. % para no adjudicados
+- Edición de productos con análisis de margen
+- Modal modernizado con 3 secciones
+- Agregar productos a licitaciones existentes
 
-### 4. Administración
-- **Clientes**: CRUD completo (nombre, razón social, CUIT, dirección, teléfono, email)
-- **Oferentes**: CRUD completo con carga masiva desde Excel
-- **Marcas**: CRUD completo con carga masiva desde Excel
-- **Tipos de Licitación**: CRUD completo con carga masiva desde Excel
-- **Catálogo Celty**: Visualización completa con búsqueda (N° Registro, Monodroga, Marca, Presentación, Laboratorio, Precio Caja, Precio Unitario, Fecha)
-- **Carga Masiva**: Importar desde Excel para todas las entidades
-- **Formato de Precios**: Argentino (punto miles, coma decimal)
+### 4. Métricas
+- Ranking de causas de pérdidas con cantidad y %
+- Diferencia promedio $ y % vs ganador
+- Análisis de competitividad
 
-### 5. Ayuda
-- Manual de usuario completo actualizado
-- Guías paso a paso para cada módulo
-- Consejos y buenas prácticas
-- Documentación de nuevas funcionalidades
+### 5. Administración
+- **Clientes**: Con organismo/jurisdicción (auto-completa en licitación)
+- **Catálogo Productos**: Con costo unitario editable
+- **Oferentes, Marcas, Tipos**: CRUD completo
+- **Organismos/Jurisdicción**: Catálogo configurable
+- **Portales/Origen**: Catálogo configurable
+- **Modalidades Entrega**: Catálogo configurable
+- **Formas de Pago**: Catálogo configurable
+- **Motivos Pérdida**: Catálogo configurable (5 por defecto)
+- Carga masiva desde Excel
+- Scroll lateral en catálogo productos
+
+### 6. Ayuda
+- Manual de usuario actualizado v1.1.0
+- Guías paso a paso
+- Nuevas funcionalidades documentadas
 
 ## Base de Datos
 
-### Tablas
+### Tablas Principales
+- **clientes**: nombre, razon_social, cuit, direccion, telefono, email, organismo_jurisdiccion
+- **licitaciones**: numero, cliente_id, tipo_id, fecha, portal_origen, modalidad_entrega, forma_pago, requiere_poliza, monto_poliza, observaciones
+- **productos**: licitacion_id, monodroga, marca, presentacion, cantidad, precio_ofertado, resultado, precio_ganador, oferente_ganador, marca_ofrecida, marca_ganadora, motivo_perdida
+- **celty**: numero_registro, monodroga, marca, presentacion, laboratorio, precio_caja, precio_unitario, costo_unitario, fecha
 
-#### clientes
-- id, nombre, razon_social, cuit, direccion, telefono, email, activo
+### Catálogos Configurables
+- **oferentes**, **marcas**, **tipos_licitacion**
+- **portales_origen**, **modalidades_entrega**, **formas_pago**
+- **organismos_jurisdiccion**, **motivos_perdida**
 
-#### oferentes
-- id, nombre, activo
+## Análisis de Márgenes
 
-#### marcas
-- id, nombre, activo
+### Lógica de Alertas
+```javascript
+if (precioOfertado <= costoUnitario) {
+    // ROJO: Pérdida
+    margen = ((precioOfertado - costoUnitario) / costoUnitario) * 100
+} else if (margen < 8%) {
+    // AMARILLO: Margen bajo
+} else {
+    // VERDE: Margen aceptable
+}
+```
 
-#### tipos_licitacion
-- id, nombre, activo
+### Aplicación
+- Nueva Licitación: Al ingresar precio ofertado
+- Gestión: Al editar producto
+- Requiere costo unitario cargado en catálogo
 
-#### licitaciones
-- id, numero_licitacion, cliente_id, tipo_licitacion_id, fecha, oferente_ganador, marca_ganadora, precio_ganador
+## Diferencias vs Ganador
 
-#### productos
-- id, licitacion_id, monodroga, marca, presentacion, cantidad, precio_ofertado, resultado, precio_ganador, oferente_ganador, marca_ofrecida, marca_ganadora
+### Cálculo Automático
+```javascript
+diferenciaPesos = precioOfertado - precioGanador
+diferenciaPorcentaje = (diferenciaPesos / precioGanador) * 100
+```
 
-#### celty (catálogo)
-- id, numero_registro, monodroga, marca, presentacion, laboratorio, precio_caja, precio_unitario, fecha
+### Visualización
+- Columnas Dif. $ y Dif. % en tabla de productos
+- Solo para resultado "No Adjudicado"
+- Formato argentino con MILL
 
-## Despliegue a Producción
+## Formato de Moneda
 
-Ver [DEPLOY.md](DEPLOY.md) para instrucciones detalladas.
+### Regla MILL
+```javascript
+if (valor >= 1000000) {
+    return (valor / 1000000).toFixed(2) + ' MILL'
+} else {
+    return valor.toLocaleString('es-AR')
+}
+```
 
-### Resumen
-1. Configurar PostgreSQL
-2. Configurar variables de entorno
-3. Desplegar en Render.com
-4. Ejecutar script de inicialización
+### Ejemplos
+- $200.000.000,00 → $200,00 MILL
+- $850.500,50 → $850.500,50
 
 ## Seguridad
 
+- ✓ Parametrización de consultas SQL (prevención SQL injection)
+- ✓ Validación de entrada en backend
 - ✓ SECRET_KEY único por entorno
-- ✓ Validación de datos de entrada
-- ✓ Manejo seguro de errores
-- ✓ Protección contra SQL injection (parametrización)
 - ✓ Variables de entorno para credenciales
+- ✓ Manejo seguro de errores
+- ✓ CSRF protection en formularios
+- ✓ Sanitización de datos de usuario
+
+## Escalabilidad
+
+- ✓ Paginación en todas las tablas
+- ✓ Índices en columnas frecuentes
+- ✓ Context managers para conexiones DB
+- ✓ Soporte PostgreSQL para producción
+- ✓ Arquitectura modular
+- ✓ Separación frontend/backend
+- ✓ API REST para futuras integraciones
+
+## Despliegue a Producción
+
+### Variables de Entorno
+```bash
+DATABASE_URL=postgresql://user:pass@host:5432/db
+SECRET_KEY=tu-secret-key-segura
+FLASK_ENV=production
+PORT=5000
+```
+
+### Render.com
+1. Conectar repositorio GitHub
+2. Configurar variables de entorno
+3. Desplegar automáticamente
+4. Ejecutar migraciones si es necesario
 
 ## Mantenimiento
 
@@ -200,7 +279,7 @@ Ver [DEPLOY.md](DEPLOY.md) para instrucciones detalladas.
 python -c "from database.db_manager import DatabaseManager; db = DatabaseManager(); db.cargar_catalogo_desde_excel('Data/Celty.xlsx')"
 ```
 
-### Backup Base de Datos
+### Backup
 ```bash
 # SQLite
 cp database/licitaciones.db database/backup_$(date +%Y%m%d).db
@@ -209,23 +288,55 @@ cp database/licitaciones.db database/backup_$(date +%Y%m%d).db
 pg_dump $DATABASE_URL > backup_$(date +%Y%m%d).sql
 ```
 
+### Migraciones
+```bash
+cd database
+python migrate_v2.py
+python migrate_catalogos.py
+python migrate_organismos.py
+python add_motivo_perdida.py
+```
+
+## Changelog v1.1.0
+
+### Agregado
+- Módulo Métricas con ranking de pérdidas y diferencias promedio
+- Análisis de márgenes con alertas visuales (rojo/amarillo/verde)
+- Campo costo_unitario en catálogo de productos
+- Catálogos configurables: Portales, Modalidades, Formas Pago, Organismos, Motivos Pérdida
+- Columnas Dif. $ y Dif. % en productos no adjudicados
+- Dashboard con 6 indicadores (unidades, porcentajes, dinero)
+- Formato MILL para montos ≥1M
+- Campo organismo_jurisdiccion en clientes (auto-completa en licitación)
+- Campos v2.0 en licitaciones: portal_origen, modalidad_entrega, forma_pago, requiere_poliza, monto_poliza, observaciones
+- Total Cotizado por licitación en Gestión
+- Agregar productos a licitaciones existentes
+- Notificaciones custom en lugar de alert()
+- Scrollbars personalizados
+
+### Mejorado
+- Modales modernizados con secciones agrupadas
+- Inputs más grandes (16px font, 12px padding)
+- Formulario Nueva Licitación completamente rediseñado
+- Tabla catálogo con scroll lateral y header sticky
+- Lógica de resultado: Adjudicado auto-completa, No Adjudicado requiere motivo
+- Marca Ofrecida por defecto "Celtyc"
+- Resultado por defecto "Parcial"
+
+### Corregido
+- Múltiples archivos de base de datos consolidados
+- Referencia USE_POSTGRES en endpoints
+- Fecha se mantiene al editar productos del catálogo
+- Excel no sobrescribe costo_unitario (solo manual)
+
 ## Licencia
 
 Propietario - Todos los derechos reservados
 
 ## Versión
 
-**1.0.0** - Enero 2025
-
-Ver [CHANGELOG.md](CHANGELOG.md) para historial completo de cambios.
+**1.1.0** - Enero 2025
 
 ## Autor
 
 Jorge - Licitarte 2025
-
-## Enlaces Útiles
-
-- [Guía de Instalación](INSTALL.md)
-- [Guía de Despliegue](DEPLOY.md)
-- [Historial de Cambios](CHANGELOG.md)
-- [Manual de Usuario](web/templates/ayuda.html) (disponible en la aplicación)

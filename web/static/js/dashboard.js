@@ -6,6 +6,13 @@ let adjudicadosCompleto = [];
 let adjudicadosPagina = 1;
 const adjudicadosPorPagina = 5;
 
+function formatearMoneda(valor) {
+    if (valor >= 1000000) {
+        return '$' + (valor / 1000000).toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' MILL';
+    }
+    return '$' + valor.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+
 async function actualizarDashboard() {
     await cargarEstadisticas();
     await cargarProductosAdjudicados();
@@ -19,8 +26,8 @@ async function cargarEstadisticas() {
     document.getElementById('unidadesCotizadas').textContent = stats.unidades_cotizadas.toLocaleString('es-AR');
     document.getElementById('unidadesGanadas').textContent = stats.unidades_ganadas.toLocaleString('es-AR');
     document.getElementById('porcentajeUnidades').textContent = stats.porcentaje_unidades.toFixed(2) + '%';
-    document.getElementById('totalCotizado').textContent = '$' + stats.total_cotizado.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-    document.getElementById('totalGanado').textContent = '$' + stats.total_ganado.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('totalCotizado').textContent = formatearMoneda(stats.total_cotizado);
+    document.getElementById('totalGanado').textContent = formatearMoneda(stats.total_ganado);
     document.getElementById('porcentajeDinero').textContent = stats.porcentaje_dinero.toFixed(2) + '%';
 }
 
@@ -47,7 +54,7 @@ function mostrarProductosAdjudicados() {
             <td>${p.cliente}</td>
             <td>${p.marca} - ${p.presentacion}</td>
             <td>${p.cantidad}</td>
-            <td>$${p.precio.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+            <td>${formatearMoneda(p.precio)}</td>
             <td>${p.fecha}</td>
         `;
         tbody.appendChild(tr);
@@ -95,7 +102,7 @@ function mostrarHistorico() {
             <td>${p.tipo_licitacion}</td>
             <td>${p.marca} - ${p.presentacion}</td>
             <td>${p.cantidad}</td>
-            <td>$${p.precio.toLocaleString('es-AR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+            <td>${formatearMoneda(p.precio)}</td>
             <td>${p.fecha}</td>
         `;
         tbody.appendChild(tr);

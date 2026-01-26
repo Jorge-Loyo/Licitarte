@@ -69,6 +69,7 @@ class DatabaseManager:
                         direccion TEXT,
                         telefono TEXT,
                         email TEXT,
+                        organismo_jurisdiccion TEXT,
                         activo BOOLEAN DEFAULT TRUE
                     )
                 ''')
@@ -169,9 +170,17 @@ class DatabaseManager:
                         direccion TEXT,
                         telefono TEXT,
                         email TEXT,
+                        organismo_jurisdiccion TEXT,
                         activo INTEGER DEFAULT 1
                     )
                 ''')
+                
+                # Migración: Agregar organismo_jurisdiccion si no existe
+                cursor.execute("PRAGMA table_info(clientes)")
+                columns = [col[1] for col in cursor.fetchall()]
+                if 'organismo_jurisdiccion' not in columns:
+                    cursor.execute("ALTER TABLE clientes ADD COLUMN organismo_jurisdiccion TEXT")
+                    print("✓ Columna organismo_jurisdiccion agregada a clientes")
                 
                 # Tabla Oferentes
                 cursor.execute('''
@@ -340,7 +349,7 @@ class DatabaseManager:
                 cursor.execute("SELECT * FROM celty WHERE numero_registro = ?", (numero_registro,))
             return cursor.fetchone()
     
-    def crear_licitacion(self, numero, fecha, oferente_ganador="", marca_ganadora="", precio_ganador=None, cliente_id=None, tipo_licitacion_id=None):
+    def crear_licitacion(self, numero, fecha, oferente_ganador="", marca_ganadora="", precio_ganador=None, cliente_id=None, tipo_licitacion_id=None, portal_origen="", modalidad_entrega="", forma_pago="", requiere_poliza=False, monto_poliza=None, observaciones=""):
         if not numero or not fecha:
             raise ValueError("Número y fecha son obligatorios")
         if len(numero.strip()) > 100:
@@ -348,15 +357,17 @@ class DatabaseManager:
         with self.get_connection() as conn:
             cursor = conn.cursor()
             if USE_POSTGRES:
-                cursor.execute("INSERT INTO licitaciones (numero_licitacion, cliente_id, tipo_licitacion_id, fecha, oferente_ganador, marca_ganadora, precio_ganador) VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id",
-                              (numero.strip(), cliente_id, tipo_licitacion_id, fecha.strip(), oferente_ganador.strip(), marca_ganadora.strip(), precio_ganador))
+                cursor.execute("""INSERT INTO licitaciones (numero_licitacion, cliente_id, tipo_licitacion_id, fecha, oferente_ganador, marca_ganadora, precio_ganador, portal_origen, modalidad_entrega, forma_pago, requiere_poliza, monto_poliza, observaciones) 
+                                  VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id""",
+                              (numero.strip(), cliente_id, tipo_licitacion_id, fecha.strip(), oferente_ganador.strip(), marca_ganadora.strip(), precio_ganador, portal_origen, modalidad_entrega, forma_pago, requiere_poliza, monto_poliza, observaciones))
                 return cursor.fetchone()[0]
             else:
-                cursor.execute("INSERT INTO licitaciones (numero_licitacion, cliente_id, tipo_licitacion_id, fecha, oferente_ganador, marca_ganadora, precio_ganador) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                              (numero.strip(), cliente_id, tipo_licitacion_id, fecha.strip(), oferente_ganador.strip(), marca_ganadora.strip(), precio_ganador))
+                cursor.execute("""INSERT INTO licitaciones (numero_licitacion, cliente_id, tipo_licitacion_id, fecha, oferente_ganador, marca_ganadora, precio_ganador, portal_origen, modalidad_entrega, forma_pago, requiere_poliza, monto_poliza, observaciones) 
+                                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                              (numero.strip(), cliente_id, tipo_licitacion_id, fecha.strip(), oferente_ganador.strip(), marca_ganadora.strip(), precio_ganador, portal_origen, modalidad_entrega, forma_pago, 1 if requiere_poliza else 0, monto_poliza, observaciones))
                 return cursor.lastrowid
     
-    def agregar_producto(self, licitacion_id, monodroga, marca, presentacion, cantidad, precio_ofertado, resultado, precio_ganador=None, oferente_ganador="", marca_ofrecida="", marca_ganadora=""):
+    def agregar_producto(self, licitacion_id, monodroga, marca, presentacion, cantidad, precio_ofertado, resultado, precio_ganador=None, oferente_ganador="", marca_ofrecida="", marca_ganadora="", motivo_perdida=""):
         if not monodroga or not marca or not presentacion or cantidad <= 0 or precio_ofertado < 0:
             raise ValueError("Datos de producto inválidos")
         if resultado == "Adjudicado":
@@ -365,12 +376,12 @@ class DatabaseManager:
             cursor = conn.cursor()
             if USE_POSTGRES:
                 cursor.execute("""INSERT INTO productos (licitacion_id, monodroga, marca, presentacion, cantidad, precio_ofertado, 
-                                 resultado, precio_ganador, oferente_ganador, marca_ofrecida, marca_ganadora) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-                              (licitacion_id, monodroga.strip(), marca.strip(), presentacion.strip(), cantidad, precio_ofertado, resultado, precio_ganador, oferente_ganador.strip(), marca_ofrecida.strip(), marca_ganadora.strip()))
+                                 resultado, precio_ganador, oferente_ganador, marca_ofrecida, marca_ganadora, motivo_perdida) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
+                              (licitacion_id, monodroga.strip(), marca.strip(), presentacion.strip(), cantidad, precio_ofertado, resultado, precio_ganador, oferente_ganador.strip(), marca_ofrecida.strip(), marca_ganadora.strip(), motivo_perdida.strip()))
             else:
                 cursor.execute("""INSERT INTO productos (licitacion_id, monodroga, marca, presentacion, cantidad, precio_ofertado, 
-                                 resultado, precio_ganador, oferente_ganador, marca_ofrecida, marca_ganadora) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                              (licitacion_id, monodroga.strip(), marca.strip(), presentacion.strip(), cantidad, precio_ofertado, resultado, precio_ganador, oferente_ganador.strip(), marca_ofrecida.strip(), marca_ganadora.strip()))
+                                 resultado, precio_ganador, oferente_ganador, marca_ofrecida, marca_ganadora, motivo_perdida) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                              (licitacion_id, monodroga.strip(), marca.strip(), presentacion.strip(), cantidad, precio_ofertado, resultado, precio_ganador, oferente_ganador.strip(), marca_ofrecida.strip(), marca_ganadora.strip(), motivo_perdida.strip()))
     
     def obtener_licitaciones(self):
         with self.get_connection() as conn:
@@ -399,7 +410,7 @@ class DatabaseManager:
                 cursor.execute("UPDATE licitaciones SET numero_licitacion=?, cliente_id=?, fecha=?, oferente_ganador=?, marca_ganadora=?, precio_ganador=? WHERE id=?",
                               (numero.strip(), cliente_id, fecha.strip(), oferente_ganador.strip(), marca_ganadora.strip(), precio_ganador, licitacion_id))
     
-    def actualizar_producto(self, producto_id, monodroga, marca, presentacion, cantidad, precio_ofertado, resultado, precio_ganador, oferente_ganador, marca_ofrecida, marca_ganadora=""):
+    def actualizar_producto(self, producto_id, monodroga, marca, presentacion, cantidad, precio_ofertado, resultado, precio_ganador, oferente_ganador, marca_ofrecida, marca_ganadora="", motivo_perdida=""):
         if not monodroga or not marca or not presentacion or cantidad <= 0 or precio_ofertado < 0:
             raise ValueError("Datos de producto inválidos")
         if resultado == "Adjudicado":
@@ -408,12 +419,12 @@ class DatabaseManager:
             cursor = conn.cursor()
             if USE_POSTGRES:
                 cursor.execute("""UPDATE productos SET monodroga=%s, marca=%s, presentacion=%s, cantidad=%s, precio_ofertado=%s, 
-                                 resultado=%s, precio_ganador=%s, oferente_ganador=%s, marca_ofrecida=%s, marca_ganadora=%s WHERE id=%s""",
-                              (monodroga.strip(), marca.strip(), presentacion.strip(), cantidad, precio_ofertado, resultado, precio_ganador, oferente_ganador.strip(), marca_ofrecida.strip(), marca_ganadora.strip(), producto_id))
+                                 resultado=%s, precio_ganador=%s, oferente_ganador=%s, marca_ofrecida=%s, marca_ganadora=%s, motivo_perdida=%s WHERE id=%s""",
+                              (monodroga.strip(), marca.strip(), presentacion.strip(), cantidad, precio_ofertado, resultado, precio_ganador, oferente_ganador.strip(), marca_ofrecida.strip(), marca_ganadora.strip(), motivo_perdida.strip(), producto_id))
             else:
                 cursor.execute("""UPDATE productos SET monodroga=?, marca=?, presentacion=?, cantidad=?, precio_ofertado=?, 
-                                 resultado=?, precio_ganador=?, oferente_ganador=?, marca_ofrecida=?, marca_ganadora=? WHERE id=?""",
-                              (monodroga.strip(), marca.strip(), presentacion.strip(), cantidad, precio_ofertado, resultado, precio_ganador, oferente_ganador.strip(), marca_ofrecida.strip(), marca_ganadora.strip(), producto_id))
+                                 resultado=?, precio_ganador=?, oferente_ganador=?, marca_ofrecida=?, marca_ganadora=?, motivo_perdida=? WHERE id=?""",
+                              (monodroga.strip(), marca.strip(), presentacion.strip(), cantidad, precio_ofertado, resultado, precio_ganador, oferente_ganador.strip(), marca_ofrecida.strip(), marca_ganadora.strip(), motivo_perdida.strip(), producto_id))
     
     def eliminar_licitacion(self, licitacion_id):
         with self.get_connection() as conn:
@@ -481,7 +492,7 @@ class DatabaseManager:
         shutil.copy2(self.db_path, backup_path)
     
     # CRUD Clientes
-    def crear_cliente(self, nombre, razon_social="", cuit="", direccion="", telefono="", email=""):
+    def crear_cliente(self, nombre, razon_social="", cuit="", direccion="", telefono="", email="", organismo_jurisdiccion=""):
         if not nombre or len(nombre.strip()) == 0:
             raise ValueError("Nombre es obligatorio")
         if len(nombre.strip()) > 200:
@@ -493,14 +504,14 @@ class DatabaseManager:
             cursor = conn.cursor()
             try:
                 if USE_POSTGRES:
-                    cursor.execute("INSERT INTO clientes (nombre, razon_social, cuit, direccion, telefono, email) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
-                                  (nombre.strip(), razon_social.strip(), cuit.strip(), direccion.strip(), telefono.strip(), email.strip()))
+                    cursor.execute("INSERT INTO clientes (nombre, organismo_jurisdiccion, razon_social, cuit, direccion, telefono, email) VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id",
+                                  (nombre.strip(), organismo_jurisdiccion.strip(), razon_social.strip(), cuit.strip(), direccion.strip(), telefono.strip(), email.strip()))
                     result = cursor.fetchone()[0]
                     print(f"DEBUG - Cliente creado en PostgreSQL con ID: {result}")
                     return result
                 else:
-                    cursor.execute("INSERT INTO clientes (nombre, razon_social, cuit, direccion, telefono, email) VALUES (?, ?, ?, ?, ?, ?)",
-                                  (nombre.strip(), razon_social.strip(), cuit.strip(), direccion.strip(), telefono.strip(), email.strip()))
+                    cursor.execute("INSERT INTO clientes (nombre, organismo_jurisdiccion, razon_social, cuit, direccion, telefono, email) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                                  (nombre.strip(), organismo_jurisdiccion.strip(), razon_social.strip(), cuit.strip(), direccion.strip(), telefono.strip(), email.strip()))
                     result = cursor.lastrowid
                     print(f"DEBUG - Cliente creado en SQLite con ID: {result}")
                     return result
@@ -519,17 +530,17 @@ class DatabaseManager:
                 cursor.execute("SELECT * FROM clientes WHERE activo = 1 ORDER BY nombre")
             return cursor.fetchall()
     
-    def actualizar_cliente(self, cliente_id, nombre, razon_social, cuit, direccion, telefono, email):
+    def actualizar_cliente(self, cliente_id, nombre, razon_social, cuit, direccion, telefono, email, organismo_jurisdiccion=""):
         if not nombre:
             raise ValueError("Nombre es obligatorio")
         with self.get_connection() as conn:
             cursor = conn.cursor()
             if USE_POSTGRES:
-                cursor.execute("UPDATE clientes SET nombre=%s, razon_social=%s, cuit=%s, direccion=%s, telefono=%s, email=%s WHERE id=%s",
-                              (nombre.strip(), razon_social.strip(), cuit.strip(), direccion.strip(), telefono.strip(), email.strip(), cliente_id))
+                cursor.execute("UPDATE clientes SET nombre=%s, organismo_jurisdiccion=%s, razon_social=%s, cuit=%s, direccion=%s, telefono=%s, email=%s WHERE id=%s",
+                              (nombre.strip(), organismo_jurisdiccion.strip(), razon_social.strip(), cuit.strip(), direccion.strip(), telefono.strip(), email.strip(), cliente_id))
             else:
-                cursor.execute("UPDATE clientes SET nombre=?, razon_social=?, cuit=?, direccion=?, telefono=?, email=? WHERE id=?",
-                              (nombre.strip(), razon_social.strip(), cuit.strip(), direccion.strip(), telefono.strip(), email.strip(), cliente_id))
+                cursor.execute("UPDATE clientes SET nombre=?, organismo_jurisdiccion=?, razon_social=?, cuit=?, direccion=?, telefono=?, email=? WHERE id=?",
+                              (nombre.strip(), organismo_jurisdiccion.strip(), razon_social.strip(), cuit.strip(), direccion.strip(), telefono.strip(), email.strip(), cliente_id))
     
     def eliminar_cliente(self, cliente_id):
         with self.get_connection() as conn:
@@ -658,3 +669,203 @@ class DatabaseManager:
                 cursor.execute("UPDATE tipos_licitacion SET activo = FALSE WHERE id = %s", (tipo_id,))
             else:
                 cursor.execute("UPDATE tipos_licitacion SET activo = 0 WHERE id = ?", (tipo_id,))
+    
+    # CRUD Portales Origen
+    def crear_portal_origen(self, nombre):
+        if not nombre or len(nombre.strip()) == 0:
+            raise ValueError("Nombre es obligatorio")
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("INSERT INTO portales_origen (nombre) VALUES (%s) RETURNING id", (nombre.strip(),))
+                return cursor.fetchone()[0]
+            else:
+                cursor.execute("INSERT INTO portales_origen (nombre) VALUES (?)", (nombre.strip(),))
+                return cursor.lastrowid
+    
+    def obtener_portales_origen(self):
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("SELECT * FROM portales_origen WHERE activo = TRUE ORDER BY nombre")
+            else:
+                cursor.execute("SELECT * FROM portales_origen WHERE activo = 1 ORDER BY nombre")
+            return cursor.fetchall()
+    
+    def actualizar_portal_origen(self, portal_id, nombre):
+        if not nombre:
+            raise ValueError("Nombre es obligatorio")
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("UPDATE portales_origen SET nombre=%s WHERE id=%s", (nombre.strip(), portal_id))
+            else:
+                cursor.execute("UPDATE portales_origen SET nombre=? WHERE id=?", (nombre.strip(), portal_id))
+    
+    def eliminar_portal_origen(self, portal_id):
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("UPDATE portales_origen SET activo = FALSE WHERE id = %s", (portal_id,))
+            else:
+                cursor.execute("UPDATE portales_origen SET activo = 0 WHERE id = ?", (portal_id,))
+    
+    # CRUD Modalidades Entrega
+    def crear_modalidad_entrega(self, nombre):
+        if not nombre or len(nombre.strip()) == 0:
+            raise ValueError("Nombre es obligatorio")
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("INSERT INTO modalidades_entrega (nombre) VALUES (%s) RETURNING id", (nombre.strip(),))
+                return cursor.fetchone()[0]
+            else:
+                cursor.execute("INSERT INTO modalidades_entrega (nombre) VALUES (?)", (nombre.strip(),))
+                return cursor.lastrowid
+    
+    def obtener_modalidades_entrega(self):
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("SELECT * FROM modalidades_entrega WHERE activo = TRUE ORDER BY nombre")
+            else:
+                cursor.execute("SELECT * FROM modalidades_entrega WHERE activo = 1 ORDER BY nombre")
+            return cursor.fetchall()
+    
+    def actualizar_modalidad_entrega(self, modalidad_id, nombre):
+        if not nombre:
+            raise ValueError("Nombre es obligatorio")
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("UPDATE modalidades_entrega SET nombre=%s WHERE id=%s", (nombre.strip(), modalidad_id))
+            else:
+                cursor.execute("UPDATE modalidades_entrega SET nombre=? WHERE id=?", (nombre.strip(), modalidad_id))
+    
+    def eliminar_modalidad_entrega(self, modalidad_id):
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("UPDATE modalidades_entrega SET activo = FALSE WHERE id = %s", (modalidad_id,))
+            else:
+                cursor.execute("UPDATE modalidades_entrega SET activo = 0 WHERE id = ?", (modalidad_id,))
+    
+    # CRUD Formas Pago
+    def crear_forma_pago(self, nombre):
+        if not nombre or len(nombre.strip()) == 0:
+            raise ValueError("Nombre es obligatorio")
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("INSERT INTO formas_pago (nombre) VALUES (%s) RETURNING id", (nombre.strip(),))
+                return cursor.fetchone()[0]
+            else:
+                cursor.execute("INSERT INTO formas_pago (nombre) VALUES (?)", (nombre.strip(),))
+                return cursor.lastrowid
+    
+    def obtener_formas_pago(self):
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("SELECT * FROM formas_pago WHERE activo = TRUE ORDER BY nombre")
+            else:
+                cursor.execute("SELECT * FROM formas_pago WHERE activo = 1 ORDER BY nombre")
+            return cursor.fetchall()
+    
+    def actualizar_forma_pago(self, forma_id, nombre):
+        if not nombre:
+            raise ValueError("Nombre es obligatorio")
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("UPDATE formas_pago SET nombre=%s WHERE id=%s", (nombre.strip(), forma_id))
+            else:
+                cursor.execute("UPDATE formas_pago SET nombre=? WHERE id=?", (nombre.strip(), forma_id))
+    
+    def eliminar_forma_pago(self, forma_id):
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("UPDATE formas_pago SET activo = FALSE WHERE id = %s", (forma_id,))
+            else:
+                cursor.execute("UPDATE formas_pago SET activo = 0 WHERE id = ?", (forma_id,))
+    
+    # CRUD Organismos Jurisdiccion
+    def crear_organismo(self, nombre):
+        if not nombre or len(nombre.strip()) == 0:
+            raise ValueError("Nombre es obligatorio")
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("INSERT INTO organismos_jurisdiccion (nombre) VALUES (%s) RETURNING id", (nombre.strip(),))
+                return cursor.fetchone()[0]
+            else:
+                cursor.execute("INSERT INTO organismos_jurisdiccion (nombre) VALUES (?)", (nombre.strip(),))
+                return cursor.lastrowid
+    
+    def obtener_organismos(self):
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("SELECT * FROM organismos_jurisdiccion WHERE activo = TRUE ORDER BY nombre")
+            else:
+                cursor.execute("SELECT * FROM organismos_jurisdiccion WHERE activo = 1 ORDER BY nombre")
+            return cursor.fetchall()
+    
+    def actualizar_organismo(self, organismo_id, nombre):
+        if not nombre:
+            raise ValueError("Nombre es obligatorio")
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("UPDATE organismos_jurisdiccion SET nombre=%s WHERE id=%s", (nombre.strip(), organismo_id))
+            else:
+                cursor.execute("UPDATE organismos_jurisdiccion SET nombre=? WHERE id=?", (nombre.strip(), organismo_id))
+    
+    def eliminar_organismo(self, organismo_id):
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("UPDATE organismos_jurisdiccion SET activo = FALSE WHERE id = %s", (organismo_id,))
+            else:
+                cursor.execute("UPDATE organismos_jurisdiccion SET activo = 0 WHERE id = ?", (organismo_id,))
+    
+    # CRUD Motivos Perdida
+    def crear_motivo_perdida(self, nombre):
+        if not nombre or len(nombre.strip()) == 0:
+            raise ValueError("Nombre es obligatorio")
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("INSERT INTO motivos_perdida (nombre) VALUES (%s) RETURNING id", (nombre.strip(),))
+                return cursor.fetchone()[0]
+            else:
+                cursor.execute("INSERT INTO motivos_perdida (nombre) VALUES (?)", (nombre.strip(),))
+                return cursor.lastrowid
+    
+    def obtener_motivos_perdida(self):
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("SELECT * FROM motivos_perdida WHERE activo = TRUE ORDER BY nombre")
+            else:
+                cursor.execute("SELECT * FROM motivos_perdida WHERE activo = 1 ORDER BY nombre")
+            return cursor.fetchall()
+    
+    def actualizar_motivo_perdida(self, motivo_id, nombre):
+        if not nombre:
+            raise ValueError("Nombre es obligatorio")
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("UPDATE motivos_perdida SET nombre=%s WHERE id=%s", (nombre.strip(), motivo_id))
+            else:
+                cursor.execute("UPDATE motivos_perdida SET nombre=? WHERE id=?", (nombre.strip(), motivo_id))
+    
+    def eliminar_motivo_perdida(self, motivo_id):
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("UPDATE motivos_perdida SET activo = FALSE WHERE id = %s", (motivo_id,))
+            else:
+                cursor.execute("UPDATE motivos_perdida SET activo = 0 WHERE id = ?", (motivo_id,))

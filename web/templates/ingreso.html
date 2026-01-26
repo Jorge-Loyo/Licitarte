@@ -8,46 +8,91 @@
 </div>
 
 <form id="licitacionForm" class="form-container">
-    <div class="form-section">
-        <h3>Datos de Licitación</h3>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+    <div style="background: var(--bg-dark); padding: 25px; border-radius: 8px; margin-bottom: 20px;">
+        <h3 style="color: var(--primary); margin-bottom: 20px; font-size: 16px;">DATOS DE LICITACIÓN</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
             <div class="form-group">
                 <label>N° Licitación *</label>
-                <input type="text" id="numeroLicitacion" required>
+                <input type="text" id="numeroLicitacion" required style="font-size: 16px; padding: 12px;">
             </div>
             <div class="form-group">
-                <label>Tipo de Licitación</label>
-                <select id="tipoLicitacionSelect">
-                    <option value="">Seleccione tipo...</option>
+                <label>Fecha *</label>
+                <input type="date" id="fecha" required style="font-size: 16px; padding: 12px;">
+            </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="form-group">
+                <label>Cliente *</label>
+                <select id="clienteSelect" required onchange="seleccionarCliente()" style="font-size: 16px; padding: 12px;">
+                    <option value="">Seleccione cliente...</option>
                 </select>
-                <button type="button" onclick="nuevoTipoLicitacion()" class="btn-secondary" style="margin-top: 5px;">+ Nuevo Tipo</button>
+            </div>
+            <div class="form-group">
+                <label>Organismo/Jurisdicción</label>
+                <input type="text" id="clienteOrganismo" readonly style="background: #333; cursor: not-allowed; font-size: 16px; padding: 12px;">
             </div>
         </div>
         <div class="form-group">
-            <label>Cliente *</label>
-            <select id="clienteSelect" required>
-                <option value="">Seleccione cliente...</option>
+            <label>Tipo de Licitación</label>
+            <select id="tipoLicitacionSelect" style="font-size: 16px; padding: 12px;">
+                <option value="">Seleccione tipo...</option>
             </select>
-            <button type="button" onclick="window.location.href='/administracion'" class="btn-secondary" style="margin-top: 5px;">+ Nuevo Cliente</button>
         </div>
-        <div class="form-group">
-            <label>Fecha *</label>
-            <input type="date" id="fecha" required>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+            <div class="form-group">
+                <label>Portal/Origen</label>
+                <select id="portalOrigen" style="font-size: 16px; padding: 12px;">
+                    <option value="">Seleccione...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Modalidad de Entrega</label>
+                <select id="modalidadEntrega" style="font-size: 16px; padding: 12px;">
+                    <option value="">Seleccione...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Forma de Pago</label>
+                <select id="formaPago" style="font-size: 16px; padding: 12px;">
+                    <option value="">Seleccione...</option>
+                </select>
+            </div>
+        </div>
+        <div style="display: grid; grid-template-columns: auto 1fr 1fr; gap: 15px; align-items: end;">
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" id="requierePoliza" style="width: 18px; height: 18px;"> Requiere Póliza
+                </label>
+            </div>
+            <div class="form-group">
+                <label>Monto de Póliza</label>
+                <input type="number" step="0.01" id="montoPoliza" disabled style="font-size: 16px; padding: 12px;">
+            </div>
+            <div class="form-group">
+                <label>Observaciones</label>
+                <input type="text" id="observaciones" placeholder="Notas adicionales..." style="font-size: 16px; padding: 12px;">
+            </div>
         </div>
     </div>
 
-    <div class="form-section">
-        <h3>Productos</h3>
+    <div style="background: var(--bg-dark); padding: 25px; border-radius: 8px; margin-bottom: 20px;">
+        <h3 style="color: var(--primary); margin-bottom: 20px; font-size: 16px;">PRODUCTOS</h3>
         <div id="productosContainer"></div>
     </div>
 
-    <div style="display: flex; gap: 10px;">
-        <button type="button" onclick="agregarProducto()" class="btn-primary">+ Agregar Producto</button>
-        <button type="submit" class="btn-success">Guardar Licitación</button>
+    <div style="display: flex; gap: 15px; justify-content: flex-end;">
+        <button type="button" onclick="agregarProducto()" class="btn-primary" style="padding: 12px 25px; font-size: 16px;">➕ Agregar Producto</button>
+        <button type="submit" class="btn-success" style="padding: 12px 30px; font-size: 16px;">✔ Guardar Licitación</button>
     </div>
 </form>
 
-<div id="mensaje" class="mensaje"></div>
+<div id="modalNotificacion" class="modal">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <h3 id="notificacionTitulo" style="color: var(--primary); margin-bottom: 20px;"></h3>
+        <p id="notificacionMensaje" style="font-size: 16px; margin-bottom: 25px;"></p>
+        <button onclick="cerrarNotificacion()" class="btn-primary" style="padding: 12px 30px;">Aceptar</button>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
