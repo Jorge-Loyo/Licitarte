@@ -450,7 +450,6 @@ def crear_producto():
             data.get('oferente', ''),
             data.get('marca_ofrecida', ''),
             data.get('marca_ganadora', ''),
-            data.get('motivo_perdida', ''),
             data.get('motivo_perdida', '')
         )
         return jsonify({'success': True})
