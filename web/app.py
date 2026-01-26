@@ -369,7 +369,8 @@ def crear_licitacion():
                 float(producto['precio_ganador']) if producto.get('precio_ganador') else None,
                 producto.get('oferente_ganador', ''),
                 producto.get('marca_ofrecida', ''),
-                producto.get('marca_ganadora', '')
+                producto.get('marca_ganadora', ''),
+                producto.get('motivo_perdida', '')
             )
         
         return jsonify({'success': True, 'id': licitacion_id})
@@ -449,6 +450,7 @@ def crear_producto():
             data.get('oferente', ''),
             data.get('marca_ofrecida', ''),
             data.get('marca_ganadora', ''),
+            data.get('motivo_perdida', ''),
             data.get('motivo_perdida', '')
         )
         return jsonify({'success': True})

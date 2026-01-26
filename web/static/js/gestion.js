@@ -284,7 +284,6 @@ function manejarCambioResultadoEdicion() {
     const precioGanador = document.getElementById('editPrecioGanador');
     const marcaOfrecida = document.getElementById('editMarcaOfrecida');
     const precioOfertado = document.getElementById('editPrecio');
-    const motivoPerdidaContainer = document.getElementById('motivoPerdidaContainer');
     const motivoPerdidaSelect = document.getElementById('editMotivoPerdida');
     const diferenciasContainer = document.getElementById('diferenciasContainer');
     
@@ -295,8 +294,9 @@ function manejarCambioResultadoEdicion() {
         oferenteGanador.disabled = true;
         marcaGanadora.disabled = true;
         precioGanador.disabled = true;
-        motivoPerdidaContainer.style.display = 'none';
+        motivoPerdidaSelect.disabled = true;
         motivoPerdidaSelect.required = false;
+        motivoPerdidaSelect.value = '';
         diferenciasContainer.style.display = 'none';
     } else if (resultado === 'No Adjudicado') {
         oferenteGanador.disabled = false;
@@ -305,7 +305,7 @@ function manejarCambioResultadoEdicion() {
         oferenteGanador.required = true;
         marcaGanadora.required = true;
         precioGanador.required = true;
-        motivoPerdidaContainer.style.display = 'block';
+        motivoPerdidaSelect.disabled = false;
         motivoPerdidaSelect.required = true;
         motivoPerdidaSelect.innerHTML = '<option value="">Seleccione...</option>';
         motivosPerdida.forEach(m => {
@@ -330,8 +330,9 @@ function manejarCambioResultadoEdicion() {
         oferenteGanador.required = false;
         marcaGanadora.required = false;
         precioGanador.required = false;
-        motivoPerdidaContainer.style.display = 'none';
+        motivoPerdidaSelect.disabled = true;
         motivoPerdidaSelect.required = false;
+        motivoPerdidaSelect.value = '';
         diferenciasContainer.style.display = 'none';
     }
 }

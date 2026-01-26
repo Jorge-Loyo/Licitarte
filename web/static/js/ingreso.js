@@ -4,6 +4,7 @@ let clientes = [];
 let oferentes = [];
 let marcas = [];
 let tiposLicitacion = [];
+let motivosPerdida = [];
 
 // Cargar catálogo y clientes al iniciar
 async function cargarCatalogo() {
@@ -191,6 +192,12 @@ function agregarProducto() {
                     <input type="number" step="0.01" class="producto-precio-ganador" style="font-size: 16px; padding: 12px;">
                 </div>
             </div>
+            <div class="form-group motivo-perdida-container" style="margin-top: 15px; display: none;">
+                <label>Motivo de Pérdida *</label>
+                <select class="producto-motivo-perdida" style="font-size: 16px; padding: 12px;">
+                    <option value="">Seleccione...</option>
+                </select>
+            </div>
         </div>
     `;
     
@@ -260,33 +267,42 @@ function manejarCambioResultado(select) {
     const precioGanador = container.querySelector('.producto-precio-ganador');
     const marcaOfrecida = container.querySelector('.producto-marca-ofrecida');
     const precioOfertado = container.querySelector('.producto-precio');
+    const motivoPerdidaContainer = container.querySelector('.motivo-perdida-container');
+    const motivoPerdida = container.querySelector('.producto-motivo-perdida');
     
     if (resultado === 'Adjudicado') {
-        // Auto-rellenar campos con datos de mi oferta
         oferenteGanador.value = 'Ganada';
         marcaGanadora.value = marcaOfrecida.value;
         precioGanador.value = precioOfertado.value;
-        
-        // Deshabilitar campos
         oferenteGanador.disabled = true;
         marcaGanadora.disabled = true;
         precioGanador.disabled = true;
+        motivoPerdidaContainer.style.display = 'none';
+        motivoPerdida.required = false;
+        motivoPerdida.value = '';
     } else if (resultado === 'No Adjudicado') {
-        // Habilitar y requerir campos
         oferenteGanador.disabled = false;
         marcaGanadora.disabled = false;
         precioGanador.disabled = false;
         oferenteGanador.required = true;
         marcaGanadora.required = true;
         precioGanador.required = true;
+        motivoPerdidaContainer.style.display = 'block';
+        motivoPerdida.required = true;
+        motivoPerdida.innerHTML = '<option value="">Seleccione...</option>';
+        motivosPerdida.forEach(m => {
+            motivoPerdida.innerHTML += `<option value="${m.nombre}">${m.nombre}</option>`;
+        });
     } else {
-        // Parcial: habilitar pero no requerir
         oferenteGanador.disabled = false;
         marcaGanadora.disabled = false;
         precioGanador.disabled = false;
         oferenteGanador.required = false;
         marcaGanadora.required = false;
         precioGanador.required = false;
+        motivoPerdidaContainer.style.display = 'none';
+        motivoPerdida.required = false;
+        motivoPerdida.value = '';
     }
 }
 
@@ -317,7 +333,8 @@ document.getElementById('licitacionForm').addEventListener('submit', async (e) =
             marca_ofrecida: item.querySelector('.producto-marca-ofrecida').value,
             oferente_ganador: item.querySelector('.producto-oferente-ganador').value,
             marca_ganadora: item.querySelector('.producto-marca-ganadora').value,
-            precio_ganador: item.querySelector('.producto-precio-ganador').value
+            precio_ganador: item.querySelector('.producto-precio-ganador').value,
+            motivo_perdida: item.querySelector('.producto-motivo-perdida').value
         });
     });
     
@@ -467,6 +484,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     await cargarPortalesOrigen();
     await cargarModalidadesEntrega();
     await cargarFormasPago();
+    
+    // Cargar motivos de pérdida
+    const responseMotivos = await fetch('/api/motivos-perdida');
+    motivosPerdida = await responseMotivos.json();
+    
     agregarProducto();
 });
 
