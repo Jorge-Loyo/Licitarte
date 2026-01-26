@@ -194,6 +194,7 @@ function editarProducto(id, producto) {
     // Agregar listeners para recalcular diferencias
     document.getElementById('editPrecio').addEventListener('input', manejarCambioResultadoEdicion);
     document.getElementById('editPrecioGanador').addEventListener('input', manejarCambioResultadoEdicion);
+    document.getElementById('editResultado').addEventListener('change', manejarCambioResultadoEdicion);
     
     // Aplicar lógica de resultado
     manejarCambioResultadoEdicion();
