@@ -23,9 +23,12 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
             <div class="form-group">
                 <label>Cliente *</label>
-                <select id="clienteSelect" required onchange="seleccionarCliente()" style="font-size: 16px; padding: 12px;">
-                    <option value="">Seleccione cliente...</option>
-                </select>
+                <div style="display: flex; gap: 8px;">
+                    <select id="clienteSelect" required onchange="seleccionarCliente()" style="font-size: 16px; padding: 12px; flex: 1;">
+                        <option value="">Seleccione cliente...</option>
+                    </select>
+                    <button type="button" onclick="abrirModalNuevoCliente()" class="btn-primary" style="padding: 12px; width: 45px; font-size: 18px;">+</button>
+                </div>
             </div>
             <div class="form-group">
                 <label>Organismo/Jurisdicción</label>
@@ -34,28 +37,40 @@
         </div>
         <div class="form-group">
             <label>Tipo de Licitación</label>
-            <select id="tipoLicitacionSelect" style="font-size: 16px; padding: 12px;">
-                <option value="">Seleccione tipo...</option>
-            </select>
+            <div style="display: flex; gap: 8px;">
+                <select id="tipoLicitacionSelect" style="font-size: 16px; padding: 12px; flex: 1;">
+                    <option value="">Seleccione tipo...</option>
+                </select>
+                <button type="button" onclick="abrirModalNuevoTipo()" class="btn-primary" style="padding: 12px; width: 45px; font-size: 18px;">+</button>
+            </div>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
             <div class="form-group">
                 <label>Portal/Origen</label>
-                <select id="portalOrigen" style="font-size: 16px; padding: 12px;">
-                    <option value="">Seleccione...</option>
-                </select>
+                <div style="display: flex; gap: 8px;">
+                    <select id="portalOrigen" style="font-size: 16px; padding: 12px; flex: 1;">
+                        <option value="">Seleccione...</option>
+                    </select>
+                    <button type="button" onclick="abrirModalNuevoPortal()" class="btn-primary" style="padding: 12px; width: 45px; font-size: 18px;">+</button>
+                </div>
             </div>
             <div class="form-group">
                 <label>Modalidad de Entrega</label>
-                <select id="modalidadEntrega" style="font-size: 16px; padding: 12px;">
-                    <option value="">Seleccione...</option>
-                </select>
+                <div style="display: flex; gap: 8px;">
+                    <select id="modalidadEntrega" style="font-size: 16px; padding: 12px; flex: 1;">
+                        <option value="">Seleccione...</option>
+                    </select>
+                    <button type="button" onclick="abrirModalNuevoModalidad()" class="btn-primary" style="padding: 12px; width: 45px; font-size: 18px;">+</button>
+                </div>
             </div>
             <div class="form-group">
                 <label>Forma de Pago</label>
-                <select id="formaPago" style="font-size: 16px; padding: 12px;">
-                    <option value="">Seleccione...</option>
-                </select>
+                <div style="display: flex; gap: 8px;">
+                    <select id="formaPago" style="font-size: 16px; padding: 12px; flex: 1;">
+                        <option value="">Seleccione...</option>
+                    </select>
+                    <button type="button" onclick="abrirModalNuevoFormaPago()" class="btn-primary" style="padding: 12px; width: 45px; font-size: 18px;">+</button>
+                </div>
             </div>
         </div>
         <div style="display: grid; grid-template-columns: auto 1fr 1fr; gap: 15px; align-items: end;">
@@ -91,6 +106,48 @@
         <h3 id="notificacionTitulo" style="color: var(--primary); margin-bottom: 20px;"></h3>
         <p id="notificacionMensaje" style="font-size: 16px; margin-bottom: 25px;"></p>
         <button onclick="cerrarNotificacion()" class="btn-primary" style="padding: 12px 30px;">Aceptar</button>
+    </div>
+</div>
+
+<div id="modalQuickAdd" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+        <h3 id="quickAddTitulo" style="color: var(--primary); margin-bottom: 20px; text-align: center;"></h3>
+        <form id="quickAddForm">
+            <div class="form-group">
+                <label id="quickAddLabel">Nombre *</label>
+                <input type="text" id="quickAddNombre" required style="font-size: 16px; padding: 12px;">
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                <button type="button" onclick="cerrarModalQuickAdd()" class="btn-secondary" style="padding: 12px 20px;">Cancelar</button>
+                <button type="submit" class="btn-primary" style="padding: 12px 20px;">✔ Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="modalNuevoCliente" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <h3 style="color: var(--primary); margin-bottom: 20px; text-align: center;">Nuevo Cliente</h3>
+        <form id="nuevoClienteForm">
+            <div class="form-group">
+                <label>Nombre *</label>
+                <input type="text" id="nuevoClienteNombre" required style="font-size: 16px; padding: 12px;">
+            </div>
+            <div class="form-group">
+                <label>Razón Social</label>
+                <input type="text" id="nuevoClienteRazon" style="font-size: 16px; padding: 12px;">
+            </div>
+            <div class="form-group">
+                <label>Organismo/Jurisdicción *</label>
+                <select id="nuevoClienteOrganismo" required style="font-size: 16px; padding: 12px;">
+                    <option value="">Seleccione...</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                <button type="button" onclick="cerrarModalNuevoCliente()" class="btn-secondary" style="padding: 12px 20px;">Cancelar</button>
+                <button type="submit" class="btn-primary" style="padding: 12px 20px;">✔ Guardar</button>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}

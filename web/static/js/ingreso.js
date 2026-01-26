@@ -469,3 +469,137 @@ document.addEventListener('DOMContentLoaded', async () => {
     await cargarFormasPago();
     agregarProducto();
 });
+
+// Funciones para modales de creación rápida
+let quickAddTipo = '';
+
+function abrirModalNuevoCliente() {
+    cargarOrganismosModal();
+    document.getElementById('nuevoClienteNombre').value = '';
+    document.getElementById('nuevoClienteRazon').value = '';
+    document.getElementById('nuevoClienteOrganismo').value = '';
+    document.getElementById('modalNuevoCliente').style.display = 'block';
+}
+
+function cerrarModalNuevoCliente() {
+    document.getElementById('modalNuevoCliente').style.display = 'none';
+}
+
+async function cargarOrganismosModal() {
+    const response = await fetch('/api/organismos');
+    const organismos = await response.json();
+    const select = document.getElementById('nuevoClienteOrganismo');
+    select.innerHTML = '<option value="">Seleccione...</option>';
+    organismos.forEach(o => {
+        select.innerHTML += `<option value="${o.nombre}">${o.nombre}</option>`;
+    });
+}
+
+document.getElementById('nuevoClienteForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = {
+        nombre: document.getElementById('nuevoClienteNombre').value,
+        razon_social: document.getElementById('nuevoClienteRazon').value,
+        organismo_jurisdiccion: document.getElementById('nuevoClienteOrganismo').value
+    };
+    
+    const response = await fetch('/api/clientes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    const result = await response.json();
+    
+    if (result.success) {
+        await cargarClientes();
+        document.getElementById('clienteSelect').value = result.id;
+        seleccionarCliente();
+        cerrarModalNuevoCliente();
+        mostrarMensaje('Cliente agregado', 'success');
+    } else {
+        alert('Error: ' + result.error);
+    }
+});
+
+function abrirModalNuevoTipo() {
+    quickAddTipo = 'tipo';
+    document.getElementById('quickAddTitulo').textContent = 'Nuevo Tipo de Licitación';
+    document.getElementById('quickAddLabel').textContent = 'Nombre *';
+    document.getElementById('quickAddNombre').value = '';
+    document.getElementById('modalQuickAdd').style.display = 'block';
+}
+
+function abrirModalNuevoPortal() {
+    quickAddTipo = 'portal';
+    document.getElementById('quickAddTitulo').textContent = 'Nuevo Portal/Origen';
+    document.getElementById('quickAddLabel').textContent = 'Nombre *';
+    document.getElementById('quickAddNombre').value = '';
+    document.getElementById('modalQuickAdd').style.display = 'block';
+}
+
+function abrirModalNuevoModalidad() {
+    quickAddTipo = 'modalidad';
+    document.getElementById('quickAddTitulo').textContent = 'Nueva Modalidad de Entrega';
+    document.getElementById('quickAddLabel').textContent = 'Nombre *';
+    document.getElementById('quickAddNombre').value = '';
+    document.getElementById('modalQuickAdd').style.display = 'block';
+}
+
+function abrirModalNuevoFormaPago() {
+    quickAddTipo = 'forma';
+    document.getElementById('quickAddTitulo').textContent = 'Nueva Forma de Pago';
+    document.getElementById('quickAddLabel').textContent = 'Nombre *';
+    document.getElementById('quickAddNombre').value = '';
+    document.getElementById('modalQuickAdd').style.display = 'block';
+}
+
+function cerrarModalQuickAdd() {
+    document.getElementById('modalQuickAdd').style.display = 'none';
+}
+
+document.getElementById('quickAddForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const nombre = document.getElementById('quickAddNombre').value;
+    
+    let endpoint = '';
+    let selectId = '';
+    let recargarFn = null;
+    
+    if (quickAddTipo === 'tipo') {
+        endpoint = '/api/tipos-licitacion';
+        selectId = 'tipoLicitacionSelect';
+        recargarFn = cargarTiposLicitacion;
+    } else if (quickAddTipo === 'portal') {
+        endpoint = '/api/portales-origen';
+        selectId = 'portalOrigen';
+        recargarFn = cargarPortalesOrigen;
+    } else if (quickAddTipo === 'modalidad') {
+        endpoint = '/api/modalidades-entrega';
+        selectId = 'modalidadEntrega';
+        recargarFn = cargarModalidadesEntrega;
+    } else if (quickAddTipo === 'forma') {
+        endpoint = '/api/formas-pago';
+        selectId = 'formaPago';
+        recargarFn = cargarFormasPago;
+    }
+    
+    const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre })
+    });
+    const result = await response.json();
+    
+    if (result.success) {
+        await recargarFn();
+        if (quickAddTipo === 'tipo') {
+            document.getElementById(selectId).value = result.id;
+        } else {
+            document.getElementById(selectId).value = nombre;
+        }
+        cerrarModalQuickAdd();
+        mostrarMensaje('Agregado correctamente', 'success');
+    } else {
+        alert('Error: ' + result.error);
+    }
+});
