@@ -29,9 +29,12 @@ database/*.db
 database/*.db-journal
 database/*_backup.db
 
-# Variables de entorno
+# Variables de entorno (CRÍTICO)
 .env
 .env.local
+.env.production
+web/.env
+web/.env.local
 
 # IDEs
 .vscode/
@@ -42,6 +45,8 @@ database/*_backup.db
 
 # Logs
 *.log
+web/logs/
+logs/
 
 # OS
 .DS_Store
@@ -53,6 +58,14 @@ Thumbs.db
 
 # Uploads
 web/uploads/
+
+# Testing
+web/.coverage
+web/htmlcov/
+web/.pytest_cache/
+.coverage
+htmlcov/
+.pytest_cache/
 
 # Distribución
 Licitarte_v*_Instalador/
