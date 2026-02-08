@@ -60,42 +60,69 @@
 - **Frontend**: HTML5, CSS3, JavaScript Vanilla
 - **Despliegue**: Gunicorn, Render.com
 
-## Instalación Local
+## 🚀 Inicio Rápido
 
-### Requisitos
-- Python 3.11+
-- pip
+Licitarte tiene **2 versiones**: Desktop (CustomTkinter) y Web (Flask).
 
-### Pasos
+### 📦 Instalación Inicial
 
-1. **Clonar repositorio**
 ```bash
+# 1. Clonar repositorio
 git clone https://github.com/tu-usuario/Licitarte.git
 cd Licitarte
-```
 
-2. **Crear entorno virtual**
-```bash
+# 2. Crear entorno virtual
 python -m venv venv
+
+# 3. Activar entorno virtual
 source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate     # Windows
+venv\Scripts\activate     # Windows (Git Bash)
 ```
 
-3. **Instalar dependencias**
+### 🌐 Ejecutar Versión WEB (Recomendado - v1.1.0)
+
+**Opción 1: Comando directo**
 ```bash
 cd web
 pip install -r requirements.txt
-```
-
-4. **Ejecutar aplicación**
-```bash
 python app.py
 ```
 
-5. **Abrir navegador**
+**Opción 2: Script automático (Windows)**
+```bash
+run_web.bat
 ```
-http://localhost:5000
+
+Luego abre tu navegador en: **http://localhost:5000**
+
+✨ **La versión web incluye todas las funcionalidades v1.1.0**: análisis de márgenes, métricas avanzadas, catálogos configurables, etc.
+
+### 🖥️ Ejecutar Versión DESKTOP (v1.0.0)
+
+```bash
+# Instalar dependencias desktop
+pip install -r requirements.txt
+
+# Ejecutar aplicación
+python main.py
 ```
+
+⚠️ **Nota**: La versión desktop tiene funcionalidades básicas (v1.0.0). Para todas las características nuevas, usa la versión web.
+
+### 🔄 Diferencias entre Versiones
+
+| Característica | Desktop | Web |
+|----------------|---------|-----|
+| Interfaz | CustomTkinter (ventana nativa) | HTML/CSS/JS (navegador) |
+| Versión | 1.0.0 | 1.1.0 |
+| Análisis de Márgenes | ❌ | ✅ |
+| Módulo Métricas | ❌ | ✅ |
+| Catálogos Configurables | ❌ | ✅ |
+| Diferencias vs Ganador | ❌ | ✅ |
+| Dashboard 6 indicadores | ❌ | ✅ |
+| Formato MILL | ❌ | ✅ |
+| Multiplataforma | ✅ | ✅ |
+| Requiere navegador | ❌ | ✅ |
 
 ## Estructura del Proyecto
 
@@ -280,6 +307,50 @@ python -c "from database.db_manager import DatabaseManager; db = DatabaseManager
 ```
 
 ### Backup
+```bash
+# SQLite
+cp database/licitaciones.db database/backup_$(date +%Y%m%d).db
+
+# PostgreSQL
+pg_dump $DATABASE_URL > backup_$(date +%Y%m%d).sql
+```
+
+### Migraciones
+```bash
+cd database
+python migrate_v2.py
+python migrate_catalogos.py
+python migrate_organismos.py
+python add_motivo_perdida.py
+```
+
+## 🛠️ Solución de Problemas
+
+### Error: "KeyError: 'total_licitaciones'"
+**Solución**: Actualizar `db_manager.py` con el método `obtener_estadisticas()` completo.
+
+### Error: "Port 5000 already in use"
+**Solución**:
+```bash
+# Cambiar puerto
+export PORT=5001  # Linux/Mac
+set PORT=5001     # Windows
+python app.py
+```
+
+### Error: "No module named 'flask'"
+**Solución**:
+```bash
+cd web
+pip install -r requirements.txt
+```
+
+### Base de datos no se crea
+**Solución**:
+```bash
+mkdir database
+chmod 755 database  # Linux/Mac
+```ckup
 ```bash
 # SQLite
 cp database/licitaciones.db database/backup_$(date +%Y%m%d).db
