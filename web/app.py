@@ -1,13 +1,16 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 import sys
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
 # Cargar variables de entorno
 load_dotenv()
 
-sys.path.insert(0, os.path.abspath('..'))
-from database.db_manager import DatabaseManager, USE_POSTGRES
+# Agregar raíz al path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from shared.database.db_manager import DatabaseManager, USE_POSTGRES
 from werkzeug.utils import secure_filename
 
 import secrets
@@ -22,7 +25,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-db = DatabaseManager(os.path.abspath('../database/licitaciones.db'))
+db = DatabaseManager(os.path.abspath('../shared/database/licitaciones.db'))
 
 # Ejecutar migraciones v1.1.0 automáticamente
 if USE_POSTGRES:

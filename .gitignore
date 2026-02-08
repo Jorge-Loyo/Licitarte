@@ -24,10 +24,10 @@ wheels/
 .installed.cfg
 *.egg
 
-# Base de datos local
-database/*.db
-database/*.db-journal
-database/*_backup.db
+# Base de datos local (nueva ubicación)
+shared/database/*.db
+shared/database/*.db-journal
+shared/database/*_backup.db
 
 # Variables de entorno (CRÍTICO)
 .env
@@ -67,8 +67,27 @@ web/.pytest_cache/
 htmlcov/
 .pytest_cache/
 
+# Debug/Temporary scripts
+web/check_db.py
+**/check_tables.py
+**/migrar_datos.py
+
 # Distribución
-Licitarte_v*_Instalador/
+desktop/dist/
 *.rar
 *.zip
 *.exe
+
+# Backups
+data/backups/*
+!data/backups/.gitkeep
+
+# Análisis y documentación local (NO SUBIR A GIT)
+ANALISIS_LICITARTE.md
+
+# Legacy (eliminados en Fase 5)
+# modules/
+# database/
+# Img/
+# main.py
+# Licitarte_v1.0_Instalador/
