@@ -22,7 +22,10 @@
                     ➕ Nueva Licitación
                 </a>
                 <a href="{{ url_for('gestion') }}" class="menu-item {% if request.endpoint == 'gestion' %}active{% endif %}">
-                    📋 Gestión
+                    📋 Licitaciones
+                </a>
+                <a href="{{ url_for('gestion_nueva') }}" class="menu-item {% if request.endpoint == 'gestion_nueva' %}active{% endif %}">
+                    🔧 Gestión
                 </a>
                 <a href="{{ url_for('metricas') }}" class="menu-item {% if request.endpoint == 'metricas' %}active{% endif %}">
                     📈 Métricas

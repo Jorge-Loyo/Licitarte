@@ -17,6 +17,7 @@
     <button class="tab-btn" onclick="mostrarTab('modalidades')">Modalidades Entrega</button>
     <button class="tab-btn" onclick="mostrarTab('formas')">Formas de Pago</button>
     <button class="tab-btn" onclick="mostrarTab('motivos')">Motivos Pérdida</button>
+    <button class="tab-btn" onclick="mostrarTab('mantenimientos')">Mantenimiento Oferta</button>
     <button class="tab-btn" onclick="mostrarTab('catalogo')">Catálogo Productos</button>
 </div>
 
@@ -256,6 +257,26 @@
                 </tr>
             </thead>
             <tbody id="motivosBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Tab Mantenimientos Oferta -->
+<div id="tab-mantenimientos" class="tab-content">
+    <div class="page-header">
+        <h3>Gestión de Mantenimiento de Oferta</h3>
+        <button onclick="nuevoMantenimiento()" class="btn-primary">+ Nuevo Mantenimiento</button>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="mantenimientosBody"></tbody>
         </table>
     </div>
 </div>
@@ -535,6 +556,27 @@
             <div style="display: flex; gap: 10px; justify-content: flex-end;">
                 <button type="button" onclick="cerrarModalMotivoPerdida()" class="btn-secondary">Cancelar</button>
                 <button type="submit" class="btn-success" style="padding: 12px 30px; font-size: 16px;">✔ Guardar Motivo</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Mantenimiento Oferta -->
+<div id="modalMantenimiento" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <span class="close" onclick="cerrarModalMantenimiento()">&times;</span>
+        <h3 id="modalMantenimientoTitulo" style="color: var(--primary); margin-bottom: 25px; text-align: center;">Nuevo Mantenimiento de Oferta</h3>
+        <form id="mantenimientoForm">
+            <input type="hidden" id="mantenimientoId">
+            <div style="background: var(--bg-dark); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <div class="form-group">
+                    <label>Nombre *</label>
+                    <input type="text" id="mantenimientoNombre" required style="font-size: 16px; padding: 12px;">
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="button" onclick="cerrarModalMantenimiento()" class="btn-secondary">Cancelar</button>
+                <button type="submit" class="btn-success" style="padding: 12px 30px; font-size: 16px;">✔ Guardar</button>
             </div>
         </form>
     </div>

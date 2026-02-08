@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presupuesto N° {{ numero }} - Licitarte</title>
+    <style>
+        @page { size: A4; margin: 15mm; }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 15px; font-size: 11px; }
+        @media print { 
+            body { margin: 0; padding: 10px; }
+            .no-print { display: none; }
+        }
+        table { font-size: 10px; }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="margin-bottom: 20px;">
+        <button onclick="window.print()" style="padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">🖨️ Imprimir</button>
+        <button onclick="window.close()" style="padding: 10px 20px; background: #95a5a6; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; margin-left: 10px;">Cerrar</button>
+    </div>
+    
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h1 style="color: #2c3e50; margin-bottom: 5px; font-size: 20px;">Presupuesto N° {{ numero }}</h1>
+    </div>
+    
+    <div id="info" style="margin-bottom: 15px; padding: 12px; background: #f8f9fa; border-left: 4px solid #3498db; font-size: 11px;"></div>
+    
+    <table id="productos" style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+        <thead>
+            <tr style="background: #3498db; color: white;">
+                <th style="padding: 8px; text-align: left; border: 1px solid #ddd; font-size: 10px;">Monodroga</th>
+                <th style="padding: 8px; text-align: left; border: 1px solid #ddd; font-size: 10px;">Marca - Presentación</th>
+                <th style="padding: 8px; text-align: left; border: 1px solid #ddd; font-size: 10px;">Laboratorio</th>
+                <th style="padding: 8px; text-align: center; border: 1px solid #ddd; font-size: 10px;">Cant.</th>
+                <th style="padding: 8px; text-align: right; border: 1px solid #ddd; font-size: 10px;">P. Unit.</th>
+                <th style="padding: 8px; text-align: right; border: 1px solid #ddd; font-size: 10px;">Total</th>
+                <th style="padding: 8px; text-align: left; border: 1px solid #ddd; font-size: 10px;">Obs.</th>
+            </tr>
+        </thead>
+        <tbody id="productosBody"></tbody>
+        <tfoot>
+            <tr style="background: #2c3e50; color: white; font-weight: bold;">
+                <td colspan="5" style="padding: 10px; text-align: right; border: 1px solid #ddd; font-size: 12px;">TOTAL OFERTA:</td>
+                <td id="total" style="padding: 10px; text-align: right; border: 1px solid #ddd; font-size: 14px;"></td>
+                <td style="border: 1px solid #ddd;"></td>
+            </tr>
+        </tfoot>
+    </table>
+    
+    <div id="totalLetras" style="margin-top: 10px; padding: 10px; background: #f8f9fa; border: 1px solid #ddd; font-weight: bold; text-align: center; font-size: 11px;"></div>
+    
+    <div style="margin-top: 30px; padding-top: 15px; border-top: 2px solid #ddd; text-align: center; color: #7f8c8d; font-size: 10px;">
+        <p style="margin: 5px 0;">Documento generado por Licitarte</p>
+    </div>
+    
+    <script>
+        const numero = {{ numero }};
+        
+        function numeroALetras(num) {
+            const unidades = ['', 'uno', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve'];
+            const decenas = ['', '', 'veinte', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'setenta', 'ochenta', 'noventa'];
+            const especiales = ['diez', 'once', 'doce', 'trece', 'catorce', 'quince', 'dieciséis', 'diecisiete', 'dieciocho', 'diecinueve'];
+            
+            if (num === 0) return 'cero';
+            if (num < 10) return unidades[num];
+            if (num >= 10 && num < 20) return especiales[num - 10];
+            if (num >= 20 && num < 100) {
+                const dec = Math.floor(num / 10);
+                const uni = num % 10;
+                return decenas[dec] + (uni > 0 ? ' y ' + unidades[uni] : '');
+            }
+            if (num >= 100 && num < 1000) {
+                const cen = Math.floor(num / 100);
+                const resto = num % 100;
+                let centenas = cen === 1 ? (resto === 0 ? 'cien' : 'ciento') : unidades[cen] + 'cientos';
+                return centenas + (resto > 0 ? ' ' + numeroALetras(resto) : '');
+            }
+            if (num >= 1000 && num < 1000000) {
+                const mil = Math.floor(num / 1000);
+                const resto = num % 1000;
+                let miles = mil === 1 ? 'mil' : numeroALetras(mil) + ' mil';
+                return miles + (resto > 0 ? ' ' + numeroALetras(resto) : '');
+            }
+            if (num >= 1000000) {
+                const mill = Math.floor(num / 1000000);
+                const resto = num % 1000000;
+                let millones = mill === 1 ? 'un millón' : numeroALetras(mill) + ' millones';
+                return millones + (resto > 0 ? ' ' + numeroALetras(resto) : '');
+            }
+            return '';
+        }
+        
+        async function cargarPresupuesto() {
+            try {
+                const response = await fetch(`/api/presupuestos/${numero}`);
+                const result = await response.json();
+                
+                if (!result.success || !result.data) {
+                    document.body.innerHTML = '<div style="text-align: center; margin-top: 50px;"><h2>Presupuesto no encontrado</h2><button onclick="window.close()" style="padding: 10px 20px; background: #95a5a6; color: white; border: none; border-radius: 5px; cursor: pointer;">Cerrar</button></div>';
+                    return;
+                }
+                
+                const data = result.data;
+                
+                // Obtener fecha de apertura de la licitación
+                const licitacionResponse = await fetch(`/api/licitaciones`);
+                const licitaciones = await licitacionResponse.json();
+                const licitacion = licitaciones.find(l => l.numero === data.licitacion);
+                
+                let fechaApertura = 'No disponible';
+                if (licitacion && licitacion.fecha) {
+                    const fecha = new Date(licitacion.fecha);
+                    const dia = String(fecha.getDate()).padStart(2, '0');
+                    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+                    const anio = fecha.getFullYear();
+                    const horas = String(fecha.getHours()).padStart(2, '0');
+                    const minutos = String(fecha.getMinutes()).padStart(2, '0');
+                    fechaApertura = `${dia}/${mes}/${anio} ${horas}:${minutos}`;
+                }
+                
+                document.getElementById('info').innerHTML = `
+                    <p style="margin: 5px 0;"><strong>Cliente:</strong> ${data.cliente || '-'}</p>
+                    <p style="margin: 5px 0;"><strong>Licitación N°:</strong> ${data.licitacion || '-'}</p>
+                    <p style="margin: 5px 0;"><strong>Apertura:</strong> ${fechaApertura}</p>
+                `;
+                
+                const tbody = document.getElementById('productosBody');
+                let total = 0;
+                let index = 0;
+                
+                if (data.productos && data.productos.length > 0) {
+                    for (const p of data.productos) {
+                        const subtotal = p.precio * p.cantidad;
+                        total += subtotal;
+                        const bgColor = index % 2 === 0 ? '#ffffff' : '#f8f9fa';
+                        
+                        // Obtener datos completos del producto
+                        const prodResponse = await fetch(`/api/productos/${licitacion.id}`);
+                        const productos = await prodResponse.json();
+                        const productoCompleto = productos.find(pr => pr.monodroga === p.monodroga && pr.marca === p.marca);
+                        
+                        const tr = document.createElement('tr');
+                        tr.style.background = bgColor;
+                        tr.innerHTML = `
+                            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${p.monodroga}</td>
+                            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${p.marca} - ${p.presentacion}</td>
+                            <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${productoCompleto?.marca_ofrecida || '-'}</td>
+                            <td style="padding: 6px; text-align: center; border: 1px solid #ddd; font-size: 9px;">${p.cantidad}</td>
+                            <td style="padding: 6px; text-align: right; border: 1px solid #ddd; font-size: 9px;">$${p.precio.toLocaleString('es-AR', {minimumFractionDigits: 2})}</td>
+                            <td style="padding: 6px; text-align: right; border: 1px solid #ddd; font-weight: bold; font-size: 9px;">$${subtotal.toLocaleString('es-AR', {minimumFractionDigits: 2})}</td>
+                            <td style="padding: 6px; border: 1px solid #ddd; font-size: 8px;">${productoCompleto?.observaciones || '-'}</td>
+                        `;
+                        tbody.appendChild(tr);
+                        index++;
+                        
+                        // Cargar alternativas para mostrar (sin sumar al total)
+                        const altResponse = await fetch(`/api/alternativas/${p.id}`);
+                        if (altResponse.ok) {
+                            const alternativas = await altResponse.json();
+                            if (alternativas && alternativas.length > 0) {
+                                alternativas.forEach(alt => {
+                                    const trAlt = document.createElement('tr');
+                                    trAlt.style.background = '#e8f4f8';
+                                    trAlt.style.fontStyle = 'italic';
+                                    trAlt.style.color = '#555';
+                                    const subtotalAlt = alt.precio_ofertado * p.cantidad;
+                                    
+                                    trAlt.innerHTML = `
+                                        <td style="padding: 6px; border: 1px solid #ddd; padding-left: 20px; font-size: 9px;">ALT ${p.monodroga}</td>
+                                        <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${alt.marca} - ${alt.presentacion}</td>
+                                        <td style="padding: 6px; border: 1px solid #ddd; font-size: 9px;">${alt.laboratorio || '-'}</td>
+                                        <td style="padding: 6px; text-align: center; border: 1px solid #ddd; font-size: 9px;">${p.cantidad}</td>
+                                        <td style="padding: 6px; text-align: right; border: 1px solid #ddd; font-size: 9px;">$${alt.precio_ofertado.toLocaleString('es-AR', {minimumFractionDigits: 2})}</td>
+                                        <td style="padding: 6px; text-align: right; border: 1px solid #ddd; font-size: 9px;">$${subtotalAlt.toLocaleString('es-AR', {minimumFractionDigits: 2})}</td>
+                                        <td style="padding: 6px; border: 1px solid #ddd; font-size: 8px;">${alt.observaciones || '-'}</td>
+                                    `;
+                                    tbody.appendChild(trAlt);
+                                });
+                            }
+                        }
+                    }
+                }
+                
+                document.getElementById('total').textContent = '$' + total.toLocaleString('es-AR', {minimumFractionDigits: 2});
+                
+                // Convertir total a letras
+                const parteEntera = Math.floor(total);
+                const parteDecimal = Math.round((total - parteEntera) * 100);
+                const totalEnLetras = numeroALetras(parteEntera).toUpperCase() + ' PESOS CON ' + parteDecimal + '/100';
+                document.getElementById('totalLetras').textContent = 'SON: ' + totalEnLetras;
+            } catch (error) {
+                document.body.innerHTML = '<div style="text-align: center; margin-top: 50px;"><h2>Error al cargar presupuesto</h2><p>' + error.message + '</p><button onclick="window.close()" style="padding: 10px 20px; background: #95a5a6; color: white; border: none; border-radius: 5px; cursor: pointer;">Cerrar</button></div>';
+            }
+        }
+        
+        cargarPresupuesto();
+    </script>
+</body>
+</html>

@@ -73,16 +73,26 @@ function mostrarLicitaciones() {
     licitacionesPagina.forEach(l => {
         const tr = document.createElement('tr');
         const totalCotizado = l.total_cotizado || 0;
+        const numeroPresupuesto = l.numero_presupuesto || '-';
+        
+        // Mostrar número de presupuesto con botón ver si existe
+        let presupuestoHtml = numeroPresupuesto;
+        if (numeroPresupuesto !== '-') {
+            presupuestoHtml = `${numeroPresupuesto} <button onclick="window.open('/presupuesto/${numeroPresupuesto}', '_blank')" class="btn-primary" style="padding: 4px 8px; font-size: 12px;">👁️</button>`;
+        }
+        
         tr.innerHTML = `
-            <td>${l.id}</td>
             <td>${l.numero}</td>
             <td>${l.cliente}</td>
             <td>${l.tipo_licitacion}</td>
             <td>${l.fecha}</td>
             <td>${formatearMoneda(totalCotizado)}</td>
-            <td>${l.ganancia || '-'}</td>
+            <td>${presupuestoHtml}</td>
             <td>
                 <button onclick="verDetalle(${l.id})" class="btn-primary">Ver Detalle</button>
+                <button onclick="editarLicitacionPagina(${l.id})" class="btn-success">Editar</button>
+                <button onclick="exportarExcel(${l.id})" class="btn-primary">📊 Excel</button>
+                <button onclick="generarPresupuesto(${l.id})" class="btn-primary">📄 Nuevo Presupuesto</button>
                 <button onclick="eliminar(${l.id})" class="btn-danger">Eliminar</button>
             </td>
         `;
@@ -107,8 +117,37 @@ async function verDetalle(id) {
     const response = await fetch(`/api/productos/${id}`);
     const productos = await response.json();
     
-    // Calcular total cotizado
-    const totalCotizado = productos.reduce((sum, p) => sum + (p.precio_ofertado * p.cantidad), 0);
+    // Calcular total cotizado considerando alternativas
+    let totalCotizado = 0;
+    for (const p of productos) {
+        let precioActual = p.precio_ofertado;
+        
+        if (p.producto_cotizar && p.producto_cotizar !== 'principal') {
+            const match = p.producto_cotizar.match(/alt-\d+-(\d+)/);
+            if (match) {
+                const idx = parseInt(match[1]);
+                const altResponse = await fetch(`/api/alternativas/${p.id}`);
+                const alternativas = await altResponse.json();
+                if (alternativas[idx]) {
+                    precioActual = alternativas[idx].precio_ofertado;
+                }
+            }
+        }
+        
+        totalCotizado += precioActual * p.cantidad;
+    }
+    
+    // Formatear fecha a DD/MM/AAAA HH:MM
+    let fechaFormateada = licitacion.fecha;
+    if (licitacion.fecha) {
+        const fecha = new Date(licitacion.fecha);
+        const dia = String(fecha.getDate()).padStart(2, '0');
+        const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+        const anio = fecha.getFullYear();
+        const horas = String(fecha.getHours()).padStart(2, '0');
+        const minutos = String(fecha.getMinutes()).padStart(2, '0');
+        fechaFormateada = `${dia}/${mes}/${anio} ${horas}:${minutos}`;
+    }
     
     document.getElementById('detalleTitle').textContent = `Licitación N° ${licitacion.numero}`;
     document.getElementById('detalleInfo').innerHTML = `
@@ -116,7 +155,7 @@ async function verDetalle(id) {
             <div><strong>N° Licitación:</strong> ${licitacion.numero}</div>
             <div><strong>Cliente:</strong> ${licitacion.cliente}</div>
             <div><strong>Tipo:</strong> ${licitacion.tipo_licitacion}</div>
-            <div><strong>Fecha:</strong> ${licitacion.fecha}</div>
+            <div><strong>Apertura:</strong> ${fechaFormateada}</div>
             <div><strong>Total Cotizado:</strong> ${formatearMoneda(totalCotizado)}</div>
         </div>
     `;
@@ -124,37 +163,138 @@ async function verDetalle(id) {
     const tbody = document.getElementById('productosBody');
     tbody.innerHTML = '';
     
-    productos.forEach(p => {
+    for (const p of productos) {
         const tr = document.createElement('tr');
-        const totalProducto = p.precio_ofertado * p.cantidad;
-        let difPesos = '-';
-        let difPorcentaje = '-';
         
-        if (p.resultado === 'No Adjudicado' && p.precio_ganador && p.precio_ofertado) {
-            const dif = p.precio_ofertado - p.precio_ganador;
-            difPesos = formatearMoneda(dif);
-            difPorcentaje = ((dif / p.precio_ganador) * 100).toFixed(2) + '%';
+        console.log('Producto:', p.monodroga, 'producto_cotizar:', p.producto_cotizar);
+        
+        // Si es alternativa, buscar sus datos
+        let precioActual = p.precio_ofertado;
+        let marcaActual = p.marca;
+        let presentacionActual = p.presentacion;
+        let alternativaSeleccionada = null;
+        
+        if (p.producto_cotizar && p.producto_cotizar !== 'principal') {
+            // Extraer índice de alternativa (ej: "alt-1-0" -> 0)
+            const match = p.producto_cotizar.match(/alt-\d+-(\d+)/);
+            if (match) {
+                const idx = parseInt(match[1]);
+                const altResponse = await fetch(`/api/alternativas/${p.id}`);
+                const alternativas = await altResponse.json();
+                console.log('Alternativas encontradas:', alternativas);
+                console.log('Índice a buscar:', idx);
+                if (alternativas[idx]) {
+                    alternativaSeleccionada = alternativas[idx];
+                    precioActual = alternativas[idx].precio_ofertado;
+                    marcaActual = alternativas[idx].marca;
+                    presentacionActual = alternativas[idx].presentacion;
+                    console.log('Alternativa seleccionada:', alternativaSeleccionada);
+                }
+            }
+        }
+        
+        const totalProducto = precioActual * p.cantidad;
+        
+        // Determinar ganador, precio y laboratorio según resultado
+        let ganador = '-';
+        let precioGanador = '-';
+        let laboratorioGanador = '-';
+        
+        // Solo llenar si NO hay alternativa seleccionada (producto_cotizar === 'principal')
+        if (p.producto_cotizar === 'principal' || !p.producto_cotizar) {
+            if (p.resultado === 'Adjudicado') {
+                ganador = 'Celtyc';
+                precioGanador = formatearMoneda(precioActual);
+                const prodCatalogo = catalogo.find(c => 
+                    c.monodroga?.toLowerCase().trim() === p.monodroga?.toLowerCase().trim() && 
+                    c.marca?.toLowerCase().trim() === marcaActual?.toLowerCase().trim() && 
+                    c.presentacion?.toLowerCase().trim() === presentacionActual?.toLowerCase().trim()
+                );
+                laboratorioGanador = prodCatalogo?.laboratorio || 'Celtyc';
+            } else if (p.resultado === 'No Adjudicado' && p.oferente_ganador) {
+                ganador = p.oferente_ganador;
+                precioGanador = p.precio_ganador ? formatearMoneda(p.precio_ganador) : '-';
+                try {
+                    const ofertasResponse = await fetch(`/api/ofertas/${p.id}`);
+                    const ofertas = await ofertasResponse.json();
+                    const ofertaGanadora = ofertas.find(o => o.oferente === ganador);
+                    laboratorioGanador = ofertaGanadora?.laboratorio || '-';
+                } catch (error) {
+                    console.error('Error cargando ofertas:', error);
+                    laboratorioGanador = '-';
+                }
+            }
         }
         
         tr.innerHTML = `
             <td>${p.monodroga}</td>
-            <td>${p.marca} - ${p.presentacion}</td>
+            <td>${marcaActual} - ${presentacionActual}</td>
             <td>${p.cantidad}</td>
-            <td>${formatearMoneda(p.precio_ofertado)}</td>
+            <td>${formatearMoneda(precioActual)}</td>
             <td>${formatearMoneda(totalProducto)}</td>
-            <td>${p.resultado}</td>
-            <td>${p.oferente || '-'}</td>
-            <td>${p.marca_ganadora || '-'}</td>
-            <td>${p.precio_ganador ? formatearMoneda(p.precio_ganador) : '-'}</td>
-            <td>${difPesos}</td>
-            <td>${difPorcentaje}</td>
-            <td>${p.marca_ofrecida || '-'}</td>
-            <td>
-                <button onclick="editarProducto(${p.id}, ${JSON.stringify(p).replace(/"/g, '&quot;')})" class="btn-primary">Editar</button>
-            </td>
+            <td>${p.observaciones || '-'}</td>
+            <td>${ganador}</td>
+            <td>${precioGanador}</td>
+            <td>${laboratorioGanador}</td>
         `;
         tbody.appendChild(tr);
-    });
+        
+        // Cargar y mostrar alternativas
+        const altResponse = await fetch(`/api/alternativas/${p.id}`);
+        const alternativas = await altResponse.json();
+        
+        if (alternativas && alternativas.length > 0) {
+            for (let altIndex = 0; altIndex < alternativas.length; altIndex++) {
+                const alt = alternativas[altIndex];
+                const trAlt = document.createElement('tr');
+                trAlt.style.background = '#1a1a1a';
+                const totalAlt = alt.precio_ofertado * p.cantidad;
+                
+                const esAlternativaSeleccionada = p.producto_cotizar === `alt-${p.id}-${altIndex}`;
+                
+                let ganadorAlt = '-';
+                let precioGanadorAlt = '-';
+                let laboratorioGanadorAlt = '-';
+                
+                if (esAlternativaSeleccionada) {
+                    if (p.resultado === 'Adjudicado') {
+                        ganadorAlt = 'Celtyc';
+                        precioGanadorAlt = formatearMoneda(alt.precio_ofertado);
+                        const prodCatalogo = catalogo.find(c => 
+                            c.monodroga?.toLowerCase().trim() === p.monodroga?.toLowerCase().trim() && 
+                            c.marca?.toLowerCase().trim() === alt.marca?.toLowerCase().trim() && 
+                            c.presentacion?.toLowerCase().trim() === alt.presentacion?.toLowerCase().trim()
+                        );
+                        laboratorioGanadorAlt = prodCatalogo?.laboratorio || 'Celtyc';
+                    } else if (p.resultado === 'No Adjudicado' && p.oferente_ganador) {
+                        ganadorAlt = p.oferente_ganador;
+                        precioGanadorAlt = p.precio_ganador ? formatearMoneda(p.precio_ganador) : '-';
+                        try {
+                            const ofertasResponse = await fetch(`/api/ofertas/${p.id}`);
+                            const ofertas = await ofertasResponse.json();
+                            const ofertaGanadora = ofertas.find(o => o.oferente === ganadorAlt);
+                            laboratorioGanadorAlt = ofertaGanadora?.laboratorio || '-';
+                        } catch (error) {
+                            laboratorioGanadorAlt = '-';
+                        }
+                    }
+                }
+                
+                trAlt.innerHTML = `
+                    <td style="padding-left: 30px; color: #999;">ALT ${p.monodroga}</td>
+                    <td style="color: #999;">${alt.marca} - ${alt.presentacion}</td>
+                    <td style="color: #999;">${p.cantidad}</td>
+                    <td style="color: #999;">${formatearMoneda(alt.precio_ofertado)}</td>
+                    <td style="color: #999;">${formatearMoneda(totalAlt)}</td>
+                    <td style="color: #999;">${alt.observaciones || '-'}</td>
+                    <td style="color: #999;">${ganadorAlt}</td>
+                    <td style="color: #999;">${precioGanadorAlt}</td>
+                    <td style="color: #999;">${laboratorioGanadorAlt}</td>
+                `;
+                tbody.appendChild(trAlt);
+            }
+        }
+    }
     
     document.getElementById('modalDetalle').style.display = 'block';
 }
@@ -381,11 +521,25 @@ document.getElementById('editarForm').addEventListener('submit', async (e) => {
     }
 });
 
-async function eliminar(id) {
-    if (!confirm('¿Eliminar esta licitación?')) return;
+let licitacionAEliminar = null;
+
+function eliminar(id) {
+    licitacionAEliminar = id;
+    document.getElementById('modalConfirmar').style.display = 'block';
+}
+
+function cerrarModalConfirmar() {
+    document.getElementById('modalConfirmar').style.display = 'none';
+    licitacionAEliminar = null;
+}
+
+async function confirmarEliminacion() {
+    if (!licitacionAEliminar) return;
     
-    const response = await fetch(`/api/licitaciones/${id}`, { method: 'DELETE' });
+    const response = await fetch(`/api/licitaciones/${licitacionAEliminar}`, { method: 'DELETE' });
     const result = await response.json();
+    
+    cerrarModalConfirmar();
     
     if (result.success) {
         mostrarNotificacion('✓ Éxito', 'Licitación eliminada');
@@ -407,61 +561,46 @@ function cerrarNotificacion() {
     document.getElementById('modalNotificacion').style.display = 'none';
 }
 
-function editarLicitacion() {
-    const licitacion = licitaciones.find(l => l.id === licitacionActual);
-    if (!licitacion) return;
-    
-    document.getElementById('editLicitacionId').value = licitacion.id;
-    document.getElementById('editNumeroLicitacion').value = licitacion.numero;
-    document.getElementById('editFecha').value = licitacion.fecha;
-    
-    // Llenar select de clientes
-    const selectCliente = document.getElementById('editClienteSelect');
-    selectCliente.innerHTML = '<option value="">Seleccione cliente...</option>';
-    clientes.forEach(c => {
-        const selected = c.nombre === licitacion.cliente ? 'selected' : '';
-        selectCliente.innerHTML += `<option value="${c.id}" ${selected}>${c.nombre}</option>`;
-    });
-    
-    // Llenar select de tipos
-    const selectTipo = document.getElementById('editTipoLicitacionSelect');
-    selectTipo.innerHTML = '<option value="">Seleccione tipo...</option>';
-    tiposLicitacion.forEach(t => {
-        const selected = t.nombre === licitacion.tipo_licitacion ? 'selected' : '';
-        selectTipo.innerHTML += `<option value="${t.id}" ${selected}>${t.nombre}</option>`;
-    });
-    
-    document.getElementById('modalEditarLicitacion').style.display = 'block';
+function editarLicitacionPagina(id) {
+    window.location.href = `/editar-licitacion/${id}`;
 }
 
-function cerrarModalEditarLicitacion() {
-    document.getElementById('modalEditarLicitacion').style.display = 'none';
-}
-
-document.getElementById('editarLicitacionForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const id = document.getElementById('editLicitacionId').value;
-    const data = {
-        numero: document.getElementById('editNumeroLicitacion').value,
-        cliente_id: document.getElementById('editClienteSelect').value,
-        tipo_licitacion_id: document.getElementById('editTipoLicitacionSelect').value || null,
-        fecha: document.getElementById('editFecha').value
-    };
-    
-    const response = await fetch(`/api/licitaciones/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    });
-    
-    const result = await response.json();
-    if (result.success) {
-        mostrarNotificacion('✓ Éxito', 'Licitación actualizada');
-        cerrarModalEditarLicitacion();
-        await cargarLicitaciones();
-        verDetalle(licitacionActual);
-    } else {
-        mostrarNotificacion('✗ Error', result.error);
+async function generarPresupuesto(licitacionId) {
+    try {
+        const response = await fetch('/api/presupuestos/crear', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ licitacion_id: licitacionId })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            mostrarNotificacion('✓ Éxito', `Presupuesto N° ${result.numero} generado correctamente`);
+            // Abrir presupuesto en nueva pestaña
+            window.open(`/presupuesto/${result.numero}`, '_blank');
+            cargarLicitaciones();
+        } else {
+            mostrarNotificacion('✗ Error', result.error);
+        }
+    } catch (error) {
+        mostrarNotificacion('✗ Error', 'Error al generar presupuesto: ' + error.message);
     }
-});
+}
+
+async function exportarExcel(licitacionId) {
+    try {
+        const response = await fetch(`/api/licitaciones/${licitacionId}/exportar-excel`);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `licitacion_${licitacionId}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    } catch (error) {
+        mostrarNotificacion('✗ Error', 'Error al exportar: ' + error.message);
+    }
+}

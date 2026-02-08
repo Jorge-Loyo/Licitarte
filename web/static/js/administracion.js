@@ -20,6 +20,7 @@ function mostrarTab(tab) {
     if (tab === 'modalidades') cargarModalidades();
     if (tab === 'formas') cargarFormasPago();
     if (tab === 'motivos') cargarMotivosPerdida();
+    if (tab === 'mantenimientos') cargarMantenimientos();
     if (tab === 'catalogo') cargarCatalogo();
 }
 
@@ -1000,5 +1001,72 @@ async function eliminarMotivoPerdida(id) {
     const response = await fetch(`/api/motivos-perdida/${id}`, { method: 'DELETE' });
     const result = await response.json();
     if (result.success) { alert('Motivo eliminado'); cargarMotivosPerdida(); }
+    else alert('Error: ' + result.error);
+}
+
+// Gestión Mantenimientos Oferta
+let mantenimientos = [];
+async function cargarMantenimientos() {
+    const response = await fetch('/api/mantenimientos-oferta');
+    mantenimientos = await response.json();
+    const tbody = document.getElementById('mantenimientosBody');
+    tbody.innerHTML = '';
+    mantenimientos.forEach(m => {
+        tbody.innerHTML += `<tr><td>${m.id}</td><td>${m.nombre}</td><td>
+            <button onclick="editarMantenimiento(${m.id})" class="btn-primary">Editar</button>
+            <button onclick="eliminarMantenimiento(${m.id})" class="btn-danger">Eliminar</button>
+        </td></tr>`;
+    });
+}
+
+function nuevoMantenimiento() {
+    document.getElementById('modalMantenimientoTitulo').textContent = 'Nuevo Mantenimiento de Oferta';
+    document.getElementById('mantenimientoForm').reset();
+    document.getElementById('mantenimientoId').value = '';
+    document.getElementById('modalMantenimiento').style.display = 'block';
+}
+
+function editarMantenimiento(id) {
+    const mantenimiento = mantenimientos.find(m => m.id === id);
+    if (!mantenimiento) return;
+    
+    document.getElementById('modalMantenimientoTitulo').textContent = 'Editar Mantenimiento de Oferta';
+    document.getElementById('mantenimientoId').value = mantenimiento.id;
+    document.getElementById('mantenimientoNombre').value = mantenimiento.nombre;
+    document.getElementById('modalMantenimiento').style.display = 'block';
+}
+
+function cerrarModalMantenimiento() {
+    document.getElementById('modalMantenimiento').style.display = 'none';
+}
+
+document.getElementById('mantenimientoForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('mantenimientoId').value;
+    const nombre = document.getElementById('mantenimientoNombre').value;
+    
+    const url = id ? `/api/mantenimientos-oferta/${id}` : '/api/mantenimientos-oferta';
+    const method = id ? 'PUT' : 'POST';
+    
+    const response = await fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nombre })
+    });
+    const result = await response.json();
+    if (result.success) {
+        alert(id ? 'Mantenimiento actualizado' : 'Mantenimiento creado');
+        cerrarModalMantenimiento();
+        cargarMantenimientos();
+    } else {
+        alert('Error: ' + result.error);
+    }
+});
+
+async function eliminarMantenimiento(id) {
+    if (!confirm('¿Eliminar?')) return;
+    const response = await fetch(`/api/mantenimientos-oferta/${id}`, { method: 'DELETE' });
+    const result = await response.json();
+    if (result.success) { alert('Mantenimiento eliminado'); cargarMantenimientos(); }
     else alert('Error: ' + result.error);
 }

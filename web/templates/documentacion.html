@@ -4,24 +4,41 @@
 
 {% block content %}
 <div class="page-header">
-    <h2>📑 Documentación y Reportes</h2>
+    <h2>📑 Documentación y Presupuestos</h2>
 </div>
 
-<div class="section" style="text-align: center; padding: 60px 20px;">
-    <h3 style="color: var(--primary); font-size: 24px; margin-bottom: 20px;">🚧 Módulo en Desarrollo</h3>
-    <p style="font-size: 18px; margin-bottom: 30px;">
-        Este módulo permitirá generar y descargar reportes predefinidos con los datos del sistema.
-    </p>
-    <div style="background: var(--bg-dark); padding: 30px; border-radius: 10px; max-width: 600px; margin: 0 auto;">
-        <h4 style="color: var(--primary); margin-bottom: 15px;">Reportes Disponibles Próximamente:</h4>
-        <ul style="text-align: left; line-height: 2;">
-            <li>Reporte de licitaciones por período</li>
-            <li>Análisis de productos adjudicados</li>
-            <li>Estadísticas de clientes</li>
-            <li>Comparativa de oferentes</li>
-            <li>Exportación a Excel/PDF</li>
-            <li>Reportes personalizados</li>
-        </ul>
+<div class="section">
+    <h3 style="color: var(--primary); margin-bottom: 20px;">Presupuestos Generados</h3>
+    
+    <div style="margin-bottom: 20px;">
+        <input type="text" id="buscarPresupuesto" placeholder="Buscar por número, licitación o cliente..." style="width: 100%; max-width: 400px; padding: 12px; font-size: 16px; border-radius: 6px; border: 1px solid var(--primary);">
+    </div>
+    
+    <div style="overflow-x: auto;">
+        <table id="tablaPresupuestos" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: var(--primary); color: white;">
+                    <th style="padding: 15px; text-align: center;">Presupuesto N°</th>
+                    <th style="padding: 15px; text-align: left;">Licitación</th>
+                    <th style="padding: 15px; text-align: left;">Cliente</th>
+                    <th style="padding: 15px; text-align: center;">Fecha Generación</th>
+                    <th style="padding: 15px; text-align: center;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="presupuestosBody">
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 40px; color: #999;">Cargando presupuestos...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div id="paginacion" style="margin-top: 20px; text-align: center;">
+        <button onclick="cargarPagina(paginaActual - 1)" id="btnAnterior" class="btn-secondary" style="margin: 0 5px;">← Anterior</button>
+        <span id="infoPagina" style="margin: 0 15px; font-size: 16px;">Página 1</span>
+        <button onclick="cargarPagina(paginaActual + 1)" id="btnSiguiente" class="btn-secondary" style="margin: 0 5px;">Siguiente →</button>
     </div>
 </div>
+
+<script src="{{ url_for('static', filename='js/documentacion.js') }}"></script>
 {% endblock %}
