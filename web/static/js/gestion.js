@@ -338,7 +338,6 @@ function editarProducto(id, producto) {
     
     // Aplicar lógica de resultado
     manejarCambioResultadoEdicion();
-    calcularMargen();
     
     document.getElementById('modalEditar').style.display = 'block';
 }
@@ -381,7 +380,6 @@ function seleccionarProducto() {
         // Obtener costo unitario del producto
         const producto = catalogo.find(p => p.id == option.value);
         costoUnitarioActual = producto ? (producto.costo_unitario || 0) : 0;
-        calcularMargen();
     }
 }
 
@@ -389,33 +387,7 @@ function cerrarModalEditar() {
     document.getElementById('modalEditar').style.display = 'none';
 }
 
-function calcularMargen() {
-    const precioOfertado = parseFloat(document.getElementById('editPrecio').value) || 0;
-    const alerta = document.getElementById('alertaMargen');
-    
-    if (precioOfertado === 0 || costoUnitarioActual === 0) {
-        alerta.style.display = 'none';
-        return;
-    }
-    
-    const margen = ((precioOfertado - costoUnitarioActual) / costoUnitarioActual) * 100;
-    
-    alerta.style.display = 'block';
-    
-    if (precioOfertado <= costoUnitarioActual) {
-        alerta.style.background = '#dc3545';
-        alerta.style.color = 'white';
-        alerta.textContent = `⚠️ ALERTA: Precio por debajo del costo (${margen.toFixed(2)}%)`;
-    } else if (margen < 8) {
-        alerta.style.background = '#ffc107';
-        alerta.style.color = '#000';
-        alerta.textContent = `⚠️ MARGEN BAJO: ${margen.toFixed(2)}%`;
-    } else {
-        alerta.style.background = '#28a745';
-        alerta.style.color = 'white';
-        alerta.textContent = `✔ MARGEN: ${margen.toFixed(2)}%`;
-    }
-}
+
 
 function manejarCambioResultadoEdicion() {
     const resultado = document.getElementById('editResultado').value;

@@ -210,7 +210,6 @@ function agregarProducto() {
                 </div>
                 <div></div>
             </div>
-            <div class="alerta-margen" style="display: none; margin-top: 10px; padding: 12px; border-radius: 5px; text-align: center; font-weight: bold; font-size: 14px;"></div>
             <div class="form-group" style="margin-top: 15px;">
                 <label>Observaciones del Renglón</label>
                 <input type="text" class="producto-observaciones" placeholder="Notas específicas de este renglón..." style="font-size: 16px; padding: 12px;">
@@ -325,7 +324,6 @@ function calcularPrecioOfertado(input) {
     const precioInput = container.querySelector('.producto-precio');
     precioInput.value = precioOfertado > 0 ? precioOfertado.toFixed(2) : '';
     
-    calcularMargenIngreso(precioInput);
     calcularTotalRenglon(container.querySelector('.producto-cantidad'));
 }
 
@@ -401,35 +399,7 @@ function calcularMargenTotal() {
     document.getElementById('margenTotalPorcentajeDisplay').value = margenPorcentaje.toFixed(2) + '%';
 }
 
-function calcularMargenIngreso(input) {
-    const container = input.closest('.producto-item');
-    const alerta = container.querySelector('.alerta-margen');
-    const precioOfertado = parseFloat(input.value) || 0;
-    const costoUnitario = parseFloat(container.dataset.costoUnitario) || 0;
-    
-    if (precioOfertado === 0 || costoUnitario === 0) {
-        alerta.style.display = 'none';
-        return;
-    }
-    
-    const margen = ((precioOfertado - costoUnitario) / costoUnitario) * 100;
-    
-    alerta.style.display = 'block';
-    
-    if (precioOfertado <= costoUnitario) {
-        alerta.style.background = '#dc3545';
-        alerta.style.color = 'white';
-        alerta.textContent = `⚠️ ALERTA: Precio por debajo del costo (${margen.toFixed(2)}%)`;
-    } else if (margen < 8) {
-        alerta.style.background = '#ffc107';
-        alerta.style.color = '#000';
-        alerta.textContent = `⚠️ MARGEN BAJO: ${margen.toFixed(2)}%`;
-    } else {
-        alerta.style.background = '#28a745';
-        alerta.style.color = 'white';
-        alerta.textContent = `✔ MARGEN: ${margen.toFixed(2)}%`;
-    }
-}
+
 
 function manejarCambioResultado(select) {
     const container = select.closest('.producto-item');
