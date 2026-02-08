@@ -1,1 +1,1 @@
-web: cd web && gunicorn app:app
+web: cd web && gunicorn app:app --workers 2 --timeout 120

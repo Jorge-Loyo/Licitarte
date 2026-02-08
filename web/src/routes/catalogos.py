@@ -1,11 +1,13 @@
 """Rutas de catálogos (clientes, oferentes, marcas, tipos, etc)"""
 from flask import Blueprint, request, jsonify
+from pydantic import ValidationError
 import sys
 import os
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 from shared.database.db_manager import DatabaseManager
+from src.validators import ClienteCreate
 
 bp = Blueprint('catalogos', __name__, url_prefix='/api')
 db = DatabaseManager(os.path.abspath('../shared/database/licitaciones.db'))
@@ -22,16 +24,15 @@ def get_clientes():
 
 @bp.route('/clientes', methods=['POST'])
 def crear_cliente():
-    data = request.json
-    if not data or not data.get('nombre'):
-        return jsonify({'success': False, 'error': 'Nombre es obligatorio'}), 400
-    if not data.get('organismo_jurisdiccion'):
-        return jsonify({'success': False, 'error': 'Organismo/Jurisdicción es obligatorio'}), 400
+    try:
+        data = ClienteCreate(**request.json)
+    except ValidationError as e:
+        return jsonify({'success': False, 'error': 'Datos inválidos', 'details': e.errors()}), 400
     try:
         cliente_id = db.crear_cliente(
-            data['nombre'], data.get('razon_social', ''), data.get('cuit', ''),
-            data.get('direccion', ''), data.get('telefono', ''), data.get('email', ''),
-            data.get('organismo_jurisdiccion', '')
+            data.nombre, data.razon_social or '', data.cuit or '',
+            data.direccion or '', data.telefono or '', data.email or '',
+            data.organismo_jurisdiccion
         )
         return jsonify({'success': True, 'id': cliente_id}), 201
     except Exception as e:

@@ -1,18 +1,41 @@
-"""Rutas de licitaciones"""
+"""Blueprint de licitaciones.
+
+Maneja CRUD completo de licitaciones farmacéuticas:
+- GET /api/licitaciones: Lista con estadísticas
+- POST /api/licitaciones: Crear con productos y alternativas
+- GET /api/licitaciones/<id>: Obtener una específica
+- PUT /api/licitaciones/<id>: Actualizar datos
+- DELETE /api/licitaciones/<id>: Eliminar completa
+
+Validación: Usa Pydantic (LicitacionCreate) para validar datos de entrada.
+Transacciones: Context managers con COMMIT/ROLLBACK automático.
+"""
 from flask import Blueprint, request, jsonify
+from pydantic import ValidationError
 import sys
 import os
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 from shared.database.db_manager import DatabaseManager, USE_POSTGRES
+from src.validators import LicitacionCreate
 
 bp = Blueprint('licitaciones', __name__, url_prefix='/api/licitaciones')
 db = DatabaseManager(os.path.abspath('../shared/database/licitaciones.db'))
 
 @bp.route('', methods=['GET'])
 def get_licitaciones():
-    """Obtener todas las licitaciones con estadísticas"""
+    """Obtener todas las licitaciones con estadísticas.
+    
+    Returns:
+        JSON: Lista de licitaciones con:
+            - Datos básicos (id, numero, fecha, cliente, tipo)
+            - Estadísticas (total_cotizado, ganancia adjudicados/total)
+            - Número de presupuesto si existe
+    
+    Query compleja: JOIN con clientes y tipos_licitacion,
+    subconsulta para contar productos adjudicados y calcular total cotizado.
+    """
     with db.get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute("""
@@ -65,54 +88,74 @@ def get_licitaciones():
 
 @bp.route('', methods=['POST'])
 def crear_licitacion():
-    """Crear nueva licitación con productos"""
-    data = request.json
-    if not data:
-        return jsonify({'success': False, 'error': 'No se recibieron datos'}), 400
+    """Crear nueva licitación con productos.
+    
+    Validación Pydantic:
+        - LicitacionCreate valida estructura y tipos
+        - Retorna 400 con detalles si falla validación
+    
+    Proceso:
+        1. Crear licitación (retorna ID)
+        2. Crear productos asociados (loop)
+        3. Crear alternativas por producto (nested loop)
+    
+    Transacción: Automática con context manager.
+    Si falla cualquier paso, rollback completo.
+    
+    Returns:
+        201: {'success': True, 'id': <licitacion_id>}
+        400: {'success': False, 'error': str, 'details': []}
+        500: {'success': False, 'error': 'Error interno'}
+    """
+    try:
+        # Validar con Pydantic
+        data = LicitacionCreate(**request.json)
+    except ValidationError as e:
+        return jsonify({'success': False, 'error': 'Datos inválidos', 'details': e.errors()}), 400
     
     try:
-        if not data.get('numero') or not data.get('fecha'):
-            return jsonify({'success': False, 'error': 'Número y fecha son obligatorios'}), 400
         
         licitacion_id = db.crear_licitacion(
-            data['numero'],
-            data['fecha'],
+            data.numero,
+            data.fecha,
             '',
             '',
             None,
-            int(data['cliente_id']) if data.get('cliente_id') else None,
-            int(data['tipo_licitacion_id']) if data.get('tipo_licitacion_id') else None,
-            data.get('portal_origen', ''),
-            data.get('modalidad_entrega', ''),
-            data.get('forma_pago', ''),
-            data.get('requiere_poliza', False),
-            float(data['monto_poliza']) if data.get('monto_poliza') else None,
-            data.get('observaciones', ''),
-            data.get('mantenimiento_oferta', '')
+            data.cliente_id,
+            data.tipo_licitacion_id,
+            data.portal_origen or '',
+            data.modalidad_entrega or '',
+            data.forma_pago or '',
+            data.requiere_poliza,
+            data.monto_poliza,
+            data.observaciones or '',
+            data.mantenimiento_oferta or ''
         )
         
-        for producto in data.get('productos', []):
+        # Crear productos asociados a la licitación
+        for producto in data.productos:
             producto_id = db.agregar_producto(
                 licitacion_id,
-                producto['monodroga'],
-                producto['marca'],
-                producto['presentacion'],
-                int(producto['cantidad']),
-                float(producto['precio']),
-                producto['resultado'],
-                float(producto['precio_ganador']) if producto.get('precio_ganador') else None,
-                producto.get('oferente_ganador', ''),
-                producto.get('marca_ofrecida', ''),
-                producto.get('marca_ganadora', ''),
-                producto.get('motivo_perdida', ''),
-                producto.get('numero_renglon', ''),
-                float(producto['costo_unitario']) if producto.get('costo_unitario') else None,
-                float(producto['margen_porcentaje']) if producto.get('margen_porcentaje') else None,
-                producto.get('observaciones', ''),
-                producto.get('producto_cotizar', 'principal')
+                producto.monodroga,
+                producto.marca,
+                producto.presentacion,
+                producto.cantidad,
+                producto.precio,
+                producto.resultado,
+                None,
+                '',
+                producto.marca_ofrecida or '',
+                '',
+                '',
+                producto.numero_renglon or '',
+                producto.costo_unitario,
+                producto.margen_porcentaje,
+                producto.observaciones or '',
+                producto.producto_cotizar
             )
             
-            for alternativa in producto.get('alternativas', []):
+            # Crear alternativas (productos secundarios) si existen
+            for alternativa in getattr(producto, 'alternativas', []):
                 with db.get_connection() as conn:
                     cursor = conn.cursor()
                     if USE_POSTGRES:

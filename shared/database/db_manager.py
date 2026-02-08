@@ -1,55 +1,27 @@
-import sqlite3
 import os
 from datetime import datetime
 from contextlib import contextmanager
 import pandas as pd
-
-# Detectar si estamos en producción (Render)
-DATABASE_URL = os.environ.get('DATABASE_URL')
-
-# Render usa postgres:// pero psycopg2 necesita postgresql://
-if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
-    DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
-
-if DATABASE_URL:
-    try:
-        import psycopg2
-        from psycopg2.extras import RealDictCursor
-        USE_POSTGRES = True
-    except ImportError:
-        USE_POSTGRES = False
-else:
-    USE_POSTGRES = False
+from .connection_pool import ConnectionPool, USE_POSTGRES
 
 class DatabaseManager:
+    _pool = None
+    
     def __init__(self, db_path="database/licitaciones.db"):
         self.db_path = db_path
-        if not USE_POSTGRES:
-            os.makedirs(os.path.dirname(db_path), exist_ok=True)
+        
+        if DatabaseManager._pool is None:
+            DatabaseManager._pool = ConnectionPool()
+        
         self.init_db()
         if not USE_POSTGRES and os.path.exists('Data/Celty.xlsx'):
             self.cargar_catalogo_desde_excel()
     
     @contextmanager
     def get_connection(self):
-        if USE_POSTGRES:
-            conn = psycopg2.connect(DATABASE_URL)
-            conn.autocommit = False
-        else:
-            conn = sqlite3.connect(self.db_path, isolation_level=None)
-            conn.execute("PRAGMA foreign_keys = ON")
-            conn.execute("PRAGMA journal_mode = WAL")
-        
-        try:
+        """Obtiene conexión del pool con transacción automática"""
+        with DatabaseManager._pool.get_connection() as conn:
             yield conn
-            if USE_POSTGRES:
-                conn.commit()
-        except Exception:
-            if USE_POSTGRES:
-                conn.rollback()
-            raise
-        finally:
-            conn.close()
     
     def init_db(self):
         with self.get_connection() as conn:

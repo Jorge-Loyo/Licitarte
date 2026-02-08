@@ -37,3 +37,13 @@ def sample_cliente(db):
         organismo_jurisdiccion='Provincial'
     )
     return cliente_id
+
+@pytest.fixture
+def sample_licitacion(db, sample_cliente):
+    """Licitación de ejemplo para tests"""
+    lic_id = db.crear_licitacion(
+        numero='LIC-TEST-001',
+        fecha='2025-01-15',
+        cliente_id=sample_cliente
+    )
+    return lic_id

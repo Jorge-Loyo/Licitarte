@@ -6,8 +6,9 @@
 
 - **Versión Actual**: 1.2.0 (Web) / 1.0.0 (Desktop)
 - **Tecnologías**: Python 3.11, Flask 3.0, SQLite/PostgreSQL
-- **Estado**: ✅ Producción Ready
+- **Estado**: ✅ Fase 6 Completada - Listo para Deploy
 - **Arquitectura**: Dual (Web + Desktop) con código compartido
+- **Última Fase**: Fase 6 - Limpieza Scripts (21 archivos eliminados)
 
 ---
 
@@ -223,10 +224,6 @@ id, numero, licitacion_id, fecha_generacion
 - Selección de catálogo (Marca - Presentación)
 - Monodroga auto-completa capitalizada
 - Cantidad, Precio Ofertado
-- **⚠️ ANÁLISIS DE MARGEN** (tiempo real):
-  - 🔴 ROJO: Precio ≤ costo (pérdida)
-  - 🟡 AMARILLO: Margen < 8% (bajo)
-  - 🟢 VERDE: Margen ≥ 8% (aceptable)
 - Resultado: Parcial (defecto) / Adjudicado / No Adjudicado
 - Marca Ofrecida (defecto: "Celtyc")
 - Oferente Ganador, Marca Ganadora, Precio Ganador
@@ -265,7 +262,7 @@ id, numero, licitacion_id, fecha_generacion
 **Editar Producto**:
 - Modal con 3 secciones:
   1. **DATOS DEL PRODUCTO**: Selección catálogo, monodroga, marca, presentación, marca ofrecida
-  2. **MI OFERTA**: Cantidad, precio, resultado, análisis margen
+  2. **MI OFERTA**: Cantidad, precio, resultado
   3. **DATOS DEL GANADOR**: Oferente, marca, precio, diferencias, motivo pérdida
 
 **Agregar Producto**:
@@ -423,27 +420,6 @@ else:
 
 ## 📊 Cálculos Clave
 
-### Análisis de Margen
-```javascript
-const costoUnitario = producto.costo_unitario;
-const precioOfertado = parseFloat(input.value);
-
-if (precioOfertado <= costoUnitario) {
-    // 🔴 ROJO: Pérdida
-    margen = ((precioOfertado - costoUnitario) / costoUnitario) * 100;
-    alerta = "PÉRDIDA";
-} else {
-    margen = ((precioOfertado - costoUnitario) / costoUnitario) * 100;
-    if (margen < 8) {
-        // 🟡 AMARILLO: Margen bajo
-        alerta = "MARGEN BAJO";
-    } else {
-        // 🟢 VERDE: Margen aceptable
-        alerta = "MARGEN ACEPTABLE";
-    }
-}
-```
-
 ### Diferencias vs Ganador
 ```javascript
 const diferenciaPesos = precioOfertado - precioGanador;
@@ -488,8 +464,6 @@ def obtener_estadisticas():
 Usuario → Ingreso → Selecciona Cliente → Auto-completa Organismo
        → Completa datos licitación (portal, modalidad, forma pago, póliza)
        → Agrega productos del catálogo
-       → Sistema calcula margen en tiempo real
-       → Alerta visual según margen (rojo/amarillo/verde)
        → Selecciona resultado (Adjudicado/Parcial/No Adjudicado)
        → Si Adjudicado: auto-completa ganador
        → Si No Adjudicado: requiere motivo pérdida
@@ -502,7 +476,7 @@ Usuario → Ingreso → Selecciona Cliente → Auto-completa Organismo
 Usuario → Gestión → Busca/Filtra licitación
        → Ver Detalle → Modal con productos
        → Editar Producto → Modal 3 secciones
-       → Modifica datos → Sistema recalcula margen
+       → Modifica datos
        → Si No Adjudicado: calcula diferencias vs ganador
        → Guardar → BD → Actualiza tabla
 ```
@@ -581,6 +555,12 @@ uploads/
 - **Indicadores**: 6 en dashboard
 - **Alertas**: 3 niveles de margen
 
+### Limpieza (Fases 4-6)
+- **Fase 4**: Scripts utilidad + documentación
+- **Fase 5**: 18 duplicados eliminados (4 carpetas, 10 archivos)
+- **Fase 6**: 21 obsoletos eliminados (14 migraciones, 3 tests, 3 configs, 1 backup)
+- **Commit**: "Fase 6: Limpieza final - Proyecto listo para producción" (42 archivos)
+
 ---
 
 ## 🛠️ Desarrollo
@@ -633,19 +613,63 @@ bash scripts/backup_db.sh
 
 ## 🚢 Despliegue
 
+### Preparación para Producción
+
+**Estado Actual**: ✅ Fase 6 completada, listo para deploy
+
+**Archivos Críticos**:
+- ✅ `Procfile`: `web: cd web && gunicorn app:app`
+- ✅ `runtime.txt`: `python-3.11.0`
+- ⚠️ `web/requirements.txt`: Contiene dependencias de testing (separar)
+- ✅ `.gitignore`: Actualizado, `.env` NO está en Git
+
+**Pasos Pre-Deploy**:
+1. Crear `web/requirements-prod.txt` (sin pytest, faker)
+2. Generar nuevo SECRET_KEY seguro
+3. Push a GitHub
+4. Configurar Render
+
 ### Render.com (Producción)
-1. Conectar repositorio GitHub
-2. Configurar variables entorno:
-   - `DATABASE_URL`: PostgreSQL URL
-   - `SECRET_KEY`: Clave segura
-   - `FLASK_ENV`: production
-3. Deploy automático desde main
-4. Ejecutar migraciones si necesario
+
+**1. Crear Web Service**:
+- Repository: `https://github.com/tu-usuario/Licitarte`
+- Branch: `main`
+- Root Directory: `/`
+
+**2. Build Settings**:
+```bash
+Build Command: cd web && pip install -r requirements-prod.txt
+Start Command: cd web && gunicorn app:app --workers 2 --timeout 120
+```
+
+**3. Environment Variables**:
+```bash
+SECRET_KEY=<generar-nuevo-token-seguro>
+DATABASE_URL=<postgresql-url-de-render>
+FLASK_ENV=production
+PORT=5000
+```
+
+**4. PostgreSQL Database**:
+- Crear PostgreSQL en Render
+- Copiar Internal Database URL
+- Pegar en DATABASE_URL
+
+**5. Deploy**:
+- Render detecta cambios en `main`
+- Build automático
+- Ejecuta migraciones si necesario
 
 ### Docker (PostgreSQL Local)
 ```bash
 docker-compose up -d
 bash scripts/setup_postgres.bat
+```
+
+### Generar SECRET_KEY
+```python
+import secrets
+print(secrets.token_hex(32))
 ```
 
 ---
@@ -725,6 +749,42 @@ bash scripts/setup_postgres.bat
 
 ---
 
-**Última actualización**: 2025-01-26  
-**Versión documento**: 1.0  
+---
+
+## 📋 Historial de Reorganización
+
+### Fase 4: Scripts Utilidad (Completada)
+- Creados: `setup_dev.sh`, `setup_prod.sh`, `backup_db.sh`, `migrate_db.sh`
+- Documentación: `FASE_4_COMPLETADA.md`
+
+### Fase 5: Limpieza Legacy (Completada)
+- **Eliminados**: 18 duplicados
+  - Carpetas: `modules/`, `database/`, `Img/`, `Licitarte_v1.0_Instalador/`
+  - Archivos: `main.py`, `build_exe.bat`, `installer.bat`, `uninstaller.bat`, `Licitarte.spec`, `crear_distribucion.bat`, `ejecutar_migracion.bat`, `migrar_db.py`, `LEEME.txt`, `MANUAL_USUARIO.md`
+- Script: `fase5_limpieza.bat`
+- Backup: `data/backups/fase5_backup_*/`
+- Documentación: `FASE_5_LIMPIEZA_FINAL.md`, `FASE_5_COMPLETADA.md`
+
+### Fase 6: Limpieza Scripts (Completada)
+- **Eliminados**: 21 obsoletos
+  - Migraciones: 14 scripts en `shared/database/` (add_motivo_perdida.py, migrate_v2.py, etc.)
+  - Testing: 3 archivos en `web/` (check_db.py, .coverage, htmlcov/)
+  - Configs: 3 duplicados en raíz (.env, .env.example, requirements.txt)
+  - Backups: 1 obsoleto (licitaciones_backup.db)
+- Script: `fase6_limpieza_scripts.bat`
+- Backup: `data/backups/fase6_backup_20260208/`
+- Commit: "Fase 6: Limpieza final - Proyecto listo para producción" (42 archivos, 2710+, 5158-)
+- Documentación: `FASE_6_LIMPIEZA_SCRIPTS.md`, `FASE_6_COMPLETADA.md`
+
+### Estado Final
+- ✅ Estructura limpia y profesional
+- ✅ Sin duplicados ni archivos obsoletos
+- ✅ Documentación completa
+- ✅ Listo para deploy en Render
+- ⚠️ Pendiente: Separar requirements de producción
+
+---
+
+**Última actualización**: 2025-02-08  
+**Versión documento**: 1.1  
 **Autor**: Licitarte Team

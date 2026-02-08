@@ -60,69 +60,37 @@
 - **Frontend**: HTML5, CSS3, JavaScript Vanilla
 - **Despliegue**: Gunicorn, Render.com
 
-## 🚀 Inicio Rápido
+## 🚀 Inicio Rápido con Docker
 
-Licitarte tiene **2 versiones**: Desktop (CustomTkinter) y Web (Flask).
+### Requisitos
+- Docker Desktop
+- Python 3.11
 
-### 📦 Instalación Inicial
+### Pasos
 
 ```bash
-# 1. Clonar repositorio
-git clone https://github.com/tu-usuario/Licitarte.git
-cd Licitarte
+# 1. Iniciar PostgreSQL
+docker-compose up -d
 
-# 2. Crear entorno virtual
-python -m venv venv
-
-# 3. Activar entorno virtual
-source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate     # Windows (Git Bash)
-```
-
-### 🌐 Ejecutar Versión WEB (Recomendado - v1.1.0)
-
-**Opción 1: Comando directo**
-```bash
+# 2. Configurar entorno
 cd web
+copy .env.example .env
+
+# 3. Instalar dependencias
 pip install -r requirements.txt
+
+# 4. Ejecutar migraciones
+cd ..
+python shared/database/run_migrations.py
+
+# 5. Iniciar aplicación
+cd web
 python app.py
 ```
 
-**Opción 2: Script automático (Windows)**
-```bash
-run_web.bat
-```
+Abre: **http://localhost:5000**
 
-Luego abre tu navegador en: **http://localhost:5000**
-
-✨ **La versión web incluye todas las funcionalidades v1.1.0**: análisis de márgenes, métricas avanzadas, catálogos configurables, etc.
-
-### 🖥️ Ejecutar Versión DESKTOP (v1.0.0)
-
-```bash
-# Instalar dependencias desktop
-pip install -r requirements.txt
-
-# Ejecutar aplicación
-python main.py
-```
-
-⚠️ **Nota**: La versión desktop tiene funcionalidades básicas (v1.0.0). Para todas las características nuevas, usa la versión web.
-
-### 🔄 Diferencias entre Versiones
-
-| Característica | Desktop | Web |
-|----------------|---------|-----|
-| Interfaz | CustomTkinter (ventana nativa) | HTML/CSS/JS (navegador) |
-| Versión | 1.0.0 | 1.1.0 |
-| Análisis de Márgenes | ❌ | ✅ |
-| Módulo Métricas | ❌ | ✅ |
-| Catálogos Configurables | ❌ | ✅ |
-| Diferencias vs Ganador | ❌ | ✅ |
-| Dashboard 6 indicadores | ❌ | ✅ |
-| Formato MILL | ❌ | ✅ |
-| Multiplataforma | ✅ | ✅ |
-| Requiere navegador | ❌ | ✅ |
+📖 **Guía completa**: Ver [INICIO_RAPIDO.md](INICIO_RAPIDO.md)
 
 ## Estructura del Proyecto
 

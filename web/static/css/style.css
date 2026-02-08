@@ -99,6 +99,46 @@ body {
     flex: 1;
     padding: 30px;
     overflow-y: auto;
+    overflow-x: hidden;
+    width: 100%;
+}
+
+@media (max-width: 1200px) {
+    .content {
+        padding: 20px;
+    }
+    
+    .stats-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .app-container {
+        flex-direction: column;
+    }
+    
+    .sidebar {
+        width: 100%;
+        height: auto;
+    }
+    
+    .content {
+        padding: 15px;
+    }
+    
+    .stats-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .search-box {
+        flex-direction: column;
+    }
+    
+    th, td {
+        padding: 8px;
+        font-size: 14px;
+    }
 }
 
 .page-header {
@@ -182,23 +222,61 @@ body {
 
 .table-container {
     overflow-x: auto;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
+    table-layout: auto;
 }
 
 th, td {
     padding: 12px;
     text-align: left;
     border-bottom: 1px solid var(--border);
-    white-space: nowrap;
 }
 
 th {
     background: var(--primary);
     color: black;
+    white-space: nowrap;
+}
+
+/* Columna de acciones responsive */
+td:last-child {
+    white-space: normal;
+}
+
+/* Botones de acción responsive */
+td button {
+    margin: 2px;
+    padding: 6px 10px;
+    font-size: 12px;
+    display: inline-block;
+}
+
+@media (max-width: 1600px) {
+    td button {
+        padding: 5px 8px;
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 1400px) {
+    td button {
+        padding: 4px 6px;
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 1200px) {
+    td button {
+        display: block;
+        width: 100%;
+        margin: 3px 0;
+    }
 }
 
 .form-container {

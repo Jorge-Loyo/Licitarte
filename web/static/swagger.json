@@ -1,0 +1,268 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Licitarte API",
+    "description": "API REST para gestión de licitaciones farmacéuticas",
+    "version": "1.2.0",
+    "contact": {
+      "name": "Licitarte Team"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000",
+      "description": "Desarrollo local"
+    }
+  ],
+  "tags": [
+    {"name": "Auth", "description": "Autenticación y sesiones"},
+    {"name": "Licitaciones", "description": "CRUD de licitaciones"},
+    {"name": "Productos", "description": "CRUD de productos"},
+    {"name": "Catálogos", "description": "Gestión de catálogos (clientes, oferentes, marcas)"},
+    {"name": "Estadísticas", "description": "Dashboard y métricas"}
+  ],
+  "paths": {
+    "/api/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Login de usuario",
+        "description": "Autentica usuario y crea sesión",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["username", "password"],
+                "properties": {
+                  "username": {"type": "string", "example": "admin"},
+                  "password": {"type": "string", "example": "admin123"},
+                  "remember": {"type": "boolean", "default": false}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login exitoso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean"},
+                    "user": {
+                      "type": "object",
+                      "properties": {
+                        "id": {"type": "integer"},
+                        "username": {"type": "string"},
+                        "email": {"type": "string"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {"description": "Credenciales inválidas"}
+        }
+      }
+    },
+    "/api/licitaciones": {
+      "get": {
+        "tags": ["Licitaciones"],
+        "summary": "Listar licitaciones",
+        "description": "Obtiene todas las licitaciones con estadísticas de productos",
+        "security": [{"cookieAuth": []}],
+        "responses": {
+          "200": {
+            "description": "Lista de licitaciones",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {"type": "integer"},
+                      "numero": {"type": "string"},
+                      "fecha": {"type": "string", "format": "date"},
+                      "cliente": {"type": "string"},
+                      "tipo_licitacion": {"type": "string"},
+                      "total_cotizado": {"type": "number"},
+                      "ganancia": {"type": "string"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Licitaciones"],
+        "summary": "Crear licitación",
+        "description": "Crea nueva licitación con productos. Valida datos con Pydantic.",
+        "security": [{"cookieAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["numero", "fecha", "productos"],
+                "properties": {
+                  "numero": {"type": "string", "maxLength": 100},
+                  "fecha": {"type": "string", "format": "date"},
+                  "cliente_id": {"type": "integer", "nullable": true},
+                  "tipo_licitacion_id": {"type": "integer", "nullable": true},
+                  "portal_origen": {"type": "string"},
+                  "modalidad_entrega": {"type": "string"},
+                  "forma_pago": {"type": "string"},
+                  "requiere_poliza": {"type": "boolean"},
+                  "monto_poliza": {"type": "number"},
+                  "observaciones": {"type": "string"},
+                  "productos": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["monodroga", "marca", "presentacion", "cantidad", "precio", "resultado"],
+                      "properties": {
+                        "monodroga": {"type": "string"},
+                        "marca": {"type": "string"},
+                        "presentacion": {"type": "string"},
+                        "cantidad": {"type": "integer", "minimum": 1},
+                        "precio": {"type": "number", "minimum": 0},
+                        "resultado": {"type": "string", "enum": ["Adjudicado", "Parcial", "No Adjudicado"]},
+                        "marca_ofrecida": {"type": "string"},
+                        "numero_renglon": {"type": "string"},
+                        "costo_unitario": {"type": "number"},
+                        "margen_porcentaje": {"type": "number"},
+                        "observaciones": {"type": "string"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Licitación creada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean"},
+                    "id": {"type": "integer"}
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Datos inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean"},
+                    "error": {"type": "string"},
+                    "details": {"type": "array"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/productos/{licitacion_id}": {
+      "get": {
+        "tags": ["Productos"],
+        "summary": "Listar productos",
+        "description": "Obtiene todos los productos de una licitación específica",
+        "security": [{"cookieAuth": []}],
+        "parameters": [
+          {
+            "name": "licitacion_id",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer"}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de productos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {"type": "integer"},
+                      "monodroga": {"type": "string"},
+                      "marca": {"type": "string"},
+                      "presentacion": {"type": "string"},
+                      "cantidad": {"type": "integer"},
+                      "precio_ofertado": {"type": "number"},
+                      "resultado": {"type": "string"},
+                      "precio_ganador": {"type": "number"},
+                      "oferente_ganador": {"type": "string"}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/estadisticas": {
+      "get": {
+        "tags": ["Estadísticas"],
+        "summary": "Dashboard",
+        "description": "Obtiene estadísticas generales: total licitaciones, ganadas, unidades, precios promedio",
+        "security": [{"cookieAuth": []}],
+        "responses": {
+          "200": {
+            "description": "Estadísticas del dashboard",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total_licitaciones": {"type": "integer"},
+                    "licitaciones_ganadas": {"type": "integer"},
+                    "total_unidades": {"type": "integer"},
+                    "precio_promedio_ponderado": {"type": "number"},
+                    "unidades_cotizadas": {"type": "integer"},
+                    "unidades_ganadas": {"type": "integer"},
+                    "porcentaje_unidades": {"type": "number"},
+                    "total_cotizado": {"type": "number"},
+                    "total_ganado": {"type": "number"},
+                    "porcentaje_dinero": {"type": "number"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "session"
+      }
+    }
+  }
+}

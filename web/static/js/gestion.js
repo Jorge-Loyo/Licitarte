@@ -78,7 +78,7 @@ function mostrarLicitaciones() {
         // Mostrar número de presupuesto con botón ver si existe
         let presupuestoHtml = numeroPresupuesto;
         if (numeroPresupuesto !== '-') {
-            presupuestoHtml = `${numeroPresupuesto} <button onclick="window.open('/presupuesto/${numeroPresupuesto}', '_blank')" class="btn-primary" style="padding: 4px 8px; font-size: 12px;">👁️</button>`;
+            presupuestoHtml = `${numeroPresupuesto} <button onclick="window.open('/presupuesto/${numeroPresupuesto}', '_blank')" class="btn-primary" style="padding: 4px 8px; font-size: 12px;" title="Ver presupuesto">👁️</button>`;
         }
         
         tr.innerHTML = `
@@ -89,11 +89,11 @@ function mostrarLicitaciones() {
             <td>${formatearMoneda(totalCotizado)}</td>
             <td>${presupuestoHtml}</td>
             <td>
-                <button onclick="verDetalle(${l.id})" class="btn-primary">Ver Detalle</button>
-                <button onclick="editarLicitacionPagina(${l.id})" class="btn-success">Editar</button>
-                <button onclick="exportarExcel(${l.id})" class="btn-primary">📊 Excel</button>
-                <button onclick="generarPresupuesto(${l.id})" class="btn-primary">📄 Nuevo Presupuesto</button>
-                <button onclick="eliminar(${l.id})" class="btn-danger">Eliminar</button>
+                <button onclick="verDetalle(${l.id})" class="btn-primary" style="margin: 2px;" title="Ver detalle de productos de esta licitación">👁️ Ver</button>
+                <button onclick="editarLicitacionPagina(${l.id})" class="btn-success" style="margin: 2px;" title="Editar datos generales de la licitación">✏️ Editar</button>
+                <button onclick="exportarExcel(${l.id})" class="btn-primary" style="margin: 2px;" title="Exportar licitación a archivo Excel">📊 Excel</button>
+                <button onclick="generarPresupuesto(${l.id})" class="btn-primary" style="margin: 2px;" title="Generar presupuesto PDF de esta licitación">📄 Presupuesto</button>
+                <button onclick="eliminar(${l.id})" class="btn-danger" style="margin: 2px;" title="Eliminar licitación y todos sus productos">🗑️ Eliminar</button>
             </td>
         `;
         tbody.appendChild(tr);
