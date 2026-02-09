@@ -28,63 +28,45 @@ try:
         count = cursor.fetchone()[0]
         
         if count == 0:
-            print("⚠ Base de datos vacía, cargando datos iniciales...")
-            import tarfile
-            seed_file = Path(__file__).parent.parent / "Data" / "medicamentos_seed.sql.gz"
-            print(f"Buscando archivo: {seed_file}")
-            print(f"Archivo existe: {seed_file.exists()}")
-            
-            if seed_file.exists():
-                with tarfile.open(seed_file, 'r:gz') as tar:
-                    for member in tar.getmembers():
-                        if member.name.endswith('.sql'):
-                            f = tar.extractfile(member)
-                            sql_content = f.read().decode('utf-8')
-                            break
-                
-                # Filtrar solo INSERT statements (excluir comentarios)
-                lines = sql_content.split('\n')
-                statements = []
-                current_statement = []
-                
-                for line in lines:
-                    line = line.strip()
-                    if not line or line.startswith('--'):
-                        continue
-                    if line.startswith('INSERT INTO'):
-                        if current_statement:
-                            statements.append(' '.join(current_statement))
-                        current_statement = [line]
-                    elif current_statement:
-                        current_statement.append(line)
-                        if line.endswith(';'):
-                            statements.append(' '.join(current_statement))
-                            current_statement = []
-                
-                total = len(statements)
-                print(f"Ejecutando {total} INSERT statements...")
-                
-                # Usar autocommit para evitar transacciones abortadas
+            print("⚠ Base de datos vacía, cargando datos de prueba...")
+            try:
+                # Datos de prueba mínimos
                 conn.autocommit = True
-                success_count = 0
                 
-                for i, statement in enumerate(statements):
+                # Laboratorios
+                labs = [(1,'1','Abbott','Abbott'),(2,'2','Geminis','Geminis'),(3,'4','Roemmers','Roemmers')]
+                for lab in labs:
                     try:
-                        cursor.execute(statement.rstrip(';'))
-                        success_count += 1
-                        if (i + 1) % 1000 == 0:
-                            print(f"Procesado {i+1}/{total}... ({success_count} exitosos)")
-                    except Exception as e:
-                        if i < 3:
-                            print(f"Error {i}: {str(e)[:100]}")
-                        continue
+                        cursor.execute("INSERT INTO laboratorios (id,cod,laboratorio,nombre,activo) VALUES (%s,%s,%s,%s,true)", lab)
+                    except: pass
+                
+                # Monodrogas
+                monos = [(1,'PARACETAMOL','Paracetamol'),(2,'IBUPROFENO','Ibuprofeno'),(3,'AMOXICILINA','Amoxicilina')]
+                for mono in monos:
+                    try:
+                        cursor.execute("INSERT INTO monodrogas (id,monodroga,nombre,activo) VALUES (%s,%s,%s,true)", mono)
+                    except: pass
+                
+                # Medicamentos
+                meds = [
+                    (1,'12345','REG001',1,1,'TAFIROL 500MG','Comprimidos x 20',False,150,180,200,220,250,None),
+                    (2,'12346','REG002',2,2,'IBUPIRAC 400MG','Comprimidos x 30',False,200,240,280,320,350,None),
+                    (3,'12347','REG003',3,3,'AMOXIDAL 500MG','Cápsulas x 16',False,300,360,420,480,550,None),
+                ]
+                for med in meds:
+                    try:
+                        cursor.execute(
+                            """INSERT INTO medicamentos (id,troquel,cod_ab,numero_registro,monodroga_id,laboratorio_id,
+                            marca,presentacion,multidosis,precio_alfabeta,precio_kairos,precio_vademecum,precio_msd,
+                            precio_alfabeta_iva,observaciones) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)""", med)
+                    except: pass
                 
                 conn.autocommit = False
                 cursor.execute("SELECT COUNT(*) FROM medicamentos")
                 count = cursor.fetchone()[0]
-                print(f"✓ Cargados {count} medicamentos exitosamente")
-            else:
-                print("✗ Archivo de seed no encontrado")
+                print(f"✓ Cargados {count} medicamentos de prueba")
+            except Exception as e:
+                print(f"✗ Error cargando datos: {e}")
         else:
             print(f"✓ Base de datos conectada: {count} medicamentos en catálogo")
 except Exception as e:
