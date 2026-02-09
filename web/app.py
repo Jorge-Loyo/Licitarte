@@ -49,6 +49,9 @@ try:
                             conn.commit()
                             print(f"Procesado {i}/{total}...")
                     except Exception as e:
+                        if i < 10:  # Mostrar primeros 10 errores
+                            print(f"Error en statement {i}: {e}")
+                            print(f"Statement: {statement[:200]}...")
                         continue
                 
                 conn.commit()
