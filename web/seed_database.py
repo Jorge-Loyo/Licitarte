@@ -1,8 +1,12 @@
 """Script para cargar datos iniciales si la BD está vacía"""
 import os
+import sys
 import gzip
 import subprocess
 from pathlib import Path
+
+# Agregar directorio padre al path para imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 def seed_database():
     """Carga datos iniciales si la base de datos está vacía"""
