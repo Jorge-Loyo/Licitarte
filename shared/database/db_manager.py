@@ -248,13 +248,15 @@ class DatabaseManager:
                     )
                 ''')
                 
-                # Insertar usuario admin por defecto
-                cursor.execute("SELECT COUNT(*) FROM usuarios WHERE username = 'admin'")
-                if cursor.fetchone()[0] == 0:
-                    cursor.execute(
-                        "INSERT INTO usuarios (username, email, password_hash) VALUES (%s, %s, %s)",
-                        ('admin', 'admin@licitarte.com', 'scrypt:32768:8:1$xQzKjYvN8fGHLmPq$8a9b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f')
-                    )
+                # Insertar/actualizar usuario admin por defecto (password: admin123)
+                from werkzeug.security import generate_password_hash
+                admin_hash = generate_password_hash('admin123')
+                cursor.execute("""
+                    INSERT INTO usuarios (username, email, password_hash) 
+                    VALUES (%s, %s, %s)
+                    ON CONFLICT (username) 
+                    DO UPDATE SET password_hash = EXCLUDED.password_hash
+                """, ('admin', 'admin@licitarte.com', admin_hash))
             else:
                 # Tabla Clientes
                 cursor.execute('''
