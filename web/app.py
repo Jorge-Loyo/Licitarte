@@ -36,9 +36,11 @@ try:
             
             if seed_file.exists():
                 with tarfile.open(seed_file, 'r:gz') as tar:
-                    member = tar.getmembers()[0]
-                    f = tar.extractfile(member)
-                    sql_content = f.read().decode('utf-8')
+                    for member in tar.getmembers():
+                        if member.name.endswith('.sql'):
+                            f = tar.extractfile(member)
+                            sql_content = f.read().decode('utf-8')
+                            break
                 
                 # Filtrar solo INSERT statements
                 statements = [s.strip() for s in sql_content.split(';') if s.strip() and 'INSERT INTO' in s]
