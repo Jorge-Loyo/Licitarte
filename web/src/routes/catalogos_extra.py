@@ -5,7 +5,8 @@ import os
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
-from shared.database.db_manager import DatabaseManager, USE_POSTGRES
+from shared.database.db_manager import DatabaseManager
+from shared.database.connection_pool import USE_POSTGRES
 
 bp = Blueprint('catalogos_extra', __name__, url_prefix='/api')
 db = DatabaseManager(os.path.abspath('../shared/database/licitaciones.db'))
@@ -327,6 +328,102 @@ def get_monodrogas():
         'total_paginas': resultado['total_paginas'],
         'datos': [{'id': m[0], 'cod': m[1], 'nombre': m[2], 'activo': m[3]} for m in resultado['datos']]
     })
+
+@bp.route('/monodrogas/buscar', methods=['GET'])
+def buscar_monodrogas():
+    q = request.args.get('q', '').strip()
+    if len(q) < 3:
+        return jsonify([])
+    
+    with db.get_connection() as conn:
+        cursor = conn.cursor()
+        if USE_POSTGRES:
+            cursor.execute("SELECT DISTINCT nombre FROM monodrogas WHERE nombre ILIKE %s AND activo = TRUE ORDER BY nombre LIMIT 20", (f'%{q}%',))
+        else:
+            cursor.execute("SELECT DISTINCT nombre FROM monodrogas WHERE nombre LIKE ? AND activo = 1 ORDER BY nombre LIMIT 20", (f'%{q}%',))
+        return jsonify([{'nombre': row[0]} for row in cursor.fetchall()])
+
+@bp.route('/laboratorios/por-monodroga', methods=['GET'])
+def get_laboratorios_por_monodroga():
+    monodroga = request.args.get('monodroga', '').strip()
+    if not monodroga:
+        return jsonify([])
+    
+    with db.get_connection() as conn:
+        cursor = conn.cursor()
+        # Obtener laboratorios de la tabla laboratorios que tienen medicamentos con esa monodroga
+        if USE_POSTGRES:
+            cursor.execute("""
+                SELECT DISTINCT l.nombre 
+                FROM laboratorios l
+                INNER JOIN medicamentos m ON LOWER(m.laboratorio) = LOWER(l.nombre)
+                WHERE m.monodroga = %s AND l.activo = TRUE
+                ORDER BY l.nombre
+            """, (monodroga,))
+        else:
+            cursor.execute("""
+                SELECT DISTINCT l.nombre 
+                FROM laboratorios l
+                INNER JOIN medicamentos m ON LOWER(m.laboratorio) = LOWER(l.nombre)
+                WHERE m.monodroga = ? AND l.activo = 1
+                ORDER BY l.nombre
+            """, (monodroga,))
+        return jsonify([{'nombre': row[0]} for row in cursor.fetchall() if row[0]])
+
+@bp.route('/laboratorios/buscar', methods=['GET'])
+def buscar_laboratorios():
+    q = request.args.get('q', '').strip()
+    monodroga = request.args.get('monodroga', '').strip()
+    
+    if not monodroga:
+        return jsonify([])
+    
+    with db.get_connection() as conn:
+        cursor = conn.cursor()
+        if USE_POSTGRES:
+            cursor.execute("""
+                SELECT DISTINCT l.nombre 
+                FROM laboratorios l
+                WHERE l.activo = TRUE 
+                  AND l.nombre ILIKE %s
+                  AND EXISTS (
+                      SELECT 1 FROM medicamentos m 
+                      WHERE LOWER(m.laboratorio) = LOWER(l.nombre) 
+                        AND LOWER(m.monodroga) = LOWER(%s)
+                  )
+                ORDER BY l.nombre
+                LIMIT 20
+            """, (f'%{q}%', monodroga))
+        else:
+            cursor.execute("""
+                SELECT DISTINCT l.nombre 
+                FROM laboratorios l
+                WHERE l.activo = 1 
+                  AND l.nombre LIKE ?
+                  AND EXISTS (
+                      SELECT 1 FROM medicamentos m 
+                      WHERE LOWER(m.laboratorio) = LOWER(l.nombre) 
+                        AND LOWER(m.monodroga) = LOWER(?)
+                  )
+                ORDER BY l.nombre
+                LIMIT 20
+            """, (f'%{q}%', monodroga))
+        return jsonify([{'nombre': row[0]} for row in cursor.fetchall() if row[0]])
+
+@bp.route('/marcas/por-monodroga-laboratorio', methods=['GET'])
+def get_marcas_por_monodroga_laboratorio():
+    monodroga = request.args.get('monodroga', '').strip()
+    laboratorio = request.args.get('laboratorio', '').strip()
+    if not monodroga or not laboratorio:
+        return jsonify([])
+    
+    with db.get_connection() as conn:
+        cursor = conn.cursor()
+        if USE_POSTGRES:
+            cursor.execute("SELECT DISTINCT marca FROM medicamentos WHERE monodroga = %s AND laboratorio = %s ORDER BY marca", (monodroga, laboratorio))
+        else:
+            cursor.execute("SELECT DISTINCT marca FROM medicamentos WHERE monodroga = ? AND laboratorio = ? ORDER BY marca", (monodroga, laboratorio))
+        return jsonify([{'nombre': row[0]} for row in cursor.fetchall() if row[0]])
 
 @bp.route('/monodrogas', methods=['POST'])
 def crear_monodroga():

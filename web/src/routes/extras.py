@@ -234,7 +234,7 @@ def exportar_licitacion_excel(id):
                     SELECT p.id, p.monodroga, p.marca, p.presentacion, p.cantidad, p.precio_ofertado,
                            p.resultado, p.precio_ganador, p.oferente_ganador, c.laboratorio
                     FROM productos p
-                    LEFT JOIN celty c ON LOWER(TRIM(p.monodroga)) = LOWER(TRIM(c.monodroga))
+                    LEFT JOIN medicamentos c ON LOWER(TRIM(p.monodroga)) = LOWER(TRIM(c.monodroga))
                                       AND LOWER(TRIM(p.marca)) = LOWER(TRIM(c.marca))
                                       AND LOWER(TRIM(p.presentacion)) = LOWER(TRIM(c.presentacion))
                     WHERE p.licitacion_id = %s
@@ -244,7 +244,7 @@ def exportar_licitacion_excel(id):
                     SELECT p.id, p.monodroga, p.marca, p.presentacion, p.cantidad, p.precio_ofertado,
                            p.resultado, p.precio_ganador, p.oferente_ganador, c.laboratorio
                     FROM productos p
-                    LEFT JOIN celty c ON LOWER(TRIM(p.monodroga)) = LOWER(TRIM(c.monodroga))
+                    LEFT JOIN medicamentos c ON LOWER(TRIM(p.monodroga)) = LOWER(TRIM(c.monodroga))
                                       AND LOWER(TRIM(p.marca)) = LOWER(TRIM(c.marca))
                                       AND LOWER(TRIM(p.presentacion)) = LOWER(TRIM(c.presentacion))
                     WHERE p.licitacion_id = ?

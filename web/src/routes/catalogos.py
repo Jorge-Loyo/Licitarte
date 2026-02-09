@@ -159,7 +159,7 @@ def eliminar_tipo_licitacion(id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# CATALOGO CELTY
+# CATALOGO MEDICAMENTOS
 @bp.route('/catalogo', methods=['GET'])
 def get_catalogo():
     page = int(request.args.get('page', 1))
@@ -190,12 +190,13 @@ def get_catalogo():
             params = ()
         
         # Contar total
-        cursor.execute(f"SELECT COUNT(*) FROM celty {where}", params)
+        cursor.execute(f"SELECT COUNT(*) FROM medicamentos {where}", params)
         total = cursor.fetchone()[0]
         
         # Obtener página
         cursor.execute(f"""SELECT id, numero_registro, monodroga, marca, presentacion, laboratorio, 
-                       precio_caja, precio_unitario, costo_unitario, fecha FROM celty {where}
+                       precio_caja, precio_unitario, costo_unitario, fecha, troquel, cod_ab, troquel_ean,
+                       cod_monodroga, cod_laboratorio, multidosis FROM medicamentos {where}
                        ORDER BY monodroga, marca, presentacion LIMIT %s OFFSET %s""",
                      params + (per_page, offset))
         productos = cursor.fetchall()
@@ -204,7 +205,10 @@ def get_catalogo():
         'productos': [{
             'id': p[0], 'numero_registro': p[1], 'monodroga': p[2], 'marca': p[3],
             'presentacion': p[4], 'laboratorio': p[5], 'precio_caja': p[6],
-            'precio_unitario': p[7], 'costo_unitario': p[8], 'fecha': p[9]
+            'precio_unitario': p[7], 'costo_unitario': p[8], 'fecha': p[9],
+            'troquel': p[10], 'cod_ab': p[11], 'troquel_ean': p[12],
+            'cod_ab_estado': 'Habilitado' if p[11] == 0 else 'Deshabilitado' if p[11] == 1 else None,
+            'cod_monodroga': p[13], 'cod_laboratorio': p[14], 'multidosis': p[15]
         } for p in productos],
         'total': total,
         'page': page,

@@ -451,13 +451,18 @@ function mostrarCatalogo() {
     const tr = document.createElement("tr");
     tr.innerHTML = `
             <td>${p.numero_registro}</td>
+            <td>${p.troquel || "-"}</td>
+            <td>${p.cod_ab !== null && p.cod_ab !== undefined ? p.cod_ab : "-"}</td>
+            <td>${p.troquel_ean || "-"}</td>
+            <td>${p.cod_monodroga !== null && p.cod_monodroga !== undefined ? p.cod_monodroga : "-"}</td>
             <td>${p.monodroga}</td>
+            <td>${p.cod_laboratorio !== null && p.cod_laboratorio !== undefined ? p.cod_laboratorio : "-"}</td>
+            <td>${p.laboratorio || "-"}</td>
             <td>${p.marca}</td>
             <td>${p.presentacion}</td>
-            <td>${p.laboratorio || "-"}</td>
+            <td>${p.multidosis !== null && p.multidosis !== undefined ? p.multidosis : "-"}</td>
             <td>${p.precio_caja ? "$" + p.precio_caja.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "-"}</td>
             <td>${p.precio_unitario ? "$" + p.precio_unitario.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "-"}</td>
-            <td>${p.costo_unitario ? "$" + p.costo_unitario.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "-"}</td>
             <td>${p.fecha || "-"}</td>
             <td>
                 <button onclick="editarProductoCatalogo(${p.id})" class="btn-primary">Editar</button>

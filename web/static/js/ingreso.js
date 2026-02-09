@@ -9,8 +9,9 @@ let motivosPerdida = [];
 // Cargar catálogo y clientes al iniciar
 async function cargarCatalogo() {
     try {
-        const response = await fetch('/api/catalogo');
-        catalogoProductos = await response.json();
+        const response = await fetch('/api/catalogo?per_page=100000');
+        const data = await response.json();
+        catalogoProductos = data.productos || [];
     } catch (error) {
         console.error('Error cargando catálogo:', error);
     }
@@ -173,22 +174,27 @@ function agregarProducto() {
                     <div class="monodroga-sugerencias" style="display: none; position: absolute; background: #1a1a1a; border: 1px solid var(--primary); border-radius: 5px; max-height: 200px; overflow-y: auto; z-index: 1000; width: calc(100% - 40px);"></div>
                 </div>
             </div>
-            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group" style="position: relative;">
+                    <label>Laboratorio *</label>
+                    <input type="text" class="producto-laboratorio-input" oninput="buscarLaboratorio(this)" placeholder="Primero seleccione monodroga..." disabled style="font-size: 16px; padding: 12px;">
+                    <div class="laboratorio-sugerencias" style="display: none; position: absolute; background: #1a1a1a; border: 1px solid var(--primary); border-radius: 5px; max-height: 200px; overflow-y: auto; z-index: 1000; width: calc(100% - 40px);"></div>
+                </div>
                 <div class="form-group">
                     <label>Marca - Presentación *</label>
-                    <select class="producto-selector" onchange="seleccionarProducto(this)" disabled style="font-size: 16px; padding: 12px;">
-                        <option value="">Primero seleccione monodroga...</option>
+                    <select class="producto-selector-marca-presentacion" onchange="seleccionarProducto(this)" disabled style="font-size: 16px; padding: 12px;">
+                        <option value="">Primero seleccione laboratorio...</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>Laboratorio</label>
-                    <input type="text" class="producto-marca-ofrecida" style="font-size: 16px; padding: 12px;">
-                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr; gap: 15px;">
                 <div class="form-group">
                     <label>Cantidad *</label>
                     <input type="number" class="producto-cantidad" required oninput="calcularTotalRenglon(this)" style="font-size: 16px; padding: 12px;">
                 </div>
             </div>
+            <input type="hidden" class="producto-laboratorio">
+            <input type="hidden" class="producto-marca-ofrecida">
             <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
                 <div class="form-group">
                     <label>Costo Unitario</label>
@@ -241,41 +247,44 @@ function agregarProducto() {
     productoCount++;
 }
 
-function buscarMonodroga(input) {
+async function buscarMonodroga(input) {
     const texto = input.value.trim();
     const container = input.closest('.producto-item');
     const sugerencias = container.querySelector('.monodroga-sugerencias');
-    const selector = container.querySelector('.producto-selector');
     
     if (texto.length < 3) {
         sugerencias.style.display = 'none';
         return;
     }
     
-    const monodrogasUnicas = [...new Set(catalogoProductos
-        .filter(p => p.monodroga && p.monodroga.toLowerCase().includes(texto.toLowerCase()))
-        .map(p => p.monodroga))]
-        .sort();
-    
-    if (monodrogasUnicas.length === 0) {
+    try {
+        const response = await fetch(`/api/monodrogas/buscar?q=${encodeURIComponent(texto)}`);
+        const monodrogas = await response.json();
+        
+        if (monodrogas.length === 0) {
+            sugerencias.style.display = 'none';
+            return;
+        }
+        
+        sugerencias.innerHTML = monodrogas.map(m => 
+            `<div onclick="seleccionarMonodroga(this, '${m.nombre.replace(/'/g, "\\'")}')"
+                  style="padding: 10px; cursor: pointer; border-bottom: 1px solid #333;">
+                ${capitalizarTexto(m.nombre)}
+             </div>`
+        ).join('');
+        
+        sugerencias.style.display = 'block';
+    } catch (error) {
+        console.error('Error buscando monodrogas:', error);
         sugerencias.style.display = 'none';
-        return;
     }
-    
-    sugerencias.innerHTML = monodrogasUnicas.map(m => 
-        `<div onclick="seleccionarMonodroga(this, '${m.replace(/'/g, "\\'")}')"
-              style="padding: 10px; cursor: pointer; border-bottom: 1px solid #333;">
-            ${capitalizarTexto(m)}
-         </div>`
-    ).join('');
-    sugerencias.style.display = 'block';
 }
 
-function seleccionarMonodroga(element, monodroga) {
+async function seleccionarMonodroga(element, monodroga) {
     const container = element.closest('.producto-item');
     const input = container.querySelector('.producto-monodroga-input');
     const sugerencias = container.querySelector('.monodroga-sugerencias');
-    const selector = container.querySelector('.producto-selector');
+    const laboratorioInput = container.querySelector('.producto-laboratorio-input');
     const hiddenMonodroga = container.querySelector('.producto-monodroga');
     
     const monodrogaCapitalizada = capitalizarTexto(monodroga);
@@ -283,19 +292,107 @@ function seleccionarMonodroga(element, monodroga) {
     hiddenMonodroga.value = monodrogaCapitalizada;
     sugerencias.style.display = 'none';
     
+    // Habilitar input de laboratorio
+    laboratorioInput.disabled = false;
+    laboratorioInput.placeholder = 'Escriba para buscar...';
+}
+
+async function buscarLaboratorio(input) {
+    const texto = input.value.trim();
+    const container = input.closest('.producto-item');
+    const monodroga = container.querySelector('.producto-monodroga').value;
+    const sugerencias = container.querySelector('.laboratorio-sugerencias');
+    const selectorMarcaPresentacion = container.querySelector('.producto-selector-marca-presentacion');
+    
+    if (!monodroga) {
+        sugerencias.style.display = 'none';
+        return;
+    }
+    
+    if (texto.length === 0) {
+        sugerencias.style.display = 'none';
+        selectorMarcaPresentacion.innerHTML = '<option value="">Primero seleccione laboratorio...</option>';
+        selectorMarcaPresentacion.disabled = true;
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/laboratorios/buscar?monodroga=${encodeURIComponent(monodroga)}&q=${encodeURIComponent(texto)}`);
+        const laboratorios = await response.json();
+        
+        if (laboratorios.length === 0) {
+            sugerencias.style.display = 'none';
+            return;
+        }
+        
+        sugerencias.innerHTML = laboratorios.map(lab => 
+            `<div onclick="seleccionarLaboratorioSugerencia(this, '${lab.nombre.replace(/'/g, "\\'")}')"
+                  style="padding: 10px; cursor: pointer; border-bottom: 1px solid #333;">
+                ${lab.nombre}
+             </div>`
+        ).join('');
+        
+        sugerencias.style.display = 'block';
+    } catch (error) {
+        console.error('Error buscando laboratorios:', error);
+        sugerencias.style.display = 'none';
+    }
+}
+
+function seleccionarLaboratorioSugerencia(element, laboratorio) {
+    const container = element.closest('.producto-item');
+    const input = container.querySelector('.producto-laboratorio-input');
+    const sugerencias = container.querySelector('.laboratorio-sugerencias');
+    const hiddenLaboratorio = container.querySelector('.producto-laboratorio');
+    const monodroga = container.querySelector('.producto-monodroga').value;
+    const selectorMarcaPresentacion = container.querySelector('.producto-selector-marca-presentacion');
+    
+    input.value = laboratorio;
+    hiddenLaboratorio.value = laboratorio;
+    sugerencias.style.display = 'none';
+    
     const productosFiltrados = catalogoProductos.filter(p => 
-        p.monodroga && p.monodroga.toLowerCase() === monodroga.toLowerCase()
+        p.monodroga && p.monodroga.toLowerCase() === monodroga.toLowerCase() &&
+        p.laboratorio && p.laboratorio.toLowerCase() === laboratorio.toLowerCase()
     );
     
-    selector.innerHTML = '<option value="">Seleccione marca y presentación...</option>';
+    selectorMarcaPresentacion.innerHTML = '<option value="">Seleccione marca - presentación...</option>';
     productosFiltrados.forEach(p => {
-        selector.innerHTML += `<option value="${p.numero_registro}" data-marca="${p.marca}" data-presentacion="${p.presentacion}" data-laboratorio="${p.laboratorio || ''}" data-costo="${p.costo_unitario || 0}">
+        selectorMarcaPresentacion.innerHTML += `<option value="${p.numero_registro}" data-marca="${p.marca}" data-presentacion="${p.presentacion}" data-laboratorio="${p.laboratorio || ''}" data-costo="${p.costo_unitario || 0}">
             ${p.marca} - ${p.presentacion}
         </option>`;
     });
-    
-    selector.disabled = false;
+    selectorMarcaPresentacion.disabled = false;
 }
+
+async function seleccionarLaboratorio(select) {
+    const container = select.closest('.producto-item');
+    const monodroga = container.querySelector('.producto-monodroga').value;
+    const laboratorio = select.value;
+    const selectorMarcaPresentacion = container.querySelector('.producto-selector-marca-presentacion');
+    
+    if (!laboratorio) {
+        selectorMarcaPresentacion.innerHTML = '<option value="">Primero seleccione laboratorio...</option>';
+        selectorMarcaPresentacion.disabled = true;
+        return;
+    }
+    
+    // Buscar productos que coincidan con monodroga y laboratorio
+    const productosFiltrados = catalogoProductos.filter(p => 
+        p.monodroga && p.monodroga.toLowerCase() === monodroga.toLowerCase() &&
+        p.laboratorio && p.laboratorio.toLowerCase() === laboratorio.toLowerCase()
+    );
+    
+    selectorMarcaPresentacion.innerHTML = '<option value="">Seleccione marca - presentación...</option>';
+    productosFiltrados.forEach(p => {
+        selectorMarcaPresentacion.innerHTML += `<option value="${p.numero_registro}" data-marca="${p.marca}" data-presentacion="${p.presentacion}" data-laboratorio="${p.laboratorio || ''}" data-costo="${p.costo_unitario || 0}">
+            ${p.marca} - ${p.presentacion}
+        </option>`;
+    });
+    selectorMarcaPresentacion.disabled = false;
+}
+
+
 
 function seleccionarProducto(select) {
     const option = select.options[select.selectedIndex];
@@ -812,8 +909,9 @@ document.getElementById('quickAddForm').addEventListener('submit', async (e) => 
 
 // Cerrar sugerencias al hacer clic fuera
 document.addEventListener('click', (e) => {
-    if (!e.target.classList.contains('producto-monodroga-input')) {
+    if (!e.target.classList.contains('producto-monodroga-input') && !e.target.classList.contains('producto-laboratorio-input')) {
         document.querySelectorAll('.monodroga-sugerencias').forEach(s => s.style.display = 'none');
+        document.querySelectorAll('.laboratorio-sugerencias').forEach(s => s.style.display = 'none');
     }
 });
 

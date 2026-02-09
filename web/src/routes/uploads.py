@@ -56,27 +56,35 @@ def crear_producto_catalogo():
             cursor = conn.cursor()
             if USE_POSTGRES:
                 cursor.execute("""
-                    INSERT INTO celty (numero_registro, monodroga, marca, presentacion, laboratorio, precio_caja, precio_unitario, costo_unitario, fecha)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    INSERT INTO medicamentos (numero_registro, monodroga, marca, presentacion, laboratorio, 
+                    precio_caja, precio_unitario, costo_unitario, fecha, troquel, cod_ab, troquel_ean, 
+                    cod_monodroga, cod_laboratorio, multidosis)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """, (
                     data['numero_registro'], data.get('monodroga', ''), data.get('marca', ''),
                     data.get('presentacion', ''), data.get('laboratorio', ''),
                     float(data['precio_caja']) if data.get('precio_caja') else None,
                     float(data['precio_unitario']) if data.get('precio_unitario') else None,
                     float(data['costo_unitario']) if data.get('costo_unitario') else None,
-                    data.get('fecha', '')
+                    data.get('fecha', ''), data.get('troquel', ''), data.get('cod_ab'),
+                    data.get('troquel_ean', ''), data.get('cod_monodroga'),
+                    data.get('cod_laboratorio'), data.get('multidosis')
                 ))
             else:
                 cursor.execute("""
-                    INSERT INTO celty (numero_registro, monodroga, marca, presentacion, laboratorio, precio_caja, precio_unitario, costo_unitario, fecha)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO medicamentos (numero_registro, monodroga, marca, presentacion, laboratorio, 
+                    precio_caja, precio_unitario, costo_unitario, fecha, troquel, cod_ab, troquel_ean, 
+                    cod_monodroga, cod_laboratorio, multidosis)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
                     data['numero_registro'], data.get('monodroga', ''), data.get('marca', ''),
                     data.get('presentacion', ''), data.get('laboratorio', ''),
                     float(data['precio_caja']) if data.get('precio_caja') else None,
                     float(data['precio_unitario']) if data.get('precio_unitario') else None,
                     float(data['costo_unitario']) if data.get('costo_unitario') else None,
-                    data.get('fecha', '')
+                    data.get('fecha', ''), data.get('troquel', ''), data.get('cod_ab'),
+                    data.get('troquel_ean', ''), data.get('cod_monodroga'),
+                    data.get('cod_laboratorio'), data.get('multidosis')
                 ))
         return jsonify({'success': True}), 201
     except Exception as e:
@@ -90,27 +98,33 @@ def actualizar_producto_catalogo(id):
             cursor = conn.cursor()
             if USE_POSTGRES:
                 cursor.execute("""
-                    UPDATE celty SET numero_registro=%s, monodroga=%s, marca=%s, presentacion=%s, 
-                    laboratorio=%s, precio_caja=%s, precio_unitario=%s, costo_unitario=%s, fecha=%s WHERE id=%s
+                    UPDATE medicamentos SET numero_registro=%s, monodroga=%s, marca=%s, presentacion=%s, 
+                    laboratorio=%s, precio_caja=%s, precio_unitario=%s, costo_unitario=%s, fecha=%s, 
+                    troquel=%s, cod_ab=%s, troquel_ean=%s, cod_monodroga=%s, cod_laboratorio=%s, multidosis=%s WHERE id=%s
                 """, (
                     data['numero_registro'], data.get('monodroga', ''), data.get('marca', ''),
                     data.get('presentacion', ''), data.get('laboratorio', ''),
                     float(data['precio_caja']) if data.get('precio_caja') else None,
                     float(data['precio_unitario']) if data.get('precio_unitario') else None,
                     float(data['costo_unitario']) if data.get('costo_unitario') else None,
-                    data.get('fecha', ''), id
+                    data.get('fecha', ''), data.get('troquel', ''), data.get('cod_ab'),
+                    data.get('troquel_ean', ''), data.get('cod_monodroga'),
+                    data.get('cod_laboratorio'), data.get('multidosis'), id
                 ))
             else:
                 cursor.execute("""
-                    UPDATE celty SET numero_registro=?, monodroga=?, marca=?, presentacion=?, 
-                    laboratorio=?, precio_caja=?, precio_unitario=?, costo_unitario=?, fecha=? WHERE id=?
+                    UPDATE medicamentos SET numero_registro=?, monodroga=?, marca=?, presentacion=?, 
+                    laboratorio=?, precio_caja=?, precio_unitario=?, costo_unitario=?, fecha=?, 
+                    troquel=?, cod_ab=?, troquel_ean=?, cod_monodroga=?, cod_laboratorio=?, multidosis=? WHERE id=?
                 """, (
                     data['numero_registro'], data.get('monodroga', ''), data.get('marca', ''),
                     data.get('presentacion', ''), data.get('laboratorio', ''),
                     float(data['precio_caja']) if data.get('precio_caja') else None,
                     float(data['precio_unitario']) if data.get('precio_unitario') else None,
                     float(data['costo_unitario']) if data.get('costo_unitario') else None,
-                    data.get('fecha', ''), id
+                    data.get('fecha', ''), data.get('troquel', ''), data.get('cod_ab'),
+                    data.get('troquel_ean', ''), data.get('cod_monodroga'),
+                    data.get('cod_laboratorio'), data.get('multidosis'), id
                 ))
         return jsonify({'success': True}), 200
     except Exception as e:

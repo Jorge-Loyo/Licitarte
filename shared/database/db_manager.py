@@ -14,7 +14,7 @@ class DatabaseManager:
             DatabaseManager._pool = ConnectionPool()
         
         self.init_db()
-        if not USE_POSTGRES and os.path.exists('Data/Celty.xlsx'):
+        if not USE_POSTGRES and os.path.exists('Data/Medicamentos.xlsx'):
             self.cargar_catalogo_desde_excel()
     
     @contextmanager
@@ -119,15 +119,21 @@ class DatabaseManager:
                     )
                 ''')
                 
-                # Tabla Celty con todas las columnas del Excel
+                # Tabla Medicamentos con todas las columnas del Excel
                 cursor.execute('''
-                    CREATE TABLE IF NOT EXISTS celty (
+                    CREATE TABLE IF NOT EXISTS medicamentos (
                         id SERIAL PRIMARY KEY,
+                        troquel TEXT,
+                        cod_ab INTEGER,
+                        troquel_ean TEXT,
                         numero_registro TEXT UNIQUE NOT NULL,
+                        cod_monodroga INTEGER,
                         monodroga TEXT,
+                        cod_laboratorio INTEGER,
+                        laboratorio TEXT,
                         marca TEXT,
                         presentacion TEXT,
-                        laboratorio TEXT,
+                        multidosis INTEGER,
                         precio_caja REAL,
                         precio_unitario REAL,
                         costo_unitario REAL,
@@ -387,15 +393,21 @@ class DatabaseManager:
                 if 'producto_cotizar' not in columns:
                     cursor.execute("ALTER TABLE productos ADD COLUMN producto_cotizar TEXT DEFAULT 'principal'")
                 
-                # Tabla Celty con todas las columnas del Excel
+                # Tabla Medicamentos con todas las columnas del Excel
                 cursor.execute('''
-                    CREATE TABLE IF NOT EXISTS celty (
+                    CREATE TABLE IF NOT EXISTS medicamentos (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        troquel TEXT,
+                        cod_ab INTEGER,
+                        troquel_ean TEXT,
                         numero_registro TEXT UNIQUE NOT NULL,
+                        cod_monodroga INTEGER,
                         monodroga TEXT,
+                        cod_laboratorio INTEGER,
+                        laboratorio TEXT,
                         marca TEXT,
                         presentacion TEXT,
-                        laboratorio TEXT,
+                        multidosis INTEGER,
                         precio_caja REAL,
                         precio_unitario REAL,
                         costo_unitario REAL,
@@ -403,11 +415,23 @@ class DatabaseManager:
                     )
                 ''')
                 
-                # Migración: Agregar costo_unitario si no existe
-                cursor.execute("PRAGMA table_info(celty)")
+                # Migraciones: Agregar columnas faltantes si no existen
+                cursor.execute("PRAGMA table_info(medicamentos)")
                 columns = [col[1] for col in cursor.fetchall()]
-                if 'costo_unitario' not in columns:
-                    cursor.execute("ALTER TABLE celty ADD COLUMN costo_unitario REAL")
+                
+                columnas_faltantes = {
+                    'costo_unitario': 'REAL',
+                    'troquel': 'TEXT',
+                    'cod_ab': 'INTEGER',
+                    'troquel_ean': 'TEXT',
+                    'cod_monodroga': 'INTEGER',
+                    'cod_laboratorio': 'INTEGER',
+                    'multidosis': 'INTEGER'
+                }
+                
+                for col_name, col_type in columnas_faltantes.items():
+                    if col_name not in columns:
+                        cursor.execute(f"ALTER TABLE medicamentos ADD COLUMN {col_name} {col_type}")
                 
                 # Crear tablas de catálogos si no existen
                 cursor.execute('''
@@ -514,13 +538,13 @@ class DatabaseManager:
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_licitacion_cliente ON licitaciones(cliente_id)')
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_producto_licitacion ON productos(licitacion_id)')
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_producto_resultado ON productos(resultado)')
-            cursor.execute('CREATE INDEX IF NOT EXISTS idx_celty_numero_registro ON celty(numero_registro)')
-            cursor.execute('CREATE INDEX IF NOT EXISTS idx_celty_monodroga ON celty(monodroga)')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_medicamentos_numero_registro ON medicamentos(numero_registro)')
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_medicamentos_monodroga ON medicamentos(monodroga)')
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_oferentes_nombre ON oferentes(nombre)')
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_marcas_nombre ON marcas(nombre)')
     
-    def cargar_catalogo_desde_excel(self, excel_path='Data/Celty.xlsx'):
-        """Carga productos desde Excel a tabla celty"""
+    def cargar_catalogo_desde_excel(self, excel_path='Data/Medicamentos.xlsx'):
+        """Carga productos desde Excel a tabla medicamentos y sincroniza laboratorios/monodrogas"""
         try:
             df = pd.read_excel(excel_path)
             
@@ -528,15 +552,20 @@ class DatabaseManager:
                 cursor = conn.cursor()
                 for _, row in df.iterrows():
                     try:
-                        numero_registro = str(row.get('Numero de Registro', ''))
-                        monodroga = str(row.get('Monodroga', ''))
-                        marca = str(row.get('Marca', ''))
-                        presentacion = str(row.get('Presentacion', ''))
-                        laboratorio = str(row.get('Laboratorio', ''))
-                        precio_caja = float(row.get('Precio por Caja', 0)) if pd.notna(row.get('Precio por Caja', 0)) else 0
-                        precio_unitario = float(row.get('Presio unitario', 0)) if pd.notna(row.get('Presio unitario', 0)) else 0
+                        numero_registro = str(row.get('N de Registro', '')) if pd.notna(row.get('N de Registro')) else ''
+                        troquel = str(row.get('Troquel', '')) if pd.notna(row.get('Troquel')) else None
+                        cod_ab = int(row.get('Cod AB')) if pd.notna(row.get('Cod AB')) else None
+                        troquel_ean = str(row.get('Troquel.1', '')) if pd.notna(row.get('Troquel.1')) else None
+                        cod_monodroga = int(row.get('Cod Monodroga')) if pd.notna(row.get('Cod Monodroga')) else None
+                        monodroga_excel = str(row.get('Monodroga', '')) if pd.notna(row.get('Monodroga')) else ''
+                        cod_laboratorio = int(row.get('Cod Laboratorio')) if pd.notna(row.get('Cod Laboratorio')) else None
+                        laboratorio_excel = str(row.get('Laboratorio', '')) if pd.notna(row.get('Laboratorio')) else ''
+                        marca = str(row.get('Marca', '')) if pd.notna(row.get('Marca')) else ''
+                        presentacion = str(row.get('Presentacion', '')) if pd.notna(row.get('Presentacion')) else ''
+                        multidosis = int(row.get('Multidosis')) if pd.notna(row.get('Multidosis')) else None
+                        precio_caja = float(row.get('Precio x caja', 0)) if pd.notna(row.get('Precio x caja')) else None
+                        precio_unitario = float(row.get('Precio unitario', 0)) if pd.notna(row.get('Precio unitario')) else None
                         
-                        # Formatear fecha a dd/mm/aaaa
                         fecha_raw = row.get('Fecha')
                         if pd.notna(fecha_raw):
                             if isinstance(fecha_raw, str):
@@ -549,26 +578,67 @@ class DatabaseManager:
                         if not numero_registro or numero_registro == 'nan':
                             continue
                         
+                        # Sincronizar monodroga: insertar solo si no existe
+                        monodroga_final = monodroga_excel.strip()
+                        if monodroga_excel and monodroga_excel.strip():
+                            if USE_POSTGRES:
+                                cursor.execute("INSERT INTO monodrogas (nombre) VALUES (%s) ON CONFLICT (nombre) DO NOTHING", (monodroga_excel.strip(),))
+                                # Obtener nombre correcto de la tabla monodrogas
+                                cursor.execute("SELECT nombre FROM monodrogas WHERE LOWER(nombre) = LOWER(%s)", (monodroga_excel.strip(),))
+                            else:
+                                cursor.execute("INSERT OR IGNORE INTO monodrogas (nombre) VALUES (?)", (monodroga_excel.strip(),))
+                                cursor.execute("SELECT nombre FROM monodrogas WHERE LOWER(nombre) = LOWER(?)", (monodroga_excel.strip(),))
+                            result = cursor.fetchone()
+                            if result:
+                                monodroga_final = result[0]
+                        
+                        # Sincronizar laboratorio: insertar solo si no existe
+                        laboratorio_final = laboratorio_excel.strip()
+                        if laboratorio_excel and laboratorio_excel.strip():
+                            if USE_POSTGRES:
+                                cursor.execute("INSERT INTO laboratorios (nombre) VALUES (%s) ON CONFLICT (nombre) DO NOTHING", (laboratorio_excel.strip(),))
+                                # Obtener nombre correcto de la tabla laboratorios
+                                cursor.execute("SELECT nombre FROM laboratorios WHERE LOWER(nombre) = LOWER(%s)", (laboratorio_excel.strip(),))
+                            else:
+                                cursor.execute("INSERT OR IGNORE INTO laboratorios (nombre) VALUES (?)", (laboratorio_excel.strip(),))
+                                cursor.execute("SELECT nombre FROM laboratorios WHERE LOWER(nombre) = LOWER(?)", (laboratorio_excel.strip(),))
+                            result = cursor.fetchone()
+                            if result:
+                                laboratorio_final = result[0]
+                        
+                        # Insertar/actualizar medicamento con nombres normalizados
                         if USE_POSTGRES:
                             cursor.execute("""
-                                INSERT INTO celty (numero_registro, monodroga, marca, presentacion, laboratorio, 
-                                                  precio_caja, precio_unitario, fecha) 
-                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                                INSERT INTO medicamentos (numero_registro, troquel, cod_ab, troquel_ean, cod_monodroga,
+                                monodroga, cod_laboratorio, laboratorio, marca, presentacion, multidosis,
+                                precio_caja, precio_unitario, fecha) 
+                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                                 ON CONFLICT (numero_registro) DO UPDATE SET
+                                    troquel = EXCLUDED.troquel,
+                                    cod_ab = EXCLUDED.cod_ab,
+                                    troquel_ean = EXCLUDED.troquel_ean,
+                                    cod_monodroga = EXCLUDED.cod_monodroga,
                                     monodroga = EXCLUDED.monodroga,
+                                    cod_laboratorio = EXCLUDED.cod_laboratorio,
+                                    laboratorio = EXCLUDED.laboratorio,
                                     marca = EXCLUDED.marca,
                                     presentacion = EXCLUDED.presentacion,
-                                    laboratorio = EXCLUDED.laboratorio,
+                                    multidosis = EXCLUDED.multidosis,
                                     precio_caja = EXCLUDED.precio_caja,
                                     precio_unitario = EXCLUDED.precio_unitario,
                                     fecha = EXCLUDED.fecha
-                            """, (numero_registro, monodroga, marca, presentacion, laboratorio, precio_caja, precio_unitario, fecha))
+                            """, (numero_registro, troquel, cod_ab, troquel_ean, cod_monodroga, monodroga_final,
+                                  cod_laboratorio, laboratorio_final, marca, presentacion, multidosis,
+                                  precio_caja, precio_unitario, fecha))
                         else:
                             cursor.execute("""
-                                INSERT OR REPLACE INTO celty (numero_registro, monodroga, marca, presentacion, laboratorio, 
-                                                            precio_caja, precio_unitario, fecha) 
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                            """, (numero_registro, monodroga, marca, presentacion, laboratorio, precio_caja, precio_unitario, fecha))
+                                INSERT OR REPLACE INTO medicamentos (numero_registro, troquel, cod_ab, troquel_ean,
+                                cod_monodroga, monodroga, cod_laboratorio, laboratorio, marca, presentacion,
+                                multidosis, precio_caja, precio_unitario, fecha) 
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            """, (numero_registro, troquel, cod_ab, troquel_ean, cod_monodroga, monodroga_final,
+                                  cod_laboratorio, laboratorio_final, marca, presentacion, multidosis,
+                                  precio_caja, precio_unitario, fecha))
                     except Exception as e:
                         print(f"Error en fila: {e}")
                         continue
@@ -578,10 +648,10 @@ class DatabaseManager:
             return False
     
     def obtener_catalogo_productos(self):
-        """Obtiene lista de productos del catálogo Celty"""
+        """Obtiene lista de productos del catálogo de medicamentos"""
         with self.get_connection() as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT numero_registro, monodroga, marca, presentacion FROM celty ORDER BY monodroga, marca, presentacion")
+            cursor.execute("SELECT numero_registro, monodroga, marca, presentacion FROM medicamentos ORDER BY monodroga, marca, presentacion")
             return cursor.fetchall()
     
     def obtener_producto_por_registro(self, numero_registro):
@@ -589,9 +659,9 @@ class DatabaseManager:
         with self.get_connection() as conn:
             cursor = conn.cursor()
             if USE_POSTGRES:
-                cursor.execute("SELECT * FROM celty WHERE numero_registro = %s", (numero_registro,))
+                cursor.execute("SELECT * FROM medicamentos WHERE numero_registro = %s", (numero_registro,))
             else:
-                cursor.execute("SELECT * FROM celty WHERE numero_registro = ?", (numero_registro,))
+                cursor.execute("SELECT * FROM medicamentos WHERE numero_registro = ?", (numero_registro,))
             return cursor.fetchone()
     
     def crear_licitacion(self, numero, fecha, oferente_ganador="", marca_ganadora="", precio_ganador=None, cliente_id=None, tipo_licitacion_id=None, portal_origen="", modalidad_entrega="", forma_pago="", requiere_poliza=False, monto_poliza=None, observaciones="", mantenimiento_oferta=""):
