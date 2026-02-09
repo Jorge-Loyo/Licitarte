@@ -1,23 +1,19 @@
 # Licitarte - Sistema de Gestión de Licitaciones Farmacéuticas
 
-**Versión 1.1.0** - Sistema profesional para gestionar licitaciones farmacéuticas con análisis de márgenes y métricas avanzadas.
+**Versión 1.3.2** - Sistema profesional para gestionar licitaciones farmacéuticas con análisis de márgenes, métricas avanzadas y normalización de catálogos.
 
-[![Versión](https://img.shields.io/badge/versión-1.1.0-blue.svg)](https://github.com/Jorge-Loyo/Licitarte)
+[![Versión](https://img.shields.io/badge/versión-1.3.2-blue.svg)](https://github.com/Jorge-Loyo/Licitarte)
 [![Python](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/flask-3.0.0-green.svg)](https://flask.palletsprojects.com/)
 [![Licencia](https://img.shields.io/badge/licencia-Propietario-red.svg)](LICENSE)
 
-## Novedades v1.1.0
+## Novedades v1.3.2
 
-- ✨ **Análisis de Márgenes**: Alertas visuales (rojo/amarillo/verde) al cotizar productos según costo unitario
-- ✨ **Métricas Avanzadas**: Módulo de métricas con ranking de causas de pérdidas y diferencias promedio
-- ✨ **Motivos de Pérdida**: Catálogo configurable de motivos cuando no se adjudica
-- ✨ **Diferencias vs Ganador**: Cálculo automático de diferencia en $ y % para productos no adjudicados
-- ✨ **Catálogos Dinámicos**: Portales/Origen, Modalidades de Entrega, Formas de Pago, Organismos/Jurisdicción
-- ✨ **Gestión de Costos**: Campo costo unitario en catálogo de productos para análisis de rentabilidad
-- ✨ **Dashboard Mejorado**: 6 indicadores (unidades cotizadas/ganadas, porcentajes, totales en dinero)
-- ✨ **Formato MILL**: Montos ≥1M se muestran en formato millones (ej: $200,00 MILL)
-- ✨ **UI Modernizada**: Modales rediseñados, scrollbars personalizados, notificaciones custom
+- ✨ **Normalización de Catálogos**: Sincronización automática de Laboratorios y Monodrogas desde tabla Medicamentos
+- ✨ **Preservación de Correcciones**: Las ediciones del usuario en catálogos maestros se mantienen en futuras cargas
+- ✨ **Búsqueda Inteligente**: Autocompletado de laboratorios desde la primera letra
+- ✨ **Flujo Optimizado**: Monodroga → Laboratorio → Marca-Presentación con filtrado en cascada
+- ✨ **Propagación Automática**: Correcciones en tablas maestras se aplican a todos los medicamentos
 
 ## Características
 
@@ -156,7 +152,11 @@ Licitarte/
 
 ### 5. Administración
 - **Clientes**: Con organismo/jurisdicción (auto-completa en licitación)
-- **Catálogo Productos**: Con costo unitario editable
+- **Catálogo Medicamentos**: 14 campos completos del Excel Alfabeta
+- **Catálogo Laboratorios**: Tabla maestra normalizada, preserva correcciones del usuario
+- **Catálogo Monodrogas**: Tabla maestra normalizada, preserva correcciones del usuario
+- **Sincronización Automática**: Al cargar Excel, sincroniza Laboratorios y Monodrogas
+- **Normalización**: Medicamentos usa siempre descripciones de tablas maestras
 - **Oferentes, Marcas, Tipos**: CRUD completo
 - **Organismos/Jurisdicción**: Catálogo configurable
 - **Portales/Origen**: Catálogo configurable
@@ -177,7 +177,9 @@ Licitarte/
 - **clientes**: nombre, razon_social, cuit, direccion, telefono, email, organismo_jurisdiccion
 - **licitaciones**: numero, cliente_id, tipo_id, fecha, portal_origen, modalidad_entrega, forma_pago, requiere_poliza, monto_poliza, observaciones
 - **productos**: licitacion_id, monodroga, marca, presentacion, cantidad, precio_ofertado, resultado, precio_ganador, oferente_ganador, marca_ofrecida, marca_ganadora, motivo_perdida
-- **celty**: numero_registro, monodroga, marca, presentacion, laboratorio, precio_caja, precio_unitario, costo_unitario, fecha
+- **medicamentos**: 14 campos (troquel, cod_ab, troquel_ean, numero_registro, cod_monodroga, monodroga, cod_laboratorio, laboratorio, marca, presentacion, multidosis, precio_caja, precio_unitario, fecha)
+- **laboratorios**: Tabla maestra normalizada (id, nombre, activo)
+- **monodrogas**: Tabla maestra normalizada (id, nombre, activo)
 
 ### Catálogos Configurables
 - **oferentes**, **marcas**, **tipos_licitacion**
@@ -374,12 +376,19 @@ Propietario - Todos los derechos reservados
 
 ## Versión
 
-**1.2.0** - Enero 2025 - ✅ EN PRODUCCIÓN
+**1.3.2** - Febrero 2025 - ✅ EN PRODUCCIÓN
 
 ### 🚀 Acceso a Producción
 **URL:** https://licitarte.onrender.com (reemplaza con tu URL)
 
-### Novedades v1.2.0
+### Novedades v1.3.2
+- ✅ Normalización de Catálogos: Laboratorios y Monodrogas sincronizados automáticamente
+- ✅ Preservación de Correcciones: Ediciones del usuario se mantienen en futuras cargas
+- ✅ Búsqueda Inteligente: Autocompletado de laboratorios desde primera letra
+- ✅ Flujo Optimizado: Monodroga → Laboratorio → Marca-Presentación
+- ✅ Propagación Automática: Correcciones se aplican a todos los medicamentos
+
+### Características v1.2.0
 - ✅ Producción Ready: Desplegado en Render con PostgreSQL
 - ✅ HTTP Status Codes: 100% compliance (54 endpoints corregidos)
 - ✅ Logging Estructurado: Sistema de logs con rotación

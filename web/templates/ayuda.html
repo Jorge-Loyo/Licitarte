@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="page-header">
-    <h2>❓ Manual de Usuario - v1.1.0</h2>
+    <h2>❓ Manual de Usuario - v1.3.2</h2>
 </div>
 
 <div class="help-container">
@@ -20,9 +20,17 @@
     
     <div class="help-content">
         <section id="inicio">
-            <h3>🏠 Bienvenido a Licitarte v1.1.0</h3>
-            <p>Sistema profesional para gestionar licitaciones farmacéuticas con análisis de márgenes y métricas avanzadas.</p>
-            <h4>Novedades v1.1.0:</h4>
+            <h3>🏠 Bienvenido a Licitarte v1.3.2</h3>
+            <p>Sistema profesional para gestionar licitaciones farmacéuticas con análisis de márgenes, métricas avanzadas y normalización de catálogos.</p>
+            <h4>Novedades v1.3.2:</h4>
+            <ul>
+                <li>✨ Normalización de catálogos: Laboratorios y Monodrogas sincronizados automáticamente</li>
+                <li>✨ Búsqueda inteligente de laboratorios con autocompletado desde primera letra</li>
+                <li>✨ Preservación de correcciones del usuario en catálogos maestros</li>
+                <li>✨ Flujo optimizado: Monodroga → Laboratorio → Marca-Presentación</li>
+                <li>✨ Sincronización automática al cargar catálogo desde Excel</li>
+            </ul>
+            <h4>Características principales:</h4>
             <ul>
                 <li>✨ Análisis de márgenes con alertas visuales (rojo/amarillo/verde)</li>
                 <li>✨ Módulo de métricas con ranking de pérdidas</li>
@@ -52,10 +60,13 @@
             <h4>Agregar Productos:</h4>
             <ol>
                 <li>Clic en "➕ Agregar Producto"</li>
-                <li><strong>Marca - Presentación:</strong> Seleccione del catálogo</li>
-                <li><strong>Monodroga:</strong> Se completa automáticamente capitalizada</li>
+                <li><strong>Monodroga:</strong> Escriba al menos 3 letras para buscar (autocomplete desde tabla monodrogas)</li>
+                <li><strong>Laboratorio:</strong> Escriba desde la primera letra para filtrar (autocomplete desde tabla laboratorios)</li>
+                <li><strong>Marca - Presentación:</strong> Seleccione del catálogo filtrado por monodroga y laboratorio</li>
                 <li><strong>Cantidad:</strong> Unidades ofertadas (obligatorio)</li>
-                <li><strong>Precio Ofertado:</strong> Precio por unidad (obligatorio)</li>
+                <li><strong>Costo Unitario:</strong> Se completa automáticamente del catálogo</li>
+                <li><strong>Margen (%):</strong> Ingrese margen deseado</li>
+                <li><strong>Precio Ofertado:</strong> Se calcula automáticamente (costo × (1 + margen/100))</li>
                 <li><strong>⚠️ ANÁLISIS DE MARGEN:</strong> Alerta automática según costo unitario:
                     <ul>
                         <li>🔴 ROJO: Precio ≤ costo (pérdida)</li>
@@ -153,15 +164,30 @@
                 <li><strong>Editar/Eliminar:</strong> Modificar o desactivar</li>
                 <li><strong>Carga Excel:</strong> Columnas: nombre, organismo_jurisdiccion, razon_social, cuit, direccion, telefono, email</li>
             </ul>
-            <h4>Catálogo de Productos Celty:</h4>
+            <h4>Catálogo de Productos Medicamentos:</h4>
             <ul>
                 <li><strong>Visualizar:</strong> Tabla con scroll lateral y header sticky</li>
                 <li><strong>Buscar:</strong> Filtrar por monodroga, marca, presentación o laboratorio</li>
-                <li><strong>Campos:</strong> N° Registro, Monodroga, Marca, Presentación, Laboratorio, Precio Caja, Precio Unitario, <strong>Costo Unitario</strong>, Fecha</li>
-                <li><strong>Costo Unitario:</strong> Campo editable manualmente (no se sobrescribe con Excel)</li>
-                <li><strong>Editar:</strong> Botón por producto, fecha se mantiene al editar</li>
-                <li><strong>Carga Excel:</strong> Actualiza todo excepto costo_unitario</li>
+                <li><strong>Campos:</strong> N° Registro, Troquel, Cód AB, Troquel EAN, Cód Monodroga, Monodroga, Cód Laboratorio, Laboratorio, Marca, Presentación, Multidosis, Precio Caja, Precio Unitario, Fecha</li>
+                <li><strong>Carga Excel:</strong> Sincroniza automáticamente tablas Laboratorios y Monodrogas</li>
+                <li><strong>Normalización:</strong> Usa descripciones de tablas maestras (preserva correcciones del usuario)</li>
                 <li><strong>Agregar:</strong> Crear productos manualmente</li>
+            </ul>
+            <h4>Catálogo de Laboratorios:</h4>
+            <ul>
+                <li><strong>Tabla Maestra:</strong> Descripciones corregidas por el usuario</li>
+                <li><strong>Sincronización:</strong> Se alimenta automáticamente desde tabla Medicamentos</li>
+                <li><strong>Preservación:</strong> Correcciones del usuario NO se sobrescriben al cargar Excel</li>
+                <li><strong>Editar:</strong> Corrija nombres incorrectos (ej: "CELTY" → "Celty S.A.")</li>
+                <li><strong>Propagación:</strong> Correcciones se aplican a todos los medicamentos en futuras cargas</li>
+            </ul>
+            <h4>Catálogo de Monodrogas:</h4>
+            <ul>
+                <li><strong>Tabla Maestra:</strong> Descripciones corregidas por el usuario</li>
+                <li><strong>Sincronización:</strong> Se alimenta automáticamente desde tabla Medicamentos</li>
+                <li><strong>Preservación:</strong> Correcciones del usuario NO se sobrescriben al cargar Excel</li>
+                <li><strong>Editar:</strong> Corrija nombres incorrectos</li>
+                <li><strong>Propagación:</strong> Correcciones se aplican a todos los medicamentos en futuras cargas</li>
             </ul>
             <h4>Catálogos Configurables:</h4>
             <ul>
@@ -208,11 +234,26 @@
             </ul>
             <h4>Administración:</h4>
             <ul>
-                <li>Mantenga actualizado catálogo Celty</li>
-                <li>Cargue costos unitarios para análisis de márgenes</li>
-                <li>Excel no sobrescribe costos (solo manual)</li>
+                <li>Mantenga actualizado catálogo Medicamentos</li>
+                <li>Corrija nombres en tablas Laboratorios y Monodrogas (se preservan en futuras cargas)</li>
                 <li>Configure catálogos según necesidades del negocio</li>
                 <li>Haga backup antes de cargas masivas</li>
+            </ul>
+            <h4>Normalización de Catálogos:</h4>
+            <ul>
+                <li><strong>Primera carga:</strong> Laboratorios/Monodrogas se crean con descripción del Excel</li>
+                <li><strong>Corrección manual:</strong> Edite nombres en tablas Laboratorios/Monodrogas</li>
+                <li><strong>Cargas posteriores:</strong> Sistema usa descripciones corregidas (no las del Excel)</li>
+                <li><strong>Ejemplo:</strong> Excel trae "CELTY" → Usuario corrige a "Celty S.A." → Futuras cargas usan "Celty S.A."</li>
+                <li><strong>Beneficio:</strong> Correcciones se mantienen y propagan automáticamente</li>
+            </ul>
+            <h4>Flujo de Selección de Productos:</h4>
+            <ul>
+                <li><strong>Paso 1:</strong> Buscar Monodroga (mínimo 3 letras, consulta tabla monodrogas)</li>
+                <li><strong>Paso 2:</strong> Buscar Laboratorio (desde primera letra, consulta tabla laboratorios)</li>
+                <li><strong>Paso 3:</strong> Seleccionar Marca-Presentación (filtrado por monodroga + laboratorio)</li>
+                <li><strong>Autocompletado:</strong> Ambos inputs filtran en tiempo real</li>
+                <li><strong>Validación:</strong> Solo muestra opciones válidas según filtros aplicados</li>
             </ul>
             <h4>Respaldos:</h4>
             <ul>

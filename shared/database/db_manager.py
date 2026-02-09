@@ -547,10 +547,16 @@ class DatabaseManager:
         """Carga productos desde Excel a tabla medicamentos y sincroniza laboratorios/monodrogas"""
         try:
             df = pd.read_excel(excel_path)
+            total_rows = len(df)
+            batch_size = 1000
             
-            with self.get_connection() as conn:
-                cursor = conn.cursor()
-                for _, row in df.iterrows():
+            for batch_start in range(0, total_rows, batch_size):
+                batch_end = min(batch_start + batch_size, total_rows)
+                df_batch = df.iloc[batch_start:batch_end]
+                
+                with self.get_connection() as conn:
+                    cursor = conn.cursor()
+                    for _, row in df_batch.iterrows():
                     try:
                         numero_registro = str(row.get('N de Registro', '')) if pd.notna(row.get('N de Registro')) else ''
                         troquel = str(row.get('Troquel', '')) if pd.notna(row.get('Troquel')) else None
@@ -639,9 +645,11 @@ class DatabaseManager:
                             """, (numero_registro, troquel, cod_ab, troquel_ean, cod_monodroga, monodroga_final,
                                   cod_laboratorio, laboratorio_final, marca, presentacion, multidosis,
                                   precio_caja, precio_unitario, fecha))
-                    except Exception as e:
-                        print(f"Error en fila: {e}")
-                        continue
+                        except Exception as e:
+                            print(f"Error en fila: {e}")
+                            continue
+                    conn.commit()
+                print(f"Procesado lote {batch_start}-{batch_end} de {total_rows}")
             return True
         except Exception as e:
             print(f"Error cargando catálogo: {e}")
