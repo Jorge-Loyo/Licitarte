@@ -559,92 +559,92 @@ class DatabaseManager:
                     for _, row in df_batch.iterrows():
                         try:
                             numero_registro = str(row.get('N de Registro', '')) if pd.notna(row.get('N de Registro')) else ''
-                        troquel = str(row.get('Troquel', '')) if pd.notna(row.get('Troquel')) else None
-                        cod_ab = int(row.get('Cod AB')) if pd.notna(row.get('Cod AB')) else None
-                        troquel_ean = str(row.get('Troquel.1', '')) if pd.notna(row.get('Troquel.1')) else None
-                        cod_monodroga = int(row.get('Cod Monodroga')) if pd.notna(row.get('Cod Monodroga')) else None
-                        monodroga_excel = str(row.get('Monodroga', '')) if pd.notna(row.get('Monodroga')) else ''
-                        cod_laboratorio = int(row.get('Cod Laboratorio')) if pd.notna(row.get('Cod Laboratorio')) else None
-                        laboratorio_excel = str(row.get('Laboratorio', '')) if pd.notna(row.get('Laboratorio')) else ''
-                        marca = str(row.get('Marca', '')) if pd.notna(row.get('Marca')) else ''
-                        presentacion = str(row.get('Presentacion', '')) if pd.notna(row.get('Presentacion')) else ''
-                        multidosis = int(row.get('Multidosis')) if pd.notna(row.get('Multidosis')) else None
-                        precio_caja = float(row.get('Precio x caja', 0)) if pd.notna(row.get('Precio x caja')) else None
-                        precio_unitario = float(row.get('Precio unitario', 0)) if pd.notna(row.get('Precio unitario')) else None
-                        
-                        fecha_raw = row.get('Fecha')
-                        if pd.notna(fecha_raw):
-                            if isinstance(fecha_raw, str):
-                                fecha = fecha_raw.split()[0] if ' ' in fecha_raw else fecha_raw
+                            troquel = str(row.get('Troquel', '')) if pd.notna(row.get('Troquel')) else None
+                            cod_ab = int(row.get('Cod AB')) if pd.notna(row.get('Cod AB')) else None
+                            troquel_ean = str(row.get('Troquel.1', '')) if pd.notna(row.get('Troquel.1')) else None
+                            cod_monodroga = int(row.get('Cod Monodroga')) if pd.notna(row.get('Cod Monodroga')) else None
+                            monodroga_excel = str(row.get('Monodroga', '')) if pd.notna(row.get('Monodroga')) else ''
+                            cod_laboratorio = int(row.get('Cod Laboratorio')) if pd.notna(row.get('Cod Laboratorio')) else None
+                            laboratorio_excel = str(row.get('Laboratorio', '')) if pd.notna(row.get('Laboratorio')) else ''
+                            marca = str(row.get('Marca', '')) if pd.notna(row.get('Marca')) else ''
+                            presentacion = str(row.get('Presentacion', '')) if pd.notna(row.get('Presentacion')) else ''
+                            multidosis = int(row.get('Multidosis')) if pd.notna(row.get('Multidosis')) else None
+                            precio_caja = float(row.get('Precio x caja', 0)) if pd.notna(row.get('Precio x caja')) else None
+                            precio_unitario = float(row.get('Precio unitario', 0)) if pd.notna(row.get('Precio unitario')) else None
+                            
+                            fecha_raw = row.get('Fecha')
+                            if pd.notna(fecha_raw):
+                                if isinstance(fecha_raw, str):
+                                    fecha = fecha_raw.split()[0] if ' ' in fecha_raw else fecha_raw
+                                else:
+                                    fecha = fecha_raw.strftime('%d/%m/%Y')
                             else:
-                                fecha = fecha_raw.strftime('%d/%m/%Y')
-                        else:
-                            fecha = ''
-                        
-                        if not numero_registro or numero_registro == 'nan':
-                            continue
-                        
-                        # Sincronizar monodroga: insertar solo si no existe
-                        monodroga_final = monodroga_excel.strip()
-                        if monodroga_excel and monodroga_excel.strip():
+                                fecha = ''
+                            
+                            if not numero_registro or numero_registro == 'nan':
+                                continue
+                            
+                            # Sincronizar monodroga: insertar solo si no existe
+                            monodroga_final = monodroga_excel.strip()
+                            if monodroga_excel and monodroga_excel.strip():
+                                if USE_POSTGRES:
+                                    cursor.execute("INSERT INTO monodrogas (nombre) VALUES (%s) ON CONFLICT (nombre) DO NOTHING", (monodroga_excel.strip(),))
+                                    # Obtener nombre correcto de la tabla monodrogas
+                                    cursor.execute("SELECT nombre FROM monodrogas WHERE LOWER(nombre) = LOWER(%s)", (monodroga_excel.strip(),))
+                                else:
+                                    cursor.execute("INSERT OR IGNORE INTO monodrogas (nombre) VALUES (?)", (monodroga_excel.strip(),))
+                                    cursor.execute("SELECT nombre FROM monodrogas WHERE LOWER(nombre) = LOWER(?)", (monodroga_excel.strip(),))
+                                result = cursor.fetchone()
+                                if result:
+                                    monodroga_final = result[0]
+                            
+                            # Sincronizar laboratorio: insertar solo si no existe
+                            laboratorio_final = laboratorio_excel.strip()
+                            if laboratorio_excel and laboratorio_excel.strip():
+                                if USE_POSTGRES:
+                                    cursor.execute("INSERT INTO laboratorios (nombre) VALUES (%s) ON CONFLICT (nombre) DO NOTHING", (laboratorio_excel.strip(),))
+                                    # Obtener nombre correcto de la tabla laboratorios
+                                    cursor.execute("SELECT nombre FROM laboratorios WHERE LOWER(nombre) = LOWER(%s)", (laboratorio_excel.strip(),))
+                                else:
+                                    cursor.execute("INSERT OR IGNORE INTO laboratorios (nombre) VALUES (?)", (laboratorio_excel.strip(),))
+                                    cursor.execute("SELECT nombre FROM laboratorios WHERE LOWER(nombre) = LOWER(?)", (laboratorio_excel.strip(),))
+                                result = cursor.fetchone()
+                                if result:
+                                    laboratorio_final = result[0]
+                            
+                            # Insertar/actualizar medicamento con nombres normalizados
                             if USE_POSTGRES:
-                                cursor.execute("INSERT INTO monodrogas (nombre) VALUES (%s) ON CONFLICT (nombre) DO NOTHING", (monodroga_excel.strip(),))
-                                # Obtener nombre correcto de la tabla monodrogas
-                                cursor.execute("SELECT nombre FROM monodrogas WHERE LOWER(nombre) = LOWER(%s)", (monodroga_excel.strip(),))
+                                cursor.execute("""
+                                    INSERT INTO medicamentos (numero_registro, troquel, cod_ab, troquel_ean, cod_monodroga,
+                                    monodroga, cod_laboratorio, laboratorio, marca, presentacion, multidosis,
+                                    precio_caja, precio_unitario, fecha) 
+                                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                    ON CONFLICT (numero_registro) DO UPDATE SET
+                                        troquel = EXCLUDED.troquel,
+                                        cod_ab = EXCLUDED.cod_ab,
+                                        troquel_ean = EXCLUDED.troquel_ean,
+                                        cod_monodroga = EXCLUDED.cod_monodroga,
+                                        monodroga = EXCLUDED.monodroga,
+                                        cod_laboratorio = EXCLUDED.cod_laboratorio,
+                                        laboratorio = EXCLUDED.laboratorio,
+                                        marca = EXCLUDED.marca,
+                                        presentacion = EXCLUDED.presentacion,
+                                        multidosis = EXCLUDED.multidosis,
+                                        precio_caja = EXCLUDED.precio_caja,
+                                        precio_unitario = EXCLUDED.precio_unitario,
+                                        fecha = EXCLUDED.fecha
+                                """, (numero_registro, troquel, cod_ab, troquel_ean, cod_monodroga, monodroga_final,
+                                      cod_laboratorio, laboratorio_final, marca, presentacion, multidosis,
+                                      precio_caja, precio_unitario, fecha))
                             else:
-                                cursor.execute("INSERT OR IGNORE INTO monodrogas (nombre) VALUES (?)", (monodroga_excel.strip(),))
-                                cursor.execute("SELECT nombre FROM monodrogas WHERE LOWER(nombre) = LOWER(?)", (monodroga_excel.strip(),))
-                            result = cursor.fetchone()
-                            if result:
-                                monodroga_final = result[0]
-                        
-                        # Sincronizar laboratorio: insertar solo si no existe
-                        laboratorio_final = laboratorio_excel.strip()
-                        if laboratorio_excel and laboratorio_excel.strip():
-                            if USE_POSTGRES:
-                                cursor.execute("INSERT INTO laboratorios (nombre) VALUES (%s) ON CONFLICT (nombre) DO NOTHING", (laboratorio_excel.strip(),))
-                                # Obtener nombre correcto de la tabla laboratorios
-                                cursor.execute("SELECT nombre FROM laboratorios WHERE LOWER(nombre) = LOWER(%s)", (laboratorio_excel.strip(),))
-                            else:
-                                cursor.execute("INSERT OR IGNORE INTO laboratorios (nombre) VALUES (?)", (laboratorio_excel.strip(),))
-                                cursor.execute("SELECT nombre FROM laboratorios WHERE LOWER(nombre) = LOWER(?)", (laboratorio_excel.strip(),))
-                            result = cursor.fetchone()
-                            if result:
-                                laboratorio_final = result[0]
-                        
-                        # Insertar/actualizar medicamento con nombres normalizados
-                        if USE_POSTGRES:
-                            cursor.execute("""
-                                INSERT INTO medicamentos (numero_registro, troquel, cod_ab, troquel_ean, cod_monodroga,
-                                monodroga, cod_laboratorio, laboratorio, marca, presentacion, multidosis,
-                                precio_caja, precio_unitario, fecha) 
-                                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                                ON CONFLICT (numero_registro) DO UPDATE SET
-                                    troquel = EXCLUDED.troquel,
-                                    cod_ab = EXCLUDED.cod_ab,
-                                    troquel_ean = EXCLUDED.troquel_ean,
-                                    cod_monodroga = EXCLUDED.cod_monodroga,
-                                    monodroga = EXCLUDED.monodroga,
-                                    cod_laboratorio = EXCLUDED.cod_laboratorio,
-                                    laboratorio = EXCLUDED.laboratorio,
-                                    marca = EXCLUDED.marca,
-                                    presentacion = EXCLUDED.presentacion,
-                                    multidosis = EXCLUDED.multidosis,
-                                    precio_caja = EXCLUDED.precio_caja,
-                                    precio_unitario = EXCLUDED.precio_unitario,
-                                    fecha = EXCLUDED.fecha
-                            """, (numero_registro, troquel, cod_ab, troquel_ean, cod_monodroga, monodroga_final,
-                                  cod_laboratorio, laboratorio_final, marca, presentacion, multidosis,
-                                  precio_caja, precio_unitario, fecha))
-                        else:
-                            cursor.execute("""
-                                INSERT OR REPLACE INTO medicamentos (numero_registro, troquel, cod_ab, troquel_ean,
-                                cod_monodroga, monodroga, cod_laboratorio, laboratorio, marca, presentacion,
-                                multidosis, precio_caja, precio_unitario, fecha) 
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                            """, (numero_registro, troquel, cod_ab, troquel_ean, cod_monodroga, monodroga_final,
-                                  cod_laboratorio, laboratorio_final, marca, presentacion, multidosis,
-                                  precio_caja, precio_unitario, fecha))
+                                cursor.execute("""
+                                    INSERT OR REPLACE INTO medicamentos (numero_registro, troquel, cod_ab, troquel_ean,
+                                    cod_monodroga, monodroga, cod_laboratorio, laboratorio, marca, presentacion,
+                                    multidosis, precio_caja, precio_unitario, fecha) 
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                """, (numero_registro, troquel, cod_ab, troquel_ean, cod_monodroga, monodroga_final,
+                                      cod_laboratorio, laboratorio_final, marca, presentacion, multidosis,
+                                      precio_caja, precio_unitario, fecha))
                         except Exception as e:
                             print(f"Error en fila: {e}")
                             continue
