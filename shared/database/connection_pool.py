@@ -37,7 +37,8 @@ class ConnectionPool:
         try:
             # Verificar si la conexión está viva
             if conn.closed or conn.info.transaction_status == psycopg.pq.TransactionStatus.UNKNOWN:
-                self.pool.putconn(conn, close=True)
+                conn.close()
+                self.pool.putconn(conn)
                 conn = self.pool.getconn()
             
             yield conn
@@ -48,7 +49,11 @@ class ConnectionPool:
                 conn.rollback()
             except:
                 pass
-            self.pool.putconn(conn, close=True)
+            try:
+                conn.close()
+            except:
+                pass
+            self.pool.putconn(conn)
             raise
         except Exception:
             conn.rollback()
