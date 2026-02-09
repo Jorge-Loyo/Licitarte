@@ -42,14 +42,14 @@ try:
                             sql_content = f.read().decode('utf-8')
                             break
                 
-                # Filtrar solo INSERT statements (excluir comentarios y líneas vacías)
+                # Filtrar solo INSERT statements (excluir comentarios)
                 lines = sql_content.split('\n')
                 statements = []
                 current_statement = []
                 
                 for line in lines:
                     line = line.strip()
-                    if not line or line.startswith('--') or line.startswith('/*'):
+                    if not line or line.startswith('--'):
                         continue
                     if line.startswith('INSERT INTO'):
                         if current_statement:
@@ -64,21 +64,22 @@ try:
                 total = len(statements)
                 print(f"Ejecutando {total} INSERT statements...")
                 
+                # Usar autocommit para evitar transacciones abortadas
+                conn.autocommit = True
                 success_count = 0
+                
                 for i, statement in enumerate(statements):
                     try:
                         cursor.execute(statement.rstrip(';'))
                         success_count += 1
-                        if i % 1000 == 0:
-                            conn.commit()
-                            print(f"Procesado {i}/{total}... ({success_count} exitosos)")
+                        if (i + 1) % 1000 == 0:
+                            print(f"Procesado {i+1}/{total}... ({success_count} exitosos)")
                     except Exception as e:
-                        conn.rollback()  # Rollback para continuar con siguiente statement
-                        if i < 5:
-                            print(f"Error en statement {i}: {e}")
+                        if i < 3:
+                            print(f"Error {i}: {str(e)[:100]}")
                         continue
                 
-                conn.commit()
+                conn.autocommit = False
                 cursor.execute("SELECT COUNT(*) FROM medicamentos")
                 count = cursor.fetchone()[0]
                 print(f"✓ Cargados {count} medicamentos exitosamente")
