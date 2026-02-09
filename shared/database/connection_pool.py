@@ -1,7 +1,7 @@
 import os
 from contextlib import contextmanager
-import psycopg2
-from psycopg2 import pool
+import psycopg
+from psycopg import pool
 
 USE_POSTGRES = True
 
@@ -17,10 +17,10 @@ class ConnectionPool:
     
     def __init__(self, min_conn=2, max_conn=10):
         try:
-            self.pool = psycopg2.pool.ThreadedConnectionPool(
-                min_conn, max_conn, DATABASE_URL
+            self.pool = psycopg.pool.ConnectionPool(
+                DATABASE_URL, min_size=min_conn, max_size=max_conn
             )
-        except psycopg2.OperationalError as e:
+        except psycopg.OperationalError as e:
             raise RuntimeError(f"No se pudo conectar a PostgreSQL. Verifica que Docker esté corriendo: {e}")
     
     @contextmanager
