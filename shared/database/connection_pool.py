@@ -13,28 +13,51 @@ if DATABASE_URL.startswith('postgres://'):
     DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
 
 class ConnectionPool:
-    """Pool de conexiones para PostgreSQL"""
+    """Pool de conexiones para PostgreSQL con reconexión automática"""
     
     def __init__(self, min_conn=2, max_conn=10):
         try:
             self.pool = PsycopgPool(
-                DATABASE_URL, min_size=min_conn, max_size=max_conn
+                DATABASE_URL, 
+                min_size=min_conn, 
+                max_size=max_conn,
+                kwargs={
+                    'autocommit': False,
+                    'prepare_threshold': None,
+                    'options': '-c statement_timeout=300000'  # 5 minutos
+                }
             )
         except psycopg.OperationalError as e:
             raise RuntimeError(f"No se pudo conectar a PostgreSQL. Verifica que Docker esté corriendo: {e}")
     
     @contextmanager
     def get_connection(self):
-        """Obtiene conexión del pool con transacción automática"""
+        """Obtiene conexión del pool con transacción automática y reconexión"""
         conn = self.pool.getconn()
         try:
+            # Verificar si la conexión está viva
+            if conn.closed or conn.info.transaction_status == psycopg.pq.TransactionStatus.UNKNOWN:
+                self.pool.putconn(conn, close=True)
+                conn = self.pool.getconn()
+            
             yield conn
             conn.commit()
+        except (psycopg.OperationalError, psycopg.InterfaceError) as e:
+            # Conexión perdida, cerrar y obtener nueva
+            try:
+                conn.rollback()
+            except:
+                pass
+            self.pool.putconn(conn, close=True)
+            raise
         except Exception:
             conn.rollback()
             raise
         finally:
-            self.pool.putconn(conn)
+            try:
+                self.pool.putconn(conn)
+            except:
+                pass
     
     def close_all(self):
         """Cierra todas las conexiones"""
