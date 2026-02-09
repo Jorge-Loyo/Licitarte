@@ -12,29 +12,7 @@ from flask_cors import CORS
 load_dotenv()
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-# Log de inicio para debugging en Render
-print("="*50)
-print("INICIANDO APLICACIÓN LICITARTE")
-print("="*50)
-
 from shared.database.db_manager import DatabaseManager
-
-# Verificar y cargar datos iniciales si es necesario
-try:
-    db = DatabaseManager()
-    with db.get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(*) FROM medicamentos")
-        count = cursor.fetchone()[0]
-        
-        if count == 0:
-            print("⚠ Base de datos vacía - Cargar catálogo desde Administración")
-        else:
-            print(f"✓ Base de datos conectada: {count} medicamentos en catálogo")
-except Exception as e:
-    print(f"✗ Error en inicialización de BD: {e}")
-    import traceback
-    traceback.print_exc()
 from security_config import SecurityConfig
 from src.models.user import User
 from src.utils.error_handlers import register_error_handlers
@@ -84,8 +62,6 @@ from src.routes import register_routes
 register_routes(app)
 
 logger.info("Application started")
-print("✓ Aplicación Flask iniciada correctamente")
-print("="*50)
 
 # Rutas de vistas
 @app.route('/login')
