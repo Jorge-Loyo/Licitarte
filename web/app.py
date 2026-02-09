@@ -19,16 +19,48 @@ print("="*50)
 
 from shared.database.db_manager import DatabaseManager
 
-# Verificar estado de la base de datos al inicio
+# Verificar y cargar datos iniciales si es necesario
 try:
     db = DatabaseManager()
     with db.get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT COUNT(*) FROM medicamentos")
         count = cursor.fetchone()[0]
-        print(f"✓ Base de datos conectada: {count} medicamentos en catálogo")
+        
+        if count == 0:
+            print("⚠ Base de datos vacía, cargando datos iniciales...")
+            import gzip
+            seed_file = Path(__file__).parent.parent / "Data" / "medicamentos_seed.sql.gz"
+            
+            if seed_file.exists():
+                with gzip.open(seed_file, 'rt', encoding='utf-8') as f:
+                    sql_content = f.read()
+                
+                statements = [s.strip() for s in sql_content.split(';') if s.strip()]
+                total = len(statements)
+                print(f"Ejecutando {total} statements SQL...")
+                
+                for i, statement in enumerate(statements):
+                    try:
+                        cursor.execute(statement)
+                        if i % 1000 == 0:
+                            conn.commit()
+                            print(f"Procesado {i}/{total}...")
+                    except Exception as e:
+                        continue
+                
+                conn.commit()
+                cursor.execute("SELECT COUNT(*) FROM medicamentos")
+                count = cursor.fetchone()[0]
+                print(f"✓ Cargados {count} medicamentos exitosamente")
+            else:
+                print("✗ Archivo de seed no encontrado")
+        else:
+            print(f"✓ Base de datos conectada: {count} medicamentos en catálogo")
 except Exception as e:
-    print(f"✗ Error conectando a base de datos: {e}")
+    print(f"✗ Error en inicialización de BD: {e}")
+    import traceback
+    traceback.print_exc()
 from security_config import SecurityConfig
 from src.models.user import User
 from src.utils.error_handlers import register_error_handlers
