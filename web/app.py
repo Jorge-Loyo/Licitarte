@@ -29,18 +29,21 @@ try:
         
         if count == 0:
             print("⚠ Base de datos vacía, cargando datos iniciales...")
-            import gzip
+            import tarfile
             seed_file = Path(__file__).parent.parent / "Data" / "medicamentos_seed.sql.gz"
             print(f"Buscando archivo: {seed_file}")
             print(f"Archivo existe: {seed_file.exists()}")
             
             if seed_file.exists():
-                with gzip.open(seed_file, 'rt', encoding='utf-8') as f:
-                    sql_content = f.read()
+                with tarfile.open(seed_file, 'r:gz') as tar:
+                    member = tar.getmembers()[0]
+                    f = tar.extractfile(member)
+                    sql_content = f.read().decode('utf-8')
                 
-                statements = [s.strip() for s in sql_content.split(';') if s.strip()]
+                # Filtrar solo INSERT statements
+                statements = [s.strip() for s in sql_content.split(';') if s.strip() and 'INSERT INTO' in s]
                 total = len(statements)
-                print(f"Ejecutando {total} statements SQL...")
+                print(f"Ejecutando {total} INSERT statements...")
                 
                 for i, statement in enumerate(statements):
                     try:
@@ -49,7 +52,7 @@ try:
                             conn.commit()
                             print(f"Procesado {i}/{total}...")
                     except Exception as e:
-                        if i < 10:  # Mostrar primeros 10 errores
+                        if i < 10:
                             print(f"Error en statement {i}: {e}")
                             print(f"Statement: {statement[:200]}...")
                         continue
