@@ -31,6 +31,8 @@ try:
             print("⚠ Base de datos vacía, cargando datos iniciales...")
             import gzip
             seed_file = Path(__file__).parent.parent / "Data" / "medicamentos_seed.sql.gz"
+            print(f"Buscando archivo: {seed_file}")
+            print(f"Archivo existe: {seed_file.exists()}")
             
             if seed_file.exists():
                 with gzip.open(seed_file, 'rt', encoding='utf-8') as f:
