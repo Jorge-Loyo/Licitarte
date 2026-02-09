@@ -11,14 +11,16 @@
     <button class="tab-btn active" onclick="mostrarTab('clientes')">Clientes</button>
     <button class="tab-btn" onclick="mostrarTab('oferentes')">Oferentes</button>
     <button class="tab-btn" onclick="mostrarTab('marcas')">Marcas</button>
+    <button class="tab-btn" onclick="mostrarTab('laboratorios')">Laboratorios</button>
+    <button class="tab-btn" onclick="mostrarTab('monodrogas')">Monodrogas</button>
     <button class="tab-btn" onclick="mostrarTab('tipos')">Tipos Licitación</button>
     <button class="tab-btn" onclick="mostrarTab('organismos')">Organismos</button>
-    <button class="tab-btn" onclick="mostrarTab('portales')">Portales/Origen</button>
-    <button class="tab-btn" onclick="mostrarTab('modalidades')">Modalidades Entrega</button>
-    <button class="tab-btn" onclick="mostrarTab('formas')">Formas de Pago</button>
+    <button class="tab-btn" onclick="mostrarTab('portales')">Portales</button>
+    <button class="tab-btn" onclick="mostrarTab('modalidades')">Modalidades</button>
+    <button class="tab-btn" onclick="mostrarTab('formas')">Formas Pago</button>
     <button class="tab-btn" onclick="mostrarTab('motivos')">Motivos Pérdida</button>
-    <button class="tab-btn" onclick="mostrarTab('mantenimientos')">Mantenimiento Oferta</button>
-    <button class="tab-btn" onclick="mostrarTab('catalogo')">Catálogo Productos</button>
+    <button class="tab-btn" onclick="mostrarTab('mantenimientos')">Mantenimiento</button>
+    <button class="tab-btn" onclick="mostrarTab('catalogo')">Catálogo</button>
 </div>
 
 <!-- Tab Clientes -->
@@ -62,7 +64,18 @@
     </div>
     
     <div class="search-box">
-        <input type="text" id="searchCatalogo" placeholder="Buscar producto..." onkeyup="filtrarCatalogo()">
+        <select id="campoCatalogo" style="margin-right: 10px; padding: 8px;">
+            <option value="todos">Todos</option>
+            <option value="monodroga">Monodroga</option>
+            <option value="marca">Marca</option>
+            <option value="laboratorio">Laboratorio</option>
+        </select>
+        <input type="text" id="searchCatalogo" placeholder="Buscar..." style="margin-right: 10px;">
+        <button onclick="buscarCatalogo()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer;">🔍 Buscar</button>
+    </div>
+    
+    <div style="margin: 10px 0; padding: 10px; background: var(--bg-dark); border-radius: 5px; text-align: center;">
+        <strong id="catalogoInfo" style="color: var(--primary); font-size: 16px;">📦 Cargando productos...</strong>
     </div>
     
     <div style="overflow-x: auto; max-height: 600px; overflow-y: auto;">
@@ -84,6 +97,8 @@
             <tbody id="catalogoBody"></tbody>
         </table>
     </div>
+    
+    <div class="pagination" id="catalogoPagination" style="margin-top: 20px; display: flex; justify-content: center; gap: 10px;"></div>
 </div>
 
 <!-- Tab Oferentes -->
@@ -278,6 +293,48 @@
             </thead>
             <tbody id="mantenimientosBody"></tbody>
         </table>
+    </div>
+</div>
+
+<!-- Tab Laboratorios -->
+<div id="tab-laboratorios" class="tab-content">
+    <div class="page-header">
+        <h3>Gestión de Laboratorios</h3>
+        <button onclick="nuevoLaboratorio()" class="btn-primary">+ Nuevo Laboratorio</button>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="laboratoriosBody"></tbody>
+        </table>
+        <div id="laboratoriosPaginacion" style="padding: 15px; text-align: center;"></div>
+    </div>
+</div>
+
+<!-- Tab Monodrogas -->
+<div id="tab-monodrogas" class="tab-content">
+    <div class="page-header">
+        <h3>Gestión de Monodrogas</h3>
+        <button onclick="nuevaMonodroga()" class="btn-primary">+ Nueva Monodroga</button>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="monodrogasBody"></tbody>
+        </table>
+        <div id="monodrogasPaginacion" style="padding: 15px; text-align: center;"></div>
     </div>
 </div>
 
@@ -576,6 +633,48 @@
             </div>
             <div style="display: flex; gap: 10px; justify-content: flex-end;">
                 <button type="button" onclick="cerrarModalMantenimiento()" class="btn-secondary">Cancelar</button>
+                <button type="submit" class="btn-success" style="padding: 12px 30px; font-size: 16px;">✔ Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Laboratorio -->
+<div id="modalLaboratorio" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <span class="close" onclick="cerrarModalLaboratorio()">&times;</span>
+        <h3 id="modalLaboratorioTitulo" style="color: var(--primary); margin-bottom: 25px; text-align: center;">Nuevo Laboratorio</h3>
+        <form id="laboratorioForm">
+            <input type="hidden" id="laboratorioId">
+            <div style="background: var(--bg-dark); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <div class="form-group">
+                    <label>Nombre *</label>
+                    <input type="text" id="laboratorioNombre" required style="font-size: 16px; padding: 12px;">
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="button" onclick="cerrarModalLaboratorio()" class="btn-secondary">Cancelar</button>
+                <button type="submit" class="btn-success" style="padding: 12px 30px; font-size: 16px;">✔ Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Monodroga -->
+<div id="modalMonodroga" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <span class="close" onclick="cerrarModalMonodroga()">&times;</span>
+        <h3 id="modalMonodrogaTitulo" style="color: var(--primary); margin-bottom: 25px; text-align: center;">Nueva Monodroga</h3>
+        <form id="monodrogaForm">
+            <input type="hidden" id="monodrogaId">
+            <div style="background: var(--bg-dark); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <div class="form-group">
+                    <label>Nombre *</label>
+                    <input type="text" id="monodrogaNombre" required style="font-size: 16px; padding: 12px;">
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="button" onclick="cerrarModalMonodroga()" class="btn-secondary">Cancelar</button>
                 <button type="submit" class="btn-success" style="padding: 12px 30px; font-size: 16px;">✔ Guardar</button>
             </div>
         </form>

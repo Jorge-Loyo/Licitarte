@@ -162,12 +162,52 @@ def eliminar_tipo_licitacion(id):
 # CATALOGO CELTY
 @bp.route('/catalogo', methods=['GET'])
 def get_catalogo():
+    page = int(request.args.get('page', 1))
+    per_page = int(request.args.get('per_page', 50))
+    search = request.args.get('search', '').strip()
+    campo = request.args.get('campo', 'todos').strip()
+    offset = (page - 1) * per_page
+    
     with db.get_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT id, numero_registro, monodroga, marca, presentacion, laboratorio, precio_caja, precio_unitario, costo_unitario, fecha FROM celty ORDER BY monodroga, marca, presentacion")
+        
+        # Construir WHERE según campo
+        if search:
+            if campo == 'monodroga':
+                where = "WHERE monodroga LIKE %s"
+                params = (f'%{search}%',)
+            elif campo == 'marca':
+                where = "WHERE marca LIKE %s"
+                params = (f'%{search}%',)
+            elif campo == 'laboratorio':
+                where = "WHERE laboratorio LIKE %s"
+                params = (f'%{search}%',)
+            else:  # todos
+                where = "WHERE monodroga LIKE %s OR marca LIKE %s OR laboratorio LIKE %s"
+                params = (f'%{search}%', f'%{search}%', f'%{search}%')
+        else:
+            where = ""
+            params = ()
+        
+        # Contar total
+        cursor.execute(f"SELECT COUNT(*) FROM celty {where}", params)
+        total = cursor.fetchone()[0]
+        
+        # Obtener página
+        cursor.execute(f"""SELECT id, numero_registro, monodroga, marca, presentacion, laboratorio, 
+                       precio_caja, precio_unitario, costo_unitario, fecha FROM celty {where}
+                       ORDER BY monodroga, marca, presentacion LIMIT %s OFFSET %s""",
+                     params + (per_page, offset))
         productos = cursor.fetchall()
-    return jsonify([{
-        'id': p[0], 'numero_registro': p[1], 'monodroga': p[2], 'marca': p[3],
-        'presentacion': p[4], 'laboratorio': p[5], 'precio_caja': p[6],
-        'precio_unitario': p[7], 'costo_unitario': p[8], 'fecha': p[9]
-    } for p in productos])
+    
+    return jsonify({
+        'productos': [{
+            'id': p[0], 'numero_registro': p[1], 'monodroga': p[2], 'marca': p[3],
+            'presentacion': p[4], 'laboratorio': p[5], 'precio_caja': p[6],
+            'precio_unitario': p[7], 'costo_unitario': p[8], 'fecha': p[9]
+        } for p in productos],
+        'total': total,
+        'page': page,
+        'per_page': per_page,
+        'total_pages': (total + per_page - 1) // per_page
+    })

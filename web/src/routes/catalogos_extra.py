@@ -267,3 +267,91 @@ def verificar_licitacion():
             return jsonify({'existe': count > 0})
     except Exception as e:
         return jsonify({'existe': False, 'error': str(e)})
+
+# LABORATORIOS
+@bp.route('/laboratorios', methods=['GET'])
+def get_laboratorios():
+    pagina = request.args.get('pagina', 1, type=int)
+    por_pagina = request.args.get('por_pagina', 50, type=int)
+    
+    resultado = db.obtener_laboratorios(pagina=pagina, por_pagina=por_pagina)
+    
+    return jsonify({
+        'total': resultado['total'],
+        'pagina': resultado['pagina'],
+        'por_pagina': resultado['por_pagina'],
+        'total_paginas': resultado['total_paginas'],
+        'datos': [{'id': l[0], 'cod': l[1], 'nombre': l[2], 'activo': l[3]} for l in resultado['datos']]
+    })
+
+@bp.route('/laboratorios', methods=['POST'])
+def crear_laboratorio():
+    data = request.json
+    if not data or not data.get('nombre'):
+        return jsonify({'success': False, 'error': 'Nombre es obligatorio'}), 400
+    try:
+        laboratorio_id = db.crear_laboratorio(data['nombre'])
+        return jsonify({'success': True, 'id': laboratorio_id}), 201
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@bp.route('/laboratorios/<int:id>', methods=['PUT'])
+def actualizar_laboratorio(id):
+    data = request.json
+    try:
+        db.actualizar_laboratorio(id, data['nombre'])
+        return jsonify({'success': True}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/laboratorios/<int:id>', methods=['DELETE'])
+def eliminar_laboratorio(id):
+    try:
+        db.eliminar_laboratorio(id)
+        return '', 204
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# MONODROGAS
+@bp.route('/monodrogas', methods=['GET'])
+def get_monodrogas():
+    pagina = request.args.get('pagina', 1, type=int)
+    por_pagina = request.args.get('por_pagina', 50, type=int)
+    
+    resultado = db.obtener_monodrogas(pagina=pagina, por_pagina=por_pagina)
+    
+    return jsonify({
+        'total': resultado['total'],
+        'pagina': resultado['pagina'],
+        'por_pagina': resultado['por_pagina'],
+        'total_paginas': resultado['total_paginas'],
+        'datos': [{'id': m[0], 'cod': m[1], 'nombre': m[2], 'activo': m[3]} for m in resultado['datos']]
+    })
+
+@bp.route('/monodrogas', methods=['POST'])
+def crear_monodroga():
+    data = request.json
+    if not data or not data.get('nombre'):
+        return jsonify({'success': False, 'error': 'Nombre es obligatorio'}), 400
+    try:
+        monodroga_id = db.crear_monodroga(data['nombre'])
+        return jsonify({'success': True, 'id': monodroga_id}), 201
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@bp.route('/monodrogas/<int:id>', methods=['PUT'])
+def actualizar_monodroga(id):
+    data = request.json
+    try:
+        db.actualizar_monodroga(id, data['nombre'])
+        return jsonify({'success': True}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@bp.route('/monodrogas/<int:id>', methods=['DELETE'])
+def eliminar_monodroga(id):
+    try:
+        db.eliminar_monodroga(id)
+        return '', 204
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
