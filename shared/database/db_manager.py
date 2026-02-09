@@ -557,8 +557,8 @@ class DatabaseManager:
                 with self.get_connection() as conn:
                     cursor = conn.cursor()
                     for _, row in df_batch.iterrows():
-                    try:
-                        numero_registro = str(row.get('N de Registro', '')) if pd.notna(row.get('N de Registro')) else ''
+                        try:
+                            numero_registro = str(row.get('N de Registro', '')) if pd.notna(row.get('N de Registro')) else ''
                         troquel = str(row.get('Troquel', '')) if pd.notna(row.get('Troquel')) else None
                         cod_ab = int(row.get('Cod AB')) if pd.notna(row.get('Cod AB')) else None
                         troquel_ean = str(row.get('Troquel.1', '')) if pd.notna(row.get('Troquel.1')) else None
