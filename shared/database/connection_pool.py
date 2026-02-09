@@ -1,7 +1,7 @@
 import os
 from contextlib import contextmanager
 import psycopg
-from psycopg import pool
+from psycopg.pool import ConnectionPool as PsycopgPool
 
 USE_POSTGRES = True
 
@@ -17,7 +17,7 @@ class ConnectionPool:
     
     def __init__(self, min_conn=2, max_conn=10):
         try:
-            self.pool = psycopg.pool.ConnectionPool(
+            self.pool = PsycopgPool(
                 DATABASE_URL, min_size=min_conn, max_size=max_conn
             )
         except psycopg.OperationalError as e:
