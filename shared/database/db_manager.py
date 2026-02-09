@@ -235,6 +235,26 @@ class DatabaseManager:
                         FOREIGN KEY (producto_id) REFERENCES productos(id) ON DELETE CASCADE
                     )
                 ''')
+                
+                # Tabla Usuarios
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS usuarios (
+                        id SERIAL PRIMARY KEY,
+                        username TEXT UNIQUE NOT NULL,
+                        email TEXT UNIQUE NOT NULL,
+                        password_hash TEXT NOT NULL,
+                        activo BOOLEAN DEFAULT TRUE,
+                        fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                ''')
+                
+                # Insertar usuario admin por defecto
+                cursor.execute("SELECT COUNT(*) FROM usuarios WHERE username = 'admin'")
+                if cursor.fetchone()[0] == 0:
+                    cursor.execute(
+                        "INSERT INTO usuarios (username, email, password_hash) VALUES (%s, %s, %s)",
+                        ('admin', 'admin@licitarte.com', 'scrypt:32768:8:1$xQzKjYvN8fGHLmPq$8a9b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f')
+                    )
             else:
                 # Tabla Clientes
                 cursor.execute('''
