@@ -185,6 +185,22 @@ class DatabaseManager:
                 ''')
                 
                 cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS laboratorios (
+                        id SERIAL PRIMARY KEY,
+                        nombre TEXT UNIQUE NOT NULL,
+                        activo BOOLEAN DEFAULT TRUE
+                    )
+                ''')
+                
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS monodrogas (
+                        id SERIAL PRIMARY KEY,
+                        nombre TEXT UNIQUE NOT NULL,
+                        activo BOOLEAN DEFAULT TRUE
+                    )
+                ''')
+                
+                cursor.execute('''
                     CREATE TABLE IF NOT EXISTS presupuestos (
                         id SERIAL PRIMARY KEY,
                         numero INTEGER NOT NULL UNIQUE,
@@ -414,6 +430,22 @@ class DatabaseManager:
                 
                 cursor.execute('''
                     CREATE TABLE IF NOT EXISTS mantenimientos_oferta (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        nombre TEXT UNIQUE NOT NULL,
+                        activo INTEGER DEFAULT 1
+                    )
+                ''')
+                
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS laboratorios (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        nombre TEXT UNIQUE NOT NULL,
+                        activo INTEGER DEFAULT 1
+                    )
+                ''')
+                
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS monodrogas (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         nombre TEXT UNIQUE NOT NULL,
                         activo INTEGER DEFAULT 1
@@ -1136,6 +1168,124 @@ class DatabaseManager:
                 cursor.execute("UPDATE mantenimientos_oferta SET activo = FALSE WHERE id = %s", (mantenimiento_id,))
             else:
                 cursor.execute("UPDATE mantenimientos_oferta SET activo = 0 WHERE id = ?", (mantenimiento_id,))
+
+    # CRUD Laboratorios
+    def crear_laboratorio(self, nombre):
+        if not nombre or len(nombre.strip()) == 0:
+            raise ValueError("Nombre es obligatorio")
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("INSERT INTO laboratorios (nombre) VALUES (%s) RETURNING id", (nombre.strip(),))
+                return cursor.fetchone()[0]
+            else:
+                cursor.execute("INSERT INTO laboratorios (nombre) VALUES (?)", (nombre.strip(),))
+                return cursor.lastrowid
+    
+    def obtener_laboratorios(self, pagina=1, por_pagina=50):
+        """Obtiene laboratorios con paginación"""
+        pagina = max(1, int(pagina))
+        por_pagina = min(100, max(10, int(por_pagina)))
+        offset = (pagina - 1) * por_pagina
+        
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                # Total de registros
+                cursor.execute("SELECT COUNT(*) FROM laboratorios WHERE activo = TRUE")
+                total = cursor.fetchone()[0]
+                # Registros de la página
+                cursor.execute("SELECT id, cod, nombre, activo FROM laboratorios WHERE activo = TRUE ORDER BY nombre LIMIT %s OFFSET %s", (por_pagina, offset))
+            else:
+                cursor.execute("SELECT COUNT(*) FROM laboratorios WHERE activo = 1")
+                total = cursor.fetchone()[0]
+                cursor.execute("SELECT id, cod, nombre, activo FROM laboratorios WHERE activo = 1 ORDER BY nombre LIMIT ? OFFSET ?", (por_pagina, offset))
+            
+            datos = cursor.fetchall()
+            return {
+                'total': total,
+                'pagina': pagina,
+                'por_pagina': por_pagina,
+                'total_paginas': (total + por_pagina - 1) // por_pagina,
+                'datos': datos
+            }
+    
+    def actualizar_laboratorio(self, laboratorio_id, nombre):
+        if not nombre:
+            raise ValueError("Nombre es obligatorio")
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("UPDATE laboratorios SET nombre=%s WHERE id=%s", (nombre.strip(), laboratorio_id))
+            else:
+                cursor.execute("UPDATE laboratorios SET nombre=? WHERE id=?", (nombre.strip(), laboratorio_id))
+    
+    def eliminar_laboratorio(self, laboratorio_id):
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("UPDATE laboratorios SET activo = FALSE WHERE id = %s", (laboratorio_id,))
+            else:
+                cursor.execute("UPDATE laboratorios SET activo = 0 WHERE id = ?", (laboratorio_id,))
+
+    # CRUD Monodrogas
+    def crear_monodroga(self, nombre):
+        if not nombre or len(nombre.strip()) == 0:
+            raise ValueError("Nombre es obligatorio")
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("INSERT INTO monodrogas (nombre) VALUES (%s) RETURNING id", (nombre.strip(),))
+                return cursor.fetchone()[0]
+            else:
+                cursor.execute("INSERT INTO monodrogas (nombre) VALUES (?)", (nombre.strip(),))
+                return cursor.lastrowid
+    
+    def obtener_monodrogas(self, pagina=1, por_pagina=50):
+        """Obtiene monodrogas con paginación"""
+        pagina = max(1, int(pagina))
+        por_pagina = min(100, max(10, int(por_pagina)))
+        offset = (pagina - 1) * por_pagina
+        
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                # Total de registros
+                cursor.execute("SELECT COUNT(*) FROM monodrogas WHERE activo = TRUE")
+                total = cursor.fetchone()[0]
+                # Registros de la página
+                cursor.execute("SELECT id, cod, nombre, activo FROM monodrogas WHERE activo = TRUE ORDER BY nombre LIMIT %s OFFSET %s", (por_pagina, offset))
+            else:
+                cursor.execute("SELECT COUNT(*) FROM monodrogas WHERE activo = 1")
+                total = cursor.fetchone()[0]
+                cursor.execute("SELECT id, cod, nombre, activo FROM monodrogas WHERE activo = 1 ORDER BY nombre LIMIT ? OFFSET ?", (por_pagina, offset))
+            
+            datos = cursor.fetchall()
+            return {
+                'total': total,
+                'pagina': pagina,
+                'por_pagina': por_pagina,
+                'total_paginas': (total + por_pagina - 1) // por_pagina,
+                'datos': datos
+            }
+    
+    def actualizar_monodroga(self, monodroga_id, nombre):
+        if not nombre:
+            raise ValueError("Nombre es obligatorio")
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("UPDATE monodrogas SET nombre=%s WHERE id=%s", (nombre.strip(), monodroga_id))
+            else:
+                cursor.execute("UPDATE monodrogas SET nombre=? WHERE id=?", (nombre.strip(), monodroga_id))
+    
+    def eliminar_monodroga(self, monodroga_id):
+        with self.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("UPDATE monodrogas SET activo = FALSE WHERE id = %s", (monodroga_id,))
+            else:
+                cursor.execute("UPDATE monodrogas SET activo = 0 WHERE id = ?", (monodroga_id,))
 
     def obtener_siguiente_numero_presupuesto(self):
         """Obtiene el siguiente número de presupuesto disponible"""
