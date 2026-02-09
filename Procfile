@@ -1,1 +1,1 @@
-web: cd web && python init_db.py && gunicorn app:app --workers 2 --timeout 120
+web: cd web && python create_admin.py && gunicorn app:app --workers 2 --timeout 120
