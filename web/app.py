@@ -42,21 +42,40 @@ try:
                             sql_content = f.read().decode('utf-8')
                             break
                 
-                # Filtrar solo INSERT statements
-                statements = [s.strip() for s in sql_content.split(';') if s.strip() and 'INSERT INTO' in s]
+                # Filtrar solo INSERT statements (excluir comentarios y líneas vacías)
+                lines = sql_content.split('\n')
+                statements = []
+                current_statement = []
+                
+                for line in lines:
+                    line = line.strip()
+                    if not line or line.startswith('--') or line.startswith('/*'):
+                        continue
+                    if line.startswith('INSERT INTO'):
+                        if current_statement:
+                            statements.append(' '.join(current_statement))
+                        current_statement = [line]
+                    elif current_statement:
+                        current_statement.append(line)
+                        if line.endswith(';'):
+                            statements.append(' '.join(current_statement))
+                            current_statement = []
+                
                 total = len(statements)
                 print(f"Ejecutando {total} INSERT statements...")
                 
+                success_count = 0
                 for i, statement in enumerate(statements):
                     try:
-                        cursor.execute(statement)
+                        cursor.execute(statement.rstrip(';'))
+                        success_count += 1
                         if i % 1000 == 0:
                             conn.commit()
-                            print(f"Procesado {i}/{total}...")
+                            print(f"Procesado {i}/{total}... ({success_count} exitosos)")
                     except Exception as e:
-                        if i < 10:
+                        conn.rollback()  # Rollback para continuar con siguiente statement
+                        if i < 5:
                             print(f"Error en statement {i}: {e}")
-                            print(f"Statement: {statement[:200]}...")
                         continue
                 
                 conn.commit()
