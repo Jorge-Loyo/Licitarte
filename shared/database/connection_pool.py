@@ -1,7 +1,7 @@
 import os
 from contextlib import contextmanager
 import psycopg
-from psycopg.pool import ConnectionPool as PsycopgPool
+from psycopg_pool import ConnectionPool as PsycopgPool
 
 USE_POSTGRES = True
 
