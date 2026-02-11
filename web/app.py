@@ -32,6 +32,10 @@ if os.getenv('USE_POSTGRES') == 'true':
                 )
                 cursor = conn.cursor()
                 
+                # Limpiar clientes inactivos que causan conflictos
+                cursor.execute("DELETE FROM clientes WHERE activo = FALSE")
+                conn.commit()
+                
                 cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name='clientes' AND column_name='organismo_jurisdiccion'")
                 if not cursor.fetchone():
                     cursor.execute("ALTER TABLE clientes ADD COLUMN organismo_jurisdiccion VARCHAR(200)")
