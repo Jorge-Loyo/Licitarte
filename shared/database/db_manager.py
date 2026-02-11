@@ -872,11 +872,13 @@ class DatabaseManager:
                 if USE_POSTGRES:
                     cursor.execute("INSERT INTO clientes (nombre, organismo_jurisdiccion, razon_social, cuit, direccion, telefono, email) VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id",
                                   (nombre.strip(), organismo_jurisdiccion.strip(), razon_social.strip(), cuit.strip(), direccion.strip(), telefono.strip(), email.strip()))
-                    return cursor.fetchone()[0]
+                    result = cursor.fetchone()[0]
                 else:
                     cursor.execute("INSERT INTO clientes (nombre, organismo_jurisdiccion, razon_social, cuit, direccion, telefono, email) VALUES (?, ?, ?, ?, ?, ?, ?)",
                                   (nombre.strip(), organismo_jurisdiccion.strip(), razon_social.strip(), cuit.strip(), direccion.strip(), telefono.strip(), email.strip()))
-                    return cursor.lastrowid
+                    result = cursor.lastrowid
+                conn.commit()
+                return result
             except Exception as e:
                 raise
     
