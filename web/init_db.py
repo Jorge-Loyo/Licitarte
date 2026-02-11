@@ -138,7 +138,23 @@ def init_db():
                     else:
                         print("⚠️ Error al cargar catálogo")
                 else:
-                    print(f"⚠️ Archivo de catálogo no encontrado en {project_root / 'Data'}")
+                    print(f"⚠️ Archivo de catálogo no encontrado, sincronizando desde medicamentos existentes...")
+                    # Si no hay Excel, sincronizar desde medicamentos existentes
+                    with db.get_connection() as conn:
+                        cursor = conn.cursor()
+                        cursor.execute("SELECT COUNT(*) FROM medicamentos")
+                        if cursor.fetchone()[0] > 0:
+                            print("Sincronizando laboratorios y monodrogas...")
+                            # Monodrogas
+                            cursor.execute("SELECT DISTINCT monodroga FROM medicamentos WHERE monodroga IS NOT NULL AND monodroga != ''")
+                            for (mono,) in cursor.fetchall():
+                                cursor.execute("INSERT INTO monodrogas (nombre) VALUES (%s) ON CONFLICT (nombre) DO NOTHING", (mono,))
+                            # Laboratorios
+                            cursor.execute("SELECT DISTINCT laboratorio FROM medicamentos WHERE laboratorio IS NOT NULL AND laboratorio != ''")
+                            for (lab,) in cursor.fetchall():
+                                cursor.execute("INSERT INTO laboratorios (nombre) VALUES (%s) ON CONFLICT (nombre) DO NOTHING", (lab,))
+                            conn.commit()
+                            print("✅ Sincronización completada")
             except Exception as e:
                 print(f"⚠️ Error cargando catálogo: {e}")
                 import traceback

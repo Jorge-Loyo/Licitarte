@@ -302,7 +302,7 @@ def get_laboratorios():
         'pagina': resultado['pagina'],
         'por_pagina': resultado['por_pagina'],
         'total_paginas': resultado['total_paginas'],
-        'datos': [{'id': l[0], 'cod': l[1], 'nombre': l[2], 'activo': l[3]} for l in resultado['datos']]
+        'datos': [{'id': l[0], 'nombre': l[1], 'activo': l[2]} for l in resultado['datos']]
     })
 
 @bp.route('/laboratorios', methods=['POST'])
@@ -348,7 +348,7 @@ def get_monodrogas():
         'pagina': resultado['pagina'],
         'por_pagina': resultado['por_pagina'],
         'total_paginas': resultado['total_paginas'],
-        'datos': [{'id': m[0], 'cod': m[1], 'nombre': m[2], 'activo': m[3]} for m in resultado['datos']]
+        'datos': [{'id': m[0], 'nombre': m[1], 'activo': m[2]} for m in resultado['datos']]
     })
 
 @bp.route('/monodrogas/buscar', methods=['GET'])
