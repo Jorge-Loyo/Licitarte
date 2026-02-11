@@ -60,7 +60,7 @@ class ClienteCreate(BaseModel):
     direccion: Optional[str] = Field(None, max_length=300)
     telefono: Optional[str] = Field(None, max_length=50)
     email: Optional[str] = Field(None, max_length=100)
-    organismo_jurisdiccion: str = Field(..., min_length=1, max_length=100)
+    organismo_jurisdiccion: str = Field(..., min_length=1, max_length=200)
     
     @validator('email')
     def email_valido(cls, v):

@@ -32,7 +32,7 @@ def crear_cliente():
         return jsonify({'success': False, 'error': 'Datos inválidos', 'details': e.errors()}), 400
     try:
         cliente_id = db.crear_cliente(
-            data.nombre, data.razon_social or '', data.cuit or '',
+            data.nombre, data.razon_social or '', data.cuit,
             data.direccion or '', data.telefono or '', data.email or '',
             data.organismo_jurisdiccion
         )
