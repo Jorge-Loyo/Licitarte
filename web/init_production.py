@@ -5,9 +5,13 @@ Ejecuta migraciones v1.1.0 y carga catálogo
 """
 import sys
 import os
-sys.path.insert(0, os.path.abspath('..'))
+from pathlib import Path
 
-from database.db_manager import DatabaseManager, USE_POSTGRES
+# Agregar directorio padre al path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from shared.database.db_manager import DatabaseManager
+from shared.database.connection_pool import USE_POSTGRES
 
 def run_migrations(db):
     """Ejecutar migraciones v1.1.0"""
@@ -17,12 +21,12 @@ def run_migrations(db):
         cursor = conn.cursor()
         
         try:
-            # 1. costo_unitario en celty
+            # 1. costo_unitario en productos
             if USE_POSTGRES:
-                cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name='celty' AND column_name='costo_unitario'")
+                cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name='productos' AND column_name='costo_unitario'")
                 if not cursor.fetchone():
-                    cursor.execute("ALTER TABLE celty ADD COLUMN costo_unitario REAL")
-                    print("✓ costo_unitario agregado")
+                    cursor.execute("ALTER TABLE productos ADD COLUMN costo_unitario REAL")
+                    print("✓ costo_unitario agregado a productos")
             
             # 2. portales_origen
             cursor.execute("CREATE TABLE IF NOT EXISTS portales_origen (id SERIAL PRIMARY KEY, nombre TEXT UNIQUE NOT NULL, activo BOOLEAN DEFAULT TRUE)")
@@ -78,6 +82,10 @@ def run_migrations(db):
             if not cursor.fetchone():
                 cursor.execute("ALTER TABLE licitaciones ADD COLUMN monto_poliza REAL")
             
+            cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name='licitaciones' AND column_name='fecha_carga'")
+            if not cursor.fetchone():
+                cursor.execute("ALTER TABLE licitaciones ADD COLUMN fecha_carga TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+            
             print("✓ Columnas agregadas a licitaciones")
             
             # 8. organismo_jurisdiccion en clientes
@@ -116,12 +124,13 @@ def init_production():
             run_migrations(db)
         
         # Cargar catálogo
-        if os.path.exists('../Data/Celty.xlsx'):
+        excel_path = Path(__file__).parent.parent / 'Data' / 'Alfabeta_Febrero.xlsx'
+        if excel_path.exists():
             print("\nCargando catálogo desde Excel...")
-            db.cargar_catalogo_desde_excel('../Data/Celty.xlsx')
+            db.cargar_catalogo_desde_excel(str(excel_path))
             print("✓ Catálogo cargado")
         else:
-            print("⚠ Archivo Celty.xlsx no encontrado")
+            print(f"⚠ Archivo {excel_path} no encontrado")
         
         print("\n✅ Inicialización completada exitosamente")
         

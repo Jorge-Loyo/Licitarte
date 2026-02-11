@@ -30,7 +30,7 @@ os.makedirs('uploads', exist_ok=True)
 # Flask-Login: Manejo de sesiones y autenticación
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login_page'
+login_manager.login_view = 'login_page'  # type: ignore
 
 @login_manager.user_loader
 def load_user(user_id):

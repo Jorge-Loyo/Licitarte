@@ -35,7 +35,7 @@ class LicitacionCreateSchema(BaseModel):
     monto_poliza: Optional[float] = Field(None, ge=0)
     observaciones: Optional[str] = None
     mantenimiento_oferta: Optional[str] = None
-    productos: List[ProductoSchema] = Field(..., min_items=1)
+    productos: List[ProductoSchema] = Field(..., min_length=1)
     
     @validator('fecha')
     def validar_fecha(cls, v):

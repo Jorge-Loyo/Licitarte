@@ -11,15 +11,14 @@ Seguridad:
     - Flask-Login para manejo de sesiones
     - Cookies HttpOnly y Secure en producción
 """
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash
 import sys
-import os
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
-from src.models.user import User
+sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
+from web.src.models.user import User
 
 bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
@@ -53,7 +52,7 @@ def login():
     user = User.get_by_username(data['username'])
     
     # Verificar usuario existe y contraseña es correcta
-    if not user or not check_password_hash(user.password_hash, data['password']):
+    if not user or not user.password_hash or not check_password_hash(user.password_hash, data['password']):
         return jsonify({'success': False, 'error': 'Credenciales inválidas'}), 401
     
     # Verificar usuario activo

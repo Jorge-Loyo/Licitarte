@@ -19,6 +19,9 @@ password_hash = generate_password_hash('admin123')
 print(f"Hash generado: {password_hash}")
 
 # Actualizar o insertar usuario admin
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL environment variable is not set")
+
 with psycopg.connect(DATABASE_URL) as conn:
     with conn.cursor() as cursor:
         cursor.execute("""

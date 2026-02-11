@@ -81,6 +81,9 @@ def crear_producto():
         400: {'success': False, 'error': str, 'details': []}
     """
     try:
+        # Validar que request.json no sea None
+        if not request.json:
+            return jsonify({'success': False, 'error': 'Request body no puede estar vacío'}), 400
         # Validar con Pydantic
         data = ProductoCreate(**request.json)
     except ValidationError as e:
@@ -88,7 +91,7 @@ def crear_producto():
     
     try:
         producto_id = db.agregar_producto(
-            request.json['licitacion_id'],
+            data.licitacion_id,
             data.monodroga,
             data.marca,
             data.presentacion,
@@ -104,7 +107,7 @@ def crear_producto():
             data.costo_unitario,
             data.margen_porcentaje,
             data.observaciones or '',
-            'principal'
+            data.producto_cotizar or 'principal'
         )
         return jsonify({'success': True, 'id': producto_id}), 201
     except Exception as e:
@@ -129,15 +132,18 @@ def actualizar_producto(id):
         500: {'error': str}
     """
     data = request.json
+    if not data:
+        return jsonify({'success': False, 'error': 'Request body no puede estar vacío'}), 400
+    
     try:
         db.actualizar_producto(
             id,
-            data['monodroga'],
-            data['marca'],
-            data['presentacion'],
-            int(data['cantidad']),
-            float(data['precio_ofertado']),
-            data['resultado'],
+            data.get('monodroga'),
+            data.get('marca'),
+            data.get('presentacion'),
+            int(data['cantidad']) if data.get('cantidad') else 0,
+            float(data['precio_ofertado']) if data.get('precio_ofertado') else 0,
+            data.get('resultado', 'Parcial'),
             float(data['precio_ganador']) if data.get('precio_ganador') else None,
             data.get('oferente', ''),
             data.get('marca_ofrecida', ''),

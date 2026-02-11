@@ -19,13 +19,13 @@ def get_estadisticas():
 @bp.route('/historico', methods=['POST'])
 def get_historico():
     """Obtener histórico de precios con filtros"""
-    data = request.json
+    data = request.json or {}
     filtro = data.get('monodroga', '')
     
     with db.get_connection() as conn:
         cursor = conn.cursor()
         if filtro:
-            if db.USE_POSTGRES:
+            try:
                 cursor.execute("""
                     SELECT l.numero_licitacion, t.nombre as tipo_licitacion, p.marca, p.presentacion, 
                            p.cantidad, p.precio_ofertado, l.fecha
@@ -35,7 +35,7 @@ def get_historico():
                     WHERE p.resultado = 'Adjudicado' AND p.monodroga ILIKE %s
                     ORDER BY l.fecha DESC
                 """, (f'%{filtro}%',))
-            else:
+            except:
                 cursor.execute("""
                     SELECT l.numero_licitacion, t.nombre as tipo_licitacion, p.marca, p.presentacion, 
                            p.cantidad, p.precio_ofertado, l.fecha

@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS licitaciones (
     cliente_id INTEGER,
     tipo_licitacion_id INTEGER,
     fecha TEXT NOT NULL,
+    fecha_carga TEXT DEFAULT CURRENT_TIMESTAMP,
     oferente_ganador TEXT,
     marca_ganadora TEXT,
     precio_ganador REAL,

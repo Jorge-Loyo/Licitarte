@@ -15,6 +15,9 @@ if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
 def init_db():
     print("Inicializando base de datos...")
     
+    if not DATABASE_URL:
+        raise ValueError("DATABASE_URL environment variable is not set")
+    
     with psycopg.connect(DATABASE_URL) as conn:
         with conn.cursor() as cursor:
             # Crear tabla usuarios
@@ -66,6 +69,7 @@ def init_db():
                     cliente_id INTEGER REFERENCES clientes(id),
                     tipo_licitacion_id INTEGER REFERENCES tipos_licitacion(id),
                     fecha DATE NOT NULL,
+                    fecha_carga TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     oferente_ganador TEXT,
                     marca_ganadora TEXT,
                     precio_ganador REAL,

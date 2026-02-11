@@ -509,15 +509,14 @@ async function confirmarEliminacion() {
     if (!licitacionAEliminar) return;
     
     const response = await fetch(`/api/licitaciones/${licitacionAEliminar}`, { method: 'DELETE' });
-    const result = await response.json();
     
     cerrarModalConfirmar();
     
-    if (result.success) {
+    if (response.ok) {
         mostrarNotificacion('✓ Éxito', 'Licitación eliminada');
         cargarLicitaciones();
     } else {
-        mostrarNotificacion('✗ Error', result.error);
+        mostrarNotificacion('✗ Error', 'Error al eliminar licitación');
     }
 }
 

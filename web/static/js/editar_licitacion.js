@@ -130,6 +130,12 @@ async function cargarLicitacion() {
         document.getElementById('fecha').value = fechaHora[0];
         document.getElementById('horaApertura').value = fechaHora[1] || '10:00';
         
+        // Mostrar fecha de carga si existe
+        if (detalle.fecha_carga) {
+            const fechaCarga = new Date(detalle.fecha_carga);
+            document.getElementById('fechaCarga').value = fechaCarga.toLocaleDateString('es-AR');
+        }
+        
         // Seleccionar cliente y tipo
         document.getElementById('clienteSelect').value = detalle.cliente_id || '';
         seleccionarCliente();
@@ -719,30 +725,20 @@ function agregarAlternativa(productoId) {
     div.id = altId;
     div.style.cssText = 'background: #1a1a1a; padding: 15px; border-radius: 6px; margin-top: 10px; position: relative;';
     
-    const productosFiltrados = catalogoProductos.filter(p => 
-        p.monodroga && p.monodroga.toLowerCase() === monodroga.toLowerCase()
-    );
-    
-    let optionsMarca = '<option value="">Seleccione marca y presentación...</option>';
-    productosFiltrados.forEach(p => {
-        optionsMarca += `<option value="${p.numero_registro}" data-marca="${p.marca}" data-presentacion="${p.presentacion}" data-laboratorio="${p.laboratorio || ''}" data-costo="${p.costo_unitario || 0}">
-            ${p.marca} - ${p.presentacion}
-        </option>`;
-    });
-    
     div.innerHTML = `
         <button type="button" onclick="eliminarAlternativa('${altId}', ${productoId})" style="position: absolute; top: 10px; right: 10px; background: var(--danger-color); color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; font-size: 14px;">✕</button>
         <h6 style="color: #999; margin-bottom: 10px; font-size: 13px;">Alternativa #${alternativaCount}</h6>
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-bottom: 10px;">
-            <div class="form-group">
-                <label style="font-size: 14px;">Marca - Presentación</label>
-                <select class="alt-selector" onchange="seleccionarAlternativa(this)" style="font-size: 14px; padding: 10px;">
-                    ${optionsMarca}
-                </select>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+            <div class="form-group" style="position: relative;">
+                <label style="font-size: 14px;">Laboratorio *</label>
+                <input type="text" class="alt-laboratorio-input" oninput="buscarLaboratorioAlternativa(this, '${monodroga}')" placeholder="Escriba para buscar..." style="font-size: 14px; padding: 10px;">
+                <div class="alt-laboratorio-sugerencias" style="display: none; position: absolute; background: #1a1a1a; border: 1px solid var(--primary); border-radius: 5px; max-height: 200px; overflow-y: auto; z-index: 1000; width: calc(100% - 20px);"></div>
             </div>
             <div class="form-group">
-                <label style="font-size: 14px;">Laboratorio</label>
-                <input type="text" class="alt-laboratorio" style="font-size: 14px; padding: 10px;">
+                <label style="font-size: 14px;">Marca - Presentación *</label>
+                <select class="alt-selector" onchange="seleccionarAlternativa(this)" disabled style="font-size: 14px; padding: 10px;">
+                    <option value="">Primero seleccione laboratorio...</option>
+                </select>
             </div>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
@@ -769,6 +765,7 @@ function agregarAlternativa(productoId) {
         </div>
         <input type="hidden" class="alt-marca">
         <input type="hidden" class="alt-presentacion">
+        <input type="hidden" class="alt-laboratorio">
     `;
     
     container.appendChild(div);
@@ -779,13 +776,75 @@ function agregarAlternativa(productoId) {
     selector.appendChild(option);
 }
 
+async function buscarLaboratorioAlternativa(input, monodroga) {
+    const texto = input.value.trim();
+    const container = input.closest('.alternativa-item');
+    const sugerencias = container.querySelector('.alt-laboratorio-sugerencias');
+    const selectorMarca = container.querySelector('.alt-selector');
+    
+    if (texto.length === 0) {
+        sugerencias.style.display = 'none';
+        selectorMarca.innerHTML = '<option value="">Primero seleccione laboratorio...</option>';
+        selectorMarca.disabled = true;
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/laboratorios/buscar?monodroga=${encodeURIComponent(monodroga)}&q=${encodeURIComponent(texto)}`);
+        const laboratorios = await response.json();
+        
+        if (laboratorios.length === 0) {
+            sugerencias.style.display = 'none';
+            return;
+        }
+        
+        sugerencias.innerHTML = laboratorios.map(lab => 
+            `<div onclick="seleccionarLaboratorioAlternativa(this, '${lab.nombre.replace(/'/g, "\\'")}')"
+                  style="padding: 10px; cursor: pointer; border-bottom: 1px solid #333;">
+                ${lab.nombre}
+             </div>`
+        ).join('');
+        
+        sugerencias.style.display = 'block';
+    } catch (error) {
+        console.error('Error buscando laboratorios:', error);
+        sugerencias.style.display = 'none';
+    }
+}
+
+function seleccionarLaboratorioAlternativa(element, laboratorio) {
+    const container = element.closest('.alternativa-item');
+    const input = container.querySelector('.alt-laboratorio-input');
+    const sugerencias = container.querySelector('.alt-laboratorio-sugerencias');
+    const hiddenLaboratorio = container.querySelector('.alt-laboratorio');
+    const selectorMarca = container.querySelector('.alt-selector');
+    const producto = container.closest('.producto-item');
+    const monodroga = producto.querySelector('.producto-monodroga').value;
+    
+    input.value = laboratorio;
+    hiddenLaboratorio.value = laboratorio;
+    sugerencias.style.display = 'none';
+    
+    const productosFiltrados = catalogoProductos.filter(p => 
+        p.monodroga && p.monodroga.toLowerCase() === monodroga.toLowerCase() &&
+        p.laboratorio && p.laboratorio.toLowerCase() === laboratorio.toLowerCase()
+    );
+    
+    selectorMarca.innerHTML = '<option value="">Seleccione marca - presentación...</option>';
+    productosFiltrados.forEach(p => {
+        selectorMarca.innerHTML += `<option value="${p.numero_registro}" data-marca="${p.marca}" data-presentacion="${p.presentacion}" data-costo="${p.costo_unitario || 0}">
+            ${p.marca} - ${p.presentacion}
+        </option>`;
+    });
+    selectorMarca.disabled = false;
+}
+
 function seleccionarAlternativa(select) {
     const option = select.options[select.selectedIndex];
     const container = select.closest('.alternativa-item');
     
     container.querySelector('.alt-marca').value = option.dataset.marca || '';
     container.querySelector('.alt-presentacion').value = option.dataset.presentacion || '';
-    container.querySelector('.alt-laboratorio').value = option.dataset.laboratorio || '';
     container.querySelector('.alt-costo').value = option.dataset.costo || '';
     
     calcularPrecioAlternativa(container.querySelector('.alt-costo'));

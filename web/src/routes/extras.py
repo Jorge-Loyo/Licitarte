@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 from shared.database.db_manager import DatabaseManager, USE_POSTGRES
 
 bp = Blueprint('extras', __name__, url_prefix='/api')
-db = DatabaseManager(os.path.abspath('../shared/database/licitaciones.db'))
+db = DatabaseManager(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../shared/database/licitaciones.db')))
 
 # PRESUPUESTOS
 @bp.route('/presupuestos/siguiente-numero', methods=['GET'])
@@ -84,6 +84,9 @@ def get_alternativas(producto_id):
 @bp.route('/alternativas', methods=['POST'])
 def crear_alternativa():
     data = request.json
+    if not data or not data.get('producto_id'):
+        return jsonify({'success': False, 'error': 'producto_id es obligatorio'}), 400
+    
     try:
         with db.get_connection() as conn:
             cursor = conn.cursor()
@@ -100,7 +103,10 @@ def crear_alternativa():
                     float(data['precio_ofertado']) if data.get('precio_ofertado') else None,
                     data.get('observaciones', '')
                 ))
-                alt_id = cursor.fetchone()[0]
+                result = cursor.fetchone()
+                alt_id = result[0] if result else None
+                if not alt_id:
+                    raise Exception('Error al crear alternativa: No se obtuvo ID')
             else:
                 cursor.execute("""
                     INSERT INTO alternativas_productos 
@@ -114,7 +120,10 @@ def crear_alternativa():
                     float(data['precio_ofertado']) if data.get('precio_ofertado') else None,
                     data.get('observaciones', '')
                 ))
-                alt_id = cursor.lastrowid
+                alt_id = getattr(cursor, 'lastrowid', None)
+                if not alt_id:
+                    raise Exception('Error al crear alternativa: No se obtuvo ID')
+            conn.commit()
             return jsonify({'success': True, 'id': alt_id})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -146,6 +155,9 @@ def get_ofertas_producto(producto_id):
 @bp.route('/ofertas/<int:producto_id>', methods=['POST'])
 def guardar_ofertas_producto(producto_id):
     data = request.json
+    if not data:
+        return jsonify({'success': False, 'error': 'Request body no puede estar vacío'}), 400
+    
     try:
         ofertas = data.get('ofertas', [])
         db.guardar_ofertas_producto(producto_id, ofertas)
@@ -184,7 +196,8 @@ def get_licitacion_detalle(id):
                     cursor.execute("SELECT COALESCE(SUM(precio_ofertado * cantidad), 0) FROM productos WHERE licitacion_id = %s", (id,))
                 else:
                     cursor.execute("SELECT COALESCE(SUM(precio_ofertado * cantidad), 0) FROM productos WHERE licitacion_id = ?", (id,))
-                total = cursor.fetchone()[0]
+                total_row = cursor.fetchone()
+                total = total_row[0] if total_row else 0
                 if total > 0:
                     porcentaje_poliza = (float(row[9]) / float(total)) * 100
             

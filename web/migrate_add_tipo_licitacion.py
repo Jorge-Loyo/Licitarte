@@ -3,10 +3,12 @@
 Migración: Agregar columna tipo_licitacion_id a tabla licitaciones
 """
 import sys
-import os
-sys.path.insert(0, os.path.abspath('..'))
+from pathlib import Path
 
-from database.db_manager import DatabaseManager
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from shared.database.db_manager import DatabaseManager
+from shared.database.connection_pool import USE_POSTGRES
 
 def migrate():
     print("Iniciando migración...")
@@ -16,7 +18,7 @@ def migrate():
         with db.get_connection() as conn:
             cursor = conn.cursor()
             
-            if db.USE_POSTGRES:
+            if USE_POSTGRES:
                 # Verificar si la columna ya existe
                 cursor.execute("""
                     SELECT column_name 

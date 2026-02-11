@@ -1,11 +1,11 @@
 """Modelo de usuario para autenticación"""
 from flask_login import UserMixin
 import sys
-import os
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from shared.database.db_manager import DatabaseManager, USE_POSTGRES
+sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
+from shared.database.db_manager import DatabaseManager
+from shared.database.connection_pool import USE_POSTGRES
 
 db = DatabaseManager()
 
@@ -15,6 +15,7 @@ class User(UserMixin):
         self.username = username
         self.email = email
         self._is_active = is_active
+        self.password_hash = None
     
     @property
     def is_active(self):

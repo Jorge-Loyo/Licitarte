@@ -6,10 +6,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 from shared.database.db_manager import DatabaseManager
-from shared.database.connection_pool import USE_POSTGRES
 
 bp = Blueprint('catalogos_extra', __name__, url_prefix='/api')
-db = DatabaseManager(os.path.abspath('../shared/database/licitaciones.db'))
+db = DatabaseManager()
+USE_POSTGRES = os.getenv('USE_POSTGRES', 'False').lower() == 'true'
 
 # PORTALES ORIGEN
 @bp.route('/portales-origen', methods=['GET'])
@@ -31,6 +31,8 @@ def crear_portal_origen():
 @bp.route('/portales-origen/<int:id>', methods=['PUT'])
 def actualizar_portal_origen(id):
     data = request.json
+    if not data or not data.get('nombre'):
+        return jsonify({'success': False, 'error': 'Nombre es obligatorio'}), 400
     try:
         db.actualizar_portal_origen(id, data['nombre'])
         return jsonify({'success': True}), 200
@@ -65,6 +67,8 @@ def crear_modalidad_entrega():
 @bp.route('/modalidades-entrega/<int:id>', methods=['PUT'])
 def actualizar_modalidad_entrega(id):
     data = request.json
+    if not data or not data.get('nombre'):
+        return jsonify({'success': False, 'error': 'Nombre es obligatorio'}), 400
     try:
         db.actualizar_modalidad_entrega(id, data['nombre'])
         return jsonify({'success': True}), 200
@@ -99,6 +103,8 @@ def crear_forma_pago():
 @bp.route('/formas-pago/<int:id>', methods=['PUT'])
 def actualizar_forma_pago(id):
     data = request.json
+    if not data or not data.get('nombre'):
+        return jsonify({'success': False, 'error': 'Nombre es obligatorio'}), 400
     try:
         db.actualizar_forma_pago(id, data['nombre'])
         return jsonify({'success': True}), 200
@@ -133,6 +139,8 @@ def crear_organismo():
 @bp.route('/organismos/<int:id>', methods=['PUT'])
 def actualizar_organismo(id):
     data = request.json
+    if not data or not data.get('nombre'):
+        return jsonify({'success': False, 'error': 'Nombre es obligatorio'}), 400
     try:
         db.actualizar_organismo(id, data['nombre'])
         return jsonify({'success': True}), 200
@@ -167,6 +175,8 @@ def crear_motivo_perdida():
 @bp.route('/motivos-perdida/<int:id>', methods=['PUT'])
 def actualizar_motivo_perdida(id):
     data = request.json
+    if not data or not data.get('nombre'):
+        return jsonify({'success': False, 'error': 'Nombre es obligatorio'}), 400
     try:
         db.actualizar_motivo_perdida(id, data['nombre'])
         return jsonify({'success': True}), 200
@@ -201,6 +211,8 @@ def crear_mantenimiento_oferta():
 @bp.route('/mantenimientos-oferta/<int:id>', methods=['PUT'])
 def actualizar_mantenimiento_oferta(id):
     data = request.json
+    if not data or not data.get('nombre'):
+        return jsonify({'success': False, 'error': 'Nombre es obligatorio'}), 400
     try:
         db.actualizar_mantenimiento_oferta(id, data['nombre'])
         return jsonify({'success': True}), 200
@@ -243,6 +255,13 @@ def get_diferencias_promedio():
               AND precio_ganador > 0
         """)
         resultado = cursor.fetchone()
+    
+    if resultado is None:
+        return jsonify({
+            'diferencia_pesos': 0,
+            'diferencia_porcentaje': 0
+        })
+    
     return jsonify({
         'diferencia_pesos': float(resultado[0]) if resultado[0] else 0,
         'diferencia_porcentaje': float(resultado[1]) if resultado[1] else 0
@@ -264,7 +283,8 @@ def verificar_licitacion():
                 cursor.execute("SELECT COUNT(*) FROM licitaciones WHERE numero_licitacion = %s AND cliente_id = %s", (numero, int(cliente_id)))
             else:
                 cursor.execute("SELECT COUNT(*) FROM licitaciones WHERE numero_licitacion = ? AND cliente_id = ?", (numero, int(cliente_id)))
-            count = cursor.fetchone()[0]
+            result = cursor.fetchone()
+            count = result[0] if result else 0
             return jsonify({'existe': count > 0})
     except Exception as e:
         return jsonify({'existe': False, 'error': str(e)})
@@ -299,6 +319,8 @@ def crear_laboratorio():
 @bp.route('/laboratorios/<int:id>', methods=['PUT'])
 def actualizar_laboratorio(id):
     data = request.json
+    if not data or not data.get('nombre'):
+        return jsonify({'success': False, 'error': 'Nombre es obligatorio'}), 400
     try:
         db.actualizar_laboratorio(id, data['nombre'])
         return jsonify({'success': True}), 200
@@ -439,6 +461,8 @@ def crear_monodroga():
 @bp.route('/monodrogas/<int:id>', methods=['PUT'])
 def actualizar_monodroga(id):
     data = request.json
+    if not data or not data.get('nombre'):
+        return jsonify({'success': False, 'error': 'Nombre es obligatorio'}), 400
     try:
         db.actualizar_monodroga(id, data['nombre'])
         return jsonify({'success': True}), 200

@@ -162,7 +162,7 @@ function agregarProducto() {
             
             <h4 style="color: var(--primary); margin-bottom: 15px; font-size: 14px;">PRODUCTO #${productoCount + 1}</h4>
             
-            <div style="display: grid; grid-template-columns: auto 1fr; gap: 15px;">
+            <div style="display: grid; grid-template-columns: auto 1fr 1fr; gap: 15px;">
                 <div class="form-group">
                     <label>Renglón Nº</label>
                     <input type="text" class="producto-numero-renglon" oninput="validarNumeroRenglon(this)" placeholder="210" style="font-size: 16px; padding: 12px; width: 100px;">
@@ -173,21 +173,19 @@ function agregarProducto() {
                     <input type="text" class="producto-monodroga-input" oninput="buscarMonodroga(this)" placeholder="Escriba al menos 3 letras..." style="font-size: 16px; padding: 12px;">
                     <div class="monodroga-sugerencias" style="display: none; position: absolute; background: #1a1a1a; border: 1px solid var(--primary); border-radius: 5px; max-height: 200px; overflow-y: auto; z-index: 1000; width: calc(100% - 40px);"></div>
                 </div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                 <div class="form-group" style="position: relative;">
                     <label>Laboratorio *</label>
                     <input type="text" class="producto-laboratorio-input" oninput="buscarLaboratorio(this)" placeholder="Primero seleccione monodroga..." disabled style="font-size: 16px; padding: 12px;">
                     <div class="laboratorio-sugerencias" style="display: none; position: absolute; background: #1a1a1a; border: 1px solid var(--primary); border-radius: 5px; max-height: 200px; overflow-y: auto; z-index: 1000; width: calc(100% - 40px);"></div>
                 </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                 <div class="form-group">
                     <label>Marca - Presentación *</label>
                     <select class="producto-selector-marca-presentacion" onchange="seleccionarProducto(this)" disabled style="font-size: 16px; padding: 12px;">
                         <option value="">Primero seleccione laboratorio...</option>
                     </select>
                 </div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr; gap: 15px;">
                 <div class="form-group">
                     <label>Cantidad *</label>
                     <input type="number" class="producto-cantidad" required oninput="calcularTotalRenglon(this)" style="font-size: 16px; padding: 12px;">
@@ -621,6 +619,7 @@ document.getElementById('licitacionForm').addEventListener('submit', async (e) =
         cliente_id: document.getElementById('clienteSelect').value,
         tipo_licitacion_id: document.getElementById('tipoLicitacionSelect').value,
         fecha: document.getElementById('fecha').value + ' ' + document.getElementById('horaApertura').value,
+        fecha_carga: new Date().toISOString(),
         portal_origen: document.getElementById('portalOrigen').value,
         modalidad_entrega: document.getElementById('modalidadEntrega').value,
         forma_pago: document.getElementById('formaPago').value,
@@ -739,6 +738,8 @@ async function nuevoTipoLicitacion() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    const hoy = new Date();
+    document.getElementById('fechaCarga').value = hoy.toLocaleDateString('es-AR');
     document.getElementById('fecha').valueAsDate = new Date();
     document.getElementById('horaApertura').value = '10:00';
     
@@ -776,6 +777,10 @@ function abrirModalNuevoCliente() {
     cargarOrganismosModal();
     document.getElementById('nuevoClienteNombre').value = '';
     document.getElementById('nuevoClienteRazon').value = '';
+    document.getElementById('nuevoClienteCuit').value = '';
+    document.getElementById('nuevoClienteDireccion').value = '';
+    document.getElementById('nuevoClienteTelefono').value = '';
+    document.getElementById('nuevoClienteEmail').value = '';
     document.getElementById('nuevoClienteOrganismo').value = '';
     document.getElementById('modalNuevoCliente').style.display = 'block';
 }
@@ -799,6 +804,10 @@ document.getElementById('nuevoClienteForm').addEventListener('submit', async (e)
     const data = {
         nombre: document.getElementById('nuevoClienteNombre').value,
         razon_social: document.getElementById('nuevoClienteRazon').value,
+        cuit: document.getElementById('nuevoClienteCuit').value,
+        direccion: document.getElementById('nuevoClienteDireccion').value,
+        telefono: document.getElementById('nuevoClienteTelefono').value,
+        email: document.getElementById('nuevoClienteEmail').value,
         organismo_jurisdiccion: document.getElementById('nuevoClienteOrganismo').value
     };
     
@@ -909,9 +918,12 @@ document.getElementById('quickAddForm').addEventListener('submit', async (e) => 
 
 // Cerrar sugerencias al hacer clic fuera
 document.addEventListener('click', (e) => {
-    if (!e.target.classList.contains('producto-monodroga-input') && !e.target.classList.contains('producto-laboratorio-input')) {
+    if (!e.target.classList.contains('producto-monodroga-input') && 
+        !e.target.classList.contains('producto-laboratorio-input') &&
+        !e.target.classList.contains('alt-laboratorio-input')) {
         document.querySelectorAll('.monodroga-sugerencias').forEach(s => s.style.display = 'none');
         document.querySelectorAll('.laboratorio-sugerencias').forEach(s => s.style.display = 'none');
+        document.querySelectorAll('.alt-laboratorio-sugerencias').forEach(s => s.style.display = 'none');
     }
 });
 
@@ -1020,16 +1032,17 @@ function agregarAlternativa(productoId) {
     div.innerHTML = `
         <button type="button" onclick="eliminarAlternativa('${altId}', ${productoId})" style="position: absolute; top: 10px; right: 10px; background: var(--danger-color); color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer; font-size: 14px;">✕</button>
         <h6 style="color: #999; margin-bottom: 10px; font-size: 13px;">Alternativa #${alternativaCount}</h6>
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-bottom: 10px;">
-            <div class="form-group">
-                <label style="font-size: 14px;">Marca - Presentación</label>
-                <select class="alt-selector" onchange="seleccionarAlternativa(this)" style="font-size: 14px; padding: 10px;">
-                    ${optionsMarca}
-                </select>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+            <div class="form-group" style="position: relative;">
+                <label style="font-size: 14px;">Laboratorio *</label>
+                <input type="text" class="alt-laboratorio-input" oninput="buscarLaboratorioAlternativa(this, '${monodroga}')" placeholder="Escriba para buscar..." style="font-size: 14px; padding: 10px;">
+                <div class="alt-laboratorio-sugerencias" style="display: none; position: absolute; background: #1a1a1a; border: 1px solid var(--primary); border-radius: 5px; max-height: 200px; overflow-y: auto; z-index: 1000; width: calc(100% - 20px);"></div>
             </div>
             <div class="form-group">
-                <label style="font-size: 14px;">Laboratorio</label>
-                <input type="text" class="alt-laboratorio" style="font-size: 14px; padding: 10px;">
+                <label style="font-size: 14px;">Marca - Presentación *</label>
+                <select class="alt-selector" onchange="seleccionarAlternativa(this)" disabled style="font-size: 14px; padding: 10px;">
+                    <option value="">Primero seleccione laboratorio...</option>
+                </select>
             </div>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
@@ -1056,6 +1069,7 @@ function agregarAlternativa(productoId) {
         </div>
         <input type="hidden" class="alt-marca">
         <input type="hidden" class="alt-presentacion">
+        <input type="hidden" class="alt-laboratorio">
     `;
     
     container.appendChild(div);
@@ -1066,13 +1080,75 @@ function agregarAlternativa(productoId) {
     selector.appendChild(option);
 }
 
+async function buscarLaboratorioAlternativa(input, monodroga) {
+    const texto = input.value.trim();
+    const container = input.closest('.alternativa-item');
+    const sugerencias = container.querySelector('.alt-laboratorio-sugerencias');
+    const selectorMarca = container.querySelector('.alt-selector');
+    
+    if (texto.length === 0) {
+        sugerencias.style.display = 'none';
+        selectorMarca.innerHTML = '<option value="">Primero seleccione laboratorio...</option>';
+        selectorMarca.disabled = true;
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/laboratorios/buscar?monodroga=${encodeURIComponent(monodroga)}&q=${encodeURIComponent(texto)}`);
+        const laboratorios = await response.json();
+        
+        if (laboratorios.length === 0) {
+            sugerencias.style.display = 'none';
+            return;
+        }
+        
+        sugerencias.innerHTML = laboratorios.map(lab => 
+            `<div onclick="seleccionarLaboratorioAlternativa(this, '${lab.nombre.replace(/'/g, "\\'")}')"
+                  style="padding: 10px; cursor: pointer; border-bottom: 1px solid #333;">
+                ${lab.nombre}
+             </div>`
+        ).join('');
+        
+        sugerencias.style.display = 'block';
+    } catch (error) {
+        console.error('Error buscando laboratorios:', error);
+        sugerencias.style.display = 'none';
+    }
+}
+
+function seleccionarLaboratorioAlternativa(element, laboratorio) {
+    const container = element.closest('.alternativa-item');
+    const input = container.querySelector('.alt-laboratorio-input');
+    const sugerencias = container.querySelector('.alt-laboratorio-sugerencias');
+    const hiddenLaboratorio = container.querySelector('.alt-laboratorio');
+    const selectorMarca = container.querySelector('.alt-selector');
+    const producto = container.closest('.producto-item');
+    const monodroga = producto.querySelector('.producto-monodroga').value;
+    
+    input.value = laboratorio;
+    hiddenLaboratorio.value = laboratorio;
+    sugerencias.style.display = 'none';
+    
+    const productosFiltrados = catalogoProductos.filter(p => 
+        p.monodroga && p.monodroga.toLowerCase() === monodroga.toLowerCase() &&
+        p.laboratorio && p.laboratorio.toLowerCase() === laboratorio.toLowerCase()
+    );
+    
+    selectorMarca.innerHTML = '<option value="">Seleccione marca - presentación...</option>';
+    productosFiltrados.forEach(p => {
+        selectorMarca.innerHTML += `<option value="${p.numero_registro}" data-marca="${p.marca}" data-presentacion="${p.presentacion}" data-costo="${p.costo_unitario || 0}">
+            ${p.marca} - ${p.presentacion}
+        </option>`;
+    });
+    selectorMarca.disabled = false;
+}
+
 function seleccionarAlternativa(select) {
     const option = select.options[select.selectedIndex];
     const container = select.closest('.alternativa-item');
     
     container.querySelector('.alt-marca').value = option.dataset.marca || '';
     container.querySelector('.alt-presentacion').value = option.dataset.presentacion || '';
-    container.querySelector('.alt-laboratorio').value = option.dataset.laboratorio || '';
     container.querySelector('.alt-costo').value = option.dataset.costo || '';
     
     calcularPrecioAlternativa(container.querySelector('.alt-costo'));

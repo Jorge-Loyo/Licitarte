@@ -13,10 +13,14 @@
     
     <div style="background: var(--bg-dark); padding: 30px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
         <h3 style="color: var(--primary); margin-bottom: 25px; font-size: 18px; font-weight: 600; border-bottom: 2px solid var(--primary); padding-bottom: 10px;">📋 DATOS DE LICITACIÓN</h3>
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px;">
             <div class="form-group">
                 <label>N° Licitación *</label>
                 <input type="text" id="numeroLicitacion" required style="font-size: 16px; padding: 12px;">
+            </div>
+            <div class="form-group">
+                <label>Fecha de Carga</label>
+                <input type="text" id="fechaCarga" readonly style="background: #333; cursor: not-allowed; font-size: 16px; padding: 12px;">
             </div>
             <div class="form-group">
                 <label>Fecha de Apertura *</label>

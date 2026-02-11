@@ -1,4 +1,4 @@
-from pydantic import BaseModel, validator, Field
+from pydantic import BaseModel, field_validator, Field
 from typing import Optional, List
 from datetime import datetime
 
@@ -16,8 +16,9 @@ class ProductoSchema(BaseModel):
     observaciones: Optional[str] = None
     producto_cotizar: str = Field(default='principal')
     
-    @validator('resultado')
-    def validar_resultado(cls, v):
+    @field_validator('resultado')
+    @classmethod
+    def validar_resultado(cls, v: str) -> str:
         if v not in ['Adjudicado', 'Parcial', 'No Adjudicado']:
             raise ValueError('Resultado debe ser: Adjudicado, Parcial o No Adjudicado')
         return v
@@ -34,18 +35,20 @@ class LicitacionCreateSchema(BaseModel):
     monto_poliza: Optional[float] = Field(None, ge=0)
     observaciones: Optional[str] = None
     mantenimiento_oferta: Optional[str] = None
-    productos: List[ProductoSchema] = Field(..., min_items=1)
+    productos: List[ProductoSchema] = Field(..., min_length=1)
     
-    @validator('fecha')
-    def validar_fecha(cls, v):
+    @field_validator('fecha')
+    @classmethod
+    def validar_fecha(cls, v: str) -> str:
         try:
             datetime.strptime(v.split()[0], '%Y-%m-%d')
             return v
-        except:
+        except Exception:
             raise ValueError('Formato de fecha inválido (YYYY-MM-DD)')
     
-    @validator('productos')
-    def validar_renglones_unicos(cls, v):
+    @field_validator('productos')
+    @classmethod
+    def validar_renglones_unicos(cls, v: List[ProductoSchema]) -> List[ProductoSchema]:
         renglones = [p.numero_renglon for p in v if p.numero_renglon]
         if len(renglones) != len(set(renglones)):
             raise ValueError('Números de renglón duplicados')

@@ -25,6 +25,8 @@ def get_clientes():
 @bp.route('/clientes', methods=['POST'])
 def crear_cliente():
     try:
+        if not request.json or not isinstance(request.json, dict):
+            return jsonify({'success': False, 'error': 'Datos inválidos'}), 400
         data = ClienteCreate(**request.json)
     except ValidationError as e:
         return jsonify({'success': False, 'error': 'Datos inválidos', 'details': e.errors()}), 400
@@ -41,6 +43,8 @@ def crear_cliente():
 @bp.route('/clientes/<int:id>', methods=['PUT'])
 def actualizar_cliente(id):
     data = request.json
+    if not data or not isinstance(data, dict):
+        return jsonify({'success': False, 'error': 'Datos inválidos'}), 400
     try:
         db.actualizar_cliente(id, data['nombre'], data.get('razon_social', ''), data.get('cuit', ''),
                              data.get('direccion', ''), data.get('telefono', ''), data.get('email', ''),
@@ -77,6 +81,8 @@ def crear_oferente():
 @bp.route('/oferentes/<int:id>', methods=['PUT'])
 def actualizar_oferente(id):
     data = request.json
+    if not data or not isinstance(data, dict):
+        return jsonify({'success': False, 'error': 'Datos inválidos'}), 400
     try:
         db.actualizar_oferente(id, data['nombre'])
         return jsonify({'success': True}), 200
@@ -111,6 +117,8 @@ def crear_marca():
 @bp.route('/marcas/<int:id>', methods=['PUT'])
 def actualizar_marca(id):
     data = request.json
+    if not data or not isinstance(data, dict):
+        return jsonify({'success': False, 'error': 'Datos inválidos'}), 400
     try:
         db.actualizar_marca(id, data['nombre'])
         return jsonify({'success': True}), 200
@@ -145,6 +153,8 @@ def crear_tipo_licitacion():
 @bp.route('/tipos-licitacion/<int:id>', methods=['PUT'])
 def actualizar_tipo_licitacion(id):
     data = request.json
+    if not data or not isinstance(data, dict):
+        return jsonify({'success': False, 'error': 'Datos inválidos'}), 400
     try:
         db.actualizar_tipo_licitacion(id, data['nombre'])
         return jsonify({'success': True}), 200
@@ -191,7 +201,8 @@ def get_catalogo():
         
         # Contar total
         cursor.execute(f"SELECT COUNT(*) FROM medicamentos {where}", params)
-        total = cursor.fetchone()[0]
+        result = cursor.fetchone()
+        total = result[0] if result else 0
         
         # Obtener página
         cursor.execute(f"""SELECT id, numero_registro, monodroga, marca, presentacion, laboratorio, 

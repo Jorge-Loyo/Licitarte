@@ -23,7 +23,7 @@ def cargar_catalogo():
         return jsonify({'success': False, 'error': 'No se envió archivo'}), 400
     
     file = request.files['file']
-    if file.filename == '':
+    if not file.filename or file.filename == '':
         return jsonify({'success': False, 'error': 'No se seleccionó archivo'}), 400
     
     if not allowed_file(file.filename):
@@ -31,6 +31,8 @@ def cargar_catalogo():
     
     try:
         filename = secure_filename(file.filename)
+        if not filename:
+            return jsonify({'success': False, 'error': 'Nombre de archivo inválido'}), 400
         filepath = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
         
@@ -61,7 +63,7 @@ def crear_producto_catalogo():
                     cod_monodroga, cod_laboratorio, multidosis)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """, (
-                    data['numero_registro'], data.get('monodroga', ''), data.get('marca', ''),
+                    data.get('numero_registro'), data.get('monodroga', ''), data.get('marca', ''),
                     data.get('presentacion', ''), data.get('laboratorio', ''),
                     float(data['precio_caja']) if data.get('precio_caja') else None,
                     float(data['precio_unitario']) if data.get('precio_unitario') else None,
@@ -77,7 +79,7 @@ def crear_producto_catalogo():
                     cod_monodroga, cod_laboratorio, multidosis)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
-                    data['numero_registro'], data.get('monodroga', ''), data.get('marca', ''),
+                    data.get('numero_registro'), data.get('monodroga', ''), data.get('marca', ''),
                     data.get('presentacion', ''), data.get('laboratorio', ''),
                     float(data['precio_caja']) if data.get('precio_caja') else None,
                     float(data['precio_unitario']) if data.get('precio_unitario') else None,
@@ -86,6 +88,7 @@ def crear_producto_catalogo():
                     data.get('troquel_ean', ''), data.get('cod_monodroga'),
                     data.get('cod_laboratorio'), data.get('multidosis')
                 ))
+            conn.commit()
         return jsonify({'success': True}), 201
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -93,6 +96,9 @@ def crear_producto_catalogo():
 @bp.route('/catalogo/<int:id>', methods=['PUT'])
 def actualizar_producto_catalogo(id):
     data = request.json
+    if not data:
+        return jsonify({'success': False, 'error': 'Request body no puede estar vacío'}), 400
+    
     try:
         with db.get_connection() as conn:
             cursor = conn.cursor()
@@ -102,7 +108,7 @@ def actualizar_producto_catalogo(id):
                     laboratorio=%s, precio_caja=%s, precio_unitario=%s, costo_unitario=%s, fecha=%s, 
                     troquel=%s, cod_ab=%s, troquel_ean=%s, cod_monodroga=%s, cod_laboratorio=%s, multidosis=%s WHERE id=%s
                 """, (
-                    data['numero_registro'], data.get('monodroga', ''), data.get('marca', ''),
+                    data.get('numero_registro'), data.get('monodroga', ''), data.get('marca', ''),
                     data.get('presentacion', ''), data.get('laboratorio', ''),
                     float(data['precio_caja']) if data.get('precio_caja') else None,
                     float(data['precio_unitario']) if data.get('precio_unitario') else None,
@@ -117,7 +123,7 @@ def actualizar_producto_catalogo(id):
                     laboratorio=?, precio_caja=?, precio_unitario=?, costo_unitario=?, fecha=?, 
                     troquel=?, cod_ab=?, troquel_ean=?, cod_monodroga=?, cod_laboratorio=?, multidosis=? WHERE id=?
                 """, (
-                    data['numero_registro'], data.get('monodroga', ''), data.get('marca', ''),
+                    data.get('numero_registro'), data.get('monodroga', ''), data.get('marca', ''),
                     data.get('presentacion', ''), data.get('laboratorio', ''),
                     float(data['precio_caja']) if data.get('precio_caja') else None,
                     float(data['precio_unitario']) if data.get('precio_unitario') else None,
@@ -126,6 +132,7 @@ def actualizar_producto_catalogo(id):
                     data.get('troquel_ean', ''), data.get('cod_monodroga'),
                     data.get('cod_laboratorio'), data.get('multidosis'), id
                 ))
+            conn.commit()
         return jsonify({'success': True}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500

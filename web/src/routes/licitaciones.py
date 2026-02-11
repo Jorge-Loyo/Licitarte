@@ -65,9 +65,14 @@ def get_licitaciones():
                     FROM productos WHERE licitacion_id = ?
                 """, (l[0],))
             stats = cursor.fetchone()
-            total = stats[0] or 0
-            adjudicados = stats[1] or 0
-            total_cotizado = float(stats[2]) if stats[2] else 0.0
+            if stats:
+                total = stats[0] or 0
+                adjudicados = stats[1] or 0
+                total_cotizado = float(stats[2]) if stats[2] else 0.0
+            else:
+                total = 0
+                adjudicados = 0
+                total_cotizado = 0.0
             ganancia = f"{adjudicados}/{total}" if total > 0 else "-"
             
             resultado.append({
@@ -88,30 +93,22 @@ def get_licitaciones():
 
 @bp.route('', methods=['POST'])
 def crear_licitacion():
-    """Crear nueva licitación con productos.
-    
-    Validación Pydantic:
-        - LicitacionCreate valida estructura y tipos
-        - Retorna 400 con detalles si falla validación
-    
-    Proceso:
-        1. Crear licitación (retorna ID)
-        2. Crear productos asociados (loop)
-        3. Crear alternativas por producto (nested loop)
-    
-    Transacción: Automática con context manager.
-    Si falla cualquier paso, rollback completo.
-    
-    Returns:
-        201: {'success': True, 'id': <licitacion_id>}
-        400: {'success': False, 'error': str, 'details': []}
-        500: {'success': False, 'error': 'Error interno'}
-    """
+    """Crear nueva licitación con productos."""
     try:
+        # Validar que request.json no sea None
+        if not request.json:
+            return jsonify({'success': False, 'error': 'Request body no puede estar vacío'}), 400
+        
+        print(f"Datos recibidos: {request.json}")
+        
         # Validar con Pydantic
         data = LicitacionCreate(**request.json)
     except ValidationError as e:
+        print(f"Error de validación Pydantic: {e.errors()}")
         return jsonify({'success': False, 'error': 'Datos inválidos', 'details': e.errors()}), 400
+    except Exception as e:
+        print(f"Error inesperado en validación: {str(e)}")
+        return jsonify({'success': False, 'error': str(e)}), 400
     
     try:
         
@@ -129,7 +126,8 @@ def crear_licitacion():
             data.requiere_poliza,
             data.monto_poliza,
             data.observaciones or '',
-            data.mantenimiento_oferta or ''
+            data.mantenimiento_oferta or '',
+            data.fecha_carga
         )
         
         # Crear productos asociados a la licitación
@@ -222,10 +220,57 @@ def get_licitacion(id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@bp.route('/<int:id>/detalle', methods=['GET'])
+def get_licitacion_detalle(id):
+    """Obtener detalle completo de licitación para edición"""
+    try:
+        with db.get_connection() as conn:
+            cursor = conn.cursor()
+            if USE_POSTGRES:
+                cursor.execute("""
+                    SELECT l.id, l.numero_licitacion, l.fecha, l.fecha_carga, l.cliente_id, l.tipo_licitacion_id,
+                           l.portal_origen, l.modalidad_entrega, l.forma_pago, l.requiere_poliza, 
+                           l.monto_poliza, l.observaciones, l.mantenimiento_oferta, l.tipo_adjudicacion
+                    FROM licitaciones l
+                    WHERE l.id = %s
+                """, (id,))
+            else:
+                cursor.execute("""
+                    SELECT l.id, l.numero_licitacion, l.fecha, l.fecha_carga, l.cliente_id, l.tipo_licitacion_id,
+                           l.portal_origen, l.modalidad_entrega, l.forma_pago, l.requiere_poliza, 
+                           l.monto_poliza, l.observaciones, l.mantenimiento_oferta, l.tipo_adjudicacion
+                    FROM licitaciones l
+                    WHERE l.id = ?
+                """, (id,))
+            row = cursor.fetchone()
+            if row:
+                return jsonify({
+                    'id': row[0],
+                    'numero': row[1],
+                    'fecha': row[2],
+                    'fecha_carga': row[3],
+                    'cliente_id': row[4],
+                    'tipo_licitacion_id': row[5],
+                    'portal_origen': row[6],
+                    'modalidad_entrega': row[7],
+                    'forma_pago': row[8],
+                    'requiere_poliza': row[9],
+                    'monto_poliza': row[10],
+                    'observaciones': row[11],
+                    'mantenimiento_oferta': row[12],
+                    'tipo_adjudicacion': row[13]
+                })
+            return jsonify({'error': 'No encontrada'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @bp.route('/<int:id>', methods=['PUT'])
 def actualizar_licitacion(id):
     """Actualizar licitación existente"""
     data = request.json
+    if not data:
+        return jsonify({'success': False, 'error': 'Request body no puede estar vacío'}), 400
+    
     try:
         with db.get_connection() as conn:
             cursor = conn.cursor()
@@ -238,8 +283,8 @@ def actualizar_licitacion(id):
                         tipo_adjudicacion=%s
                     WHERE id=%s
                 """, (
-                    data['numero'],
-                    data['fecha'],
+                    data.get('numero'),
+                    data.get('fecha'),
                     int(data['cliente_id']) if data.get('cliente_id') else None,
                     int(data['tipo_licitacion_id']) if data.get('tipo_licitacion_id') else None,
                     data.get('portal_origen', ''),
@@ -261,8 +306,8 @@ def actualizar_licitacion(id):
                         tipo_adjudicacion=?
                     WHERE id=?
                 """, (
-                    data['numero'],
-                    data['fecha'],
+                    data.get('numero'),
+                    data.get('fecha'),
                     int(data['cliente_id']) if data.get('cliente_id') else None,
                     int(data['tipo_licitacion_id']) if data.get('tipo_licitacion_id') else None,
                     data.get('portal_origen', ''),
