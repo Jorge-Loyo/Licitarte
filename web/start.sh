@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+echo "Verificando columnas faltantes..."
+python fix_render_columns.py
+
 echo "Ejecutando migraciones..."
 python migrate_render.py
 

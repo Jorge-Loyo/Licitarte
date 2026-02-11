@@ -19,7 +19,7 @@ def get_clientes():
     return jsonify([{
         'id': c[0], 'nombre': c[1], 'razon_social': c[2], 'cuit': c[3],
         'direccion': c[4], 'telefono': c[5], 'email': c[6],
-        'organismo_jurisdiccion': c[7] if len(c) > 7 else ''
+        'organismo_jurisdiccion': c[7] if len(c) > 7 and c[7] is not None else ''
     } for c in clientes])
 
 @bp.route('/clientes', methods=['POST'])
