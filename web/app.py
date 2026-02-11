@@ -12,55 +12,48 @@ from flask_cors import CORS
 load_dotenv()
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-# Verificar y agregar columnas faltantes en PostgreSQL (Render)
+# Ejecutar migración de columnas solo una vez
 if os.getenv('USE_POSTGRES') == 'true':
-    try:
-        import psycopg
-        from urllib.parse import urlparse
-        
-        db_url = os.getenv('DATABASE_URL')
-        if db_url:
-            result = urlparse(db_url)
-            conn = psycopg.connect(
-                dbname=result.path[1:],
-                user=result.username,
-                password=result.password,
-                host=result.hostname,
-                port=result.port
-            )
-            cursor = conn.cursor()
+    lock_file = '/tmp/licitarte_migration.lock'
+    if not os.path.exists(lock_file):
+        try:
+            import psycopg
+            from urllib.parse import urlparse
             
-            # Verificar y agregar organismo_jurisdiccion en clientes
-            cursor.execute("""
-                SELECT column_name FROM information_schema.columns 
-                WHERE table_name='clientes' AND column_name='organismo_jurisdiccion'
-            """)
-            if not cursor.fetchone():
-                cursor.execute("ALTER TABLE clientes ADD COLUMN organismo_jurisdiccion VARCHAR(200)")
-                conn.commit()
-            
-            # Verificar y agregar numero_presupuesto en licitaciones
-            cursor.execute("""
-                SELECT column_name FROM information_schema.columns 
-                WHERE table_name='licitaciones' AND column_name='numero_presupuesto'
-            """)
-            if not cursor.fetchone():
-                cursor.execute("ALTER TABLE licitaciones ADD COLUMN numero_presupuesto INTEGER")
-                conn.commit()
-            
-            # Verificar y agregar fecha_carga en licitaciones
-            cursor.execute("""
-                SELECT column_name FROM information_schema.columns 
-                WHERE table_name='licitaciones' AND column_name='fecha_carga'
-            """)
-            if not cursor.fetchone():
-                cursor.execute("ALTER TABLE licitaciones ADD COLUMN fecha_carga TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-                conn.commit()
-            
-            cursor.close()
-            conn.close()
-    except Exception as e:
-        print(f"Error verificando columnas: {e}")
+            db_url = os.getenv('DATABASE_URL')
+            if db_url:
+                result = urlparse(db_url)
+                conn = psycopg.connect(
+                    dbname=result.path[1:],
+                    user=result.username,
+                    password=result.password,
+                    host=result.hostname,
+                    port=result.port
+                )
+                cursor = conn.cursor()
+                
+                cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name='clientes' AND column_name='organismo_jurisdiccion'")
+                if not cursor.fetchone():
+                    cursor.execute("ALTER TABLE clientes ADD COLUMN organismo_jurisdiccion VARCHAR(200)")
+                    conn.commit()
+                
+                cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name='licitaciones' AND column_name='numero_presupuesto'")
+                if not cursor.fetchone():
+                    cursor.execute("ALTER TABLE licitaciones ADD COLUMN numero_presupuesto INTEGER")
+                    conn.commit()
+                
+                cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name='licitaciones' AND column_name='fecha_carga'")
+                if not cursor.fetchone():
+                    cursor.execute("ALTER TABLE licitaciones ADD COLUMN fecha_carga TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+                    conn.commit()
+                
+                cursor.close()
+                conn.close()
+                
+                # Crear archivo lock
+                open(lock_file, 'w').close()
+        except Exception as e:
+            print(f"Error en migración: {e}")
 
 from shared.database.db_manager import DatabaseManager
 from security_config import SecurityConfig
