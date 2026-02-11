@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+echo "Ejecutando migraciones..."
+python migrate_render.py
+
 echo "Creando usuario admin..."
 python create_admin.py
 

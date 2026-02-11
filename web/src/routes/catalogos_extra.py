@@ -6,10 +6,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 from shared.database.db_manager import DatabaseManager
+from shared.database.connection_pool import USE_POSTGRES
 
 bp = Blueprint('catalogos_extra', __name__, url_prefix='/api')
 db = DatabaseManager()
-USE_POSTGRES = os.getenv('USE_POSTGRES', 'False').lower() == 'true'
 
 # PORTALES ORIGEN
 @bp.route('/portales-origen', methods=['GET'])
