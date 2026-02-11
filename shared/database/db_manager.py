@@ -1295,11 +1295,11 @@ class DatabaseManager:
                 cursor.execute("SELECT COUNT(*) FROM laboratorios WHERE activo = TRUE")
                 total = cursor.fetchone()[0]
                 # Registros de la página
-                cursor.execute("SELECT id, cod, nombre, activo FROM laboratorios WHERE activo = TRUE ORDER BY nombre LIMIT %s OFFSET %s", (por_pagina, offset))
+                cursor.execute("SELECT id, nombre, activo FROM laboratorios WHERE activo = TRUE ORDER BY nombre LIMIT %s OFFSET %s", (por_pagina, offset))
             else:
                 cursor.execute("SELECT COUNT(*) FROM laboratorios WHERE activo = 1")
                 total = cursor.fetchone()[0]
-                cursor.execute("SELECT id, cod, nombre, activo FROM laboratorios WHERE activo = 1 ORDER BY nombre LIMIT ? OFFSET ?", (por_pagina, offset))
+                cursor.execute("SELECT id, nombre, activo FROM laboratorios WHERE activo = 1 ORDER BY nombre LIMIT ? OFFSET ?", (por_pagina, offset))
             
             datos = cursor.fetchall()
             return {
@@ -1354,11 +1354,11 @@ class DatabaseManager:
                 cursor.execute("SELECT COUNT(*) FROM monodrogas WHERE activo = TRUE")
                 total = cursor.fetchone()[0]
                 # Registros de la página
-                cursor.execute("SELECT id, cod, nombre, activo FROM monodrogas WHERE activo = TRUE ORDER BY nombre LIMIT %s OFFSET %s", (por_pagina, offset))
+                cursor.execute("SELECT id, nombre, activo FROM monodrogas WHERE activo = TRUE ORDER BY nombre LIMIT %s OFFSET %s", (por_pagina, offset))
             else:
                 cursor.execute("SELECT COUNT(*) FROM monodrogas WHERE activo = 1")
                 total = cursor.fetchone()[0]
-                cursor.execute("SELECT id, cod, nombre, activo FROM monodrogas WHERE activo = 1 ORDER BY nombre LIMIT ? OFFSET ?", (por_pagina, offset))
+                cursor.execute("SELECT id, nombre, activo FROM monodrogas WHERE activo = 1 ORDER BY nombre LIMIT ? OFFSET ?", (por_pagina, offset))
             
             datos = cursor.fetchall()
             return {
