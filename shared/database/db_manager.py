@@ -901,6 +901,7 @@ class DatabaseManager:
             else:
                 cursor.execute("UPDATE clientes SET nombre=?, razon_social=?, cuit=?, direccion=?, telefono=?, email=?, organismo_jurisdiccion=? WHERE id=?",
                               (nombre.strip(), razon_social.strip(), cuit.strip(), direccion.strip(), telefono.strip(), email.strip(), organismo_jurisdiccion.strip(), cliente_id))
+            conn.commit()
     
     def eliminar_cliente(self, cliente_id):
         with self.get_connection() as conn:
