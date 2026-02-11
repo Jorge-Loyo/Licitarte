@@ -86,6 +86,10 @@ def run_migrations(db):
             if not cursor.fetchone():
                 cursor.execute("ALTER TABLE licitaciones ADD COLUMN fecha_carga TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
             
+            cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name='licitaciones' AND column_name='numero_presupuesto'")
+            if not cursor.fetchone():
+                cursor.execute("ALTER TABLE licitaciones ADD COLUMN numero_presupuesto INTEGER")
+            
             print("✓ Columnas agregadas a licitaciones")
             
             # 8. organismo_jurisdiccion en clientes
