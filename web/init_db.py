@@ -110,6 +110,39 @@ def init_db():
             
             conn.commit()
             print("✅ Base de datos inicializada correctamente")
+            
+            # Cargar catálogo de medicamentos (esto llena laboratorios y monodrogas)
+            print("\nCargando catálogo de medicamentos...")
+            try:
+                from pathlib import Path
+                import sys
+                
+                # Agregar paths necesarios
+                project_root = Path(__file__).parent.parent
+                sys.path.insert(0, str(project_root))
+                
+                from shared.database.db_manager import DatabaseManager
+                
+                db = DatabaseManager()
+                
+                # Buscar archivo Excel en Data/
+                excel_path = project_root / 'Data' / 'Alfabeta_Febrero.xlsx'
+                if not excel_path.exists():
+                    excel_path = project_root / 'Data' / 'Medicamentos.xlsx'
+                
+                if excel_path.exists():
+                    print(f"Cargando desde {excel_path.name}...")
+                    resultado = db.cargar_catalogo_desde_excel(str(excel_path))
+                    if resultado:
+                        print("✅ Catálogo cargado (medicamentos, laboratorios y monodrogas)")
+                    else:
+                        print("⚠️ Error al cargar catálogo")
+                else:
+                    print(f"⚠️ Archivo de catálogo no encontrado en {project_root / 'Data'}")
+            except Exception as e:
+                print(f"⚠️ Error cargando catálogo: {e}")
+                import traceback
+                traceback.print_exc()
 
 if __name__ == '__main__':
     init_db()

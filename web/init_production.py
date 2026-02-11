@@ -123,14 +123,20 @@ def init_production():
         if USE_POSTGRES:
             run_migrations(db)
         
-        # Cargar catálogo
+        # Cargar catálogo (esto también llena laboratorios y monodrogas)
         excel_path = Path(__file__).parent.parent / 'Data' / 'Alfabeta_Febrero.xlsx'
+        if not excel_path.exists():
+            excel_path = Path(__file__).parent.parent / 'Data' / 'Medicamentos.xlsx'
+        
         if excel_path.exists():
-            print("\nCargando catálogo desde Excel...")
-            db.cargar_catalogo_desde_excel(str(excel_path))
-            print("✓ Catálogo cargado")
+            print(f"\nCargando catálogo desde {excel_path.name}...")
+            resultado = db.cargar_catalogo_desde_excel(str(excel_path))
+            if resultado:
+                print("✓ Catálogo cargado (medicamentos, laboratorios y monodrogas sincronizados)")
+            else:
+                print("⚠ Error al cargar catálogo")
         else:
-            print(f"⚠ Archivo {excel_path} no encontrado")
+            print("⚠ Archivo de catálogo no encontrado en Data/")
         
         print("\n✅ Inicialización completada exitosamente")
         
