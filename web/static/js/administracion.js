@@ -113,9 +113,17 @@ document.getElementById("clienteForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const id = document.getElementById("clienteId").value;
+  const organismoValue = document.getElementById("clienteOrganismo").value;
+  
+  // Validar que se haya seleccionado un organismo
+  if (!organismoValue || organismoValue.trim() === "") {
+    alert("Debe seleccionar un Organismo/Jurisdicción");
+    return;
+  }
+  
   const data = {
     nombre: document.getElementById("clienteNombre").value,
-    organismo_jurisdiccion: document.getElementById("clienteOrganismo").value,
+    organismo_jurisdiccion: organismoValue,
     razon_social: document.getElementById("clienteRazonSocial").value,
     cuit: document.getElementById("clienteCuit").value,
     direccion: document.getElementById("clienteDireccion").value,
