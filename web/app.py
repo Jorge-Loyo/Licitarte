@@ -12,55 +12,17 @@ from flask_cors import CORS
 load_dotenv()
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-# Ejecutar limpieza y migraciones en PostgreSQL
-if os.getenv('USE_POSTGRES') == 'true':
+# Sincronizar base de datos local a Render en cada deploy
+if os.getenv('USE_POSTGRES') == 'true' and os.getenv('SYNC_DB') == 'true':
     try:
-        import psycopg
-        from urllib.parse import urlparse
-        
-        db_url = os.getenv('DATABASE_URL')
-        if db_url:
-            result = urlparse(db_url)
-            conn = psycopg.connect(
-                dbname=result.path[1:],
-                user=result.username,
-                password=result.password,
-                host=result.hostname,
-                port=result.port
-            )
-            cursor = conn.cursor()
-            
-            # SIEMPRE limpiar clientes inactivos al iniciar
-            cursor.execute("DELETE FROM clientes WHERE activo = FALSE")
-            deleted = cursor.rowcount
-            conn.commit()
-            print(f"Limpieza: {deleted} clientes inactivos eliminados")
-            
-            # Verificar columnas
-            cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name='clientes' AND column_name='organismo_jurisdiccion'")
-            if not cursor.fetchone():
-                cursor.execute("ALTER TABLE clientes ADD COLUMN organismo_jurisdiccion VARCHAR(200)")
-                conn.commit()
-                print("Columna organismo_jurisdiccion agregada")
-            
-            cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name='licitaciones' AND column_name='numero_presupuesto'")
-            if not cursor.fetchone():
-                cursor.execute("ALTER TABLE licitaciones ADD COLUMN numero_presupuesto INTEGER")
-                conn.commit()
-                print("Columna numero_presupuesto agregada")
-            
-            cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name='licitaciones' AND column_name='fecha_carga'")
-            if not cursor.fetchone():
-                cursor.execute("ALTER TABLE licitaciones ADD COLUMN fecha_carga TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-                conn.commit()
-                print("Columna fecha_carga agregada")
-            
-            cursor.close()
-            conn.close()
-            print("Migraciones completadas")
-            
+        print("Iniciando sincronización de base de datos...")
+        import subprocess
+        result = subprocess.run(['python', 'sync_db.py'], capture_output=True, text=True)
+        print(result.stdout)
+        if result.stderr:
+            print(result.stderr)
     except Exception as e:
-        print(f"Error en migración: {e}")
+        print(f"Error en sincronización: {e}")
 
 from shared.database.db_manager import DatabaseManager
 from security_config import SecurityConfig

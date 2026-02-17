@@ -340,8 +340,9 @@ def eliminar_laboratorio(id):
 def get_monodrogas():
     pagina = request.args.get('pagina', 1, type=int)
     por_pagina = request.args.get('por_pagina', 50, type=int)
+    search = request.args.get('search', '').strip()
     
-    resultado = db.obtener_monodrogas(pagina=pagina, por_pagina=por_pagina)
+    resultado = db.obtener_monodrogas(pagina=pagina, por_pagina=por_pagina, search=search)
     
     return jsonify({
         'total': resultado['total'],

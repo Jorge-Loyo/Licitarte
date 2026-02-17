@@ -95,19 +95,13 @@ def get_licitaciones():
 def crear_licitacion():
     """Crear nueva licitación con productos."""
     try:
-        # Validar que request.json no sea None
         if not request.json:
             return jsonify({'success': False, 'error': 'Request body no puede estar vacío'}), 400
         
-        print(f"Datos recibidos: {request.json}")
-        
-        # Validar con Pydantic
         data = LicitacionCreate(**request.json)
     except ValidationError as e:
-        print(f"Error de validación Pydantic: {e.errors()}")
         return jsonify({'success': False, 'error': 'Datos inválidos', 'details': e.errors()}), 400
     except Exception as e:
-        print(f"Error inesperado en validación: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 400
     
     try:

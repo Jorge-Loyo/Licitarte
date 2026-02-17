@@ -42,7 +42,7 @@ async function cargarClientes() {
     mostrarClientes(clientes);
   } catch (error) {
     console.error("Error cargando clientes:", error);
-    mostrarModalMensaje("Mensaje", "Error al cargar clientes: " + error.message, "success");
+    alert("Error al cargar clientes: " + error.message);
   }
 }
 
@@ -117,7 +117,7 @@ document.getElementById("clienteForm").addEventListener("submit", async (e) => {
   
   // Validar que se haya seleccionado un organismo
   if (!organismoValue || organismoValue.trim() === "") {
-    mostrarModalMensaje("Mensaje", "Debe seleccionar un Organismo/Jurisdicción", "success");
+    alert("Debe seleccionar un Organismo/Jurisdicción");
     return;
   }
   
@@ -148,29 +148,30 @@ document.getElementById("clienteForm").addEventListener("submit", async (e) => {
     console.log("Response data:", result);
 
     if (result.success) {
-      mostrarModalMensaje("Mensaje", id ? "Cliente actualizado" : "Cliente creado", "success");
+      alert(id ? "Cliente actualizado" : "Cliente creado");
       cerrarModalCliente();
       cargarClientes();
     } else {
-      mostrarModalMensaje("Mensaje", "Error: " + result.error, "success");
+      alert("Error: " + result.error);
     }
   } catch (error) {
     console.error("Error en fetch:", error);
-    mostrarModalMensaje("Mensaje", "Error de conexión: " + error.message, "success");
+    alert("Error de conexión: " + error.message);
   }
 });
 
 async function eliminarCliente(id) {
   mostrarModalConfirmar("¿Eliminar este cliente?", async () => {
-    const response = await fetch(`/api/clientes/${id}`, { method: "DELETE" });
-    const result = await response.json();
-    if (result.success) {
-      cargarClientes();
-      mostrarModalMensaje("Éxito", "Cliente eliminado", "success");
-    } else {
-      mostrarModalMensaje("Error", result.error, "error");
-    }
-  });
+
+  const response = await fetch(`/api/clientes/${id}`, { method: "DELETE" });
+  const result = await response.json();
+
+  if (result.success) {
+    alert("Cliente eliminado");
+    cargarClientes();
+  } else {
+    alert("Error: " + result.error);
+  }
 }
 
 // Gestión Oferentes
@@ -237,25 +238,26 @@ document
     });
     const result = await response.json();
     if (result.success) {
+      alert(id ? "Oferente actualizado" : "Oferente creado");
       cerrarModalOferente();
       cargarOferentes();
-      mostrarModalMensaje("Éxito", id ? "Oferente actualizado" : "Oferente creado", "success");
     } else {
-      mostrarModalMensaje("Error", result.error, "error");
+      alert("Error: " + result.error);
     }
   });
 
 async function eliminarOferente(id) {
   mostrarModalConfirmar("¿Eliminar este oferente?", async () => {
-    const response = await fetch(`/api/oferentes/${id}`, { method: "DELETE" });
-    const result = await response.json();
-    if (result.success) {
-      cargarOferentes();
-      mostrarModalMensaje("Éxito", "Oferente eliminado", "success");
-    } else {
-      mostrarModalMensaje("Error", result.error, "error");
-    }
-  });
+
+  const response = await fetch(`/api/oferentes/${id}`, { method: "DELETE" });
+  const result = await response.json();
+
+  if (result.success) {
+    alert("Oferente eliminado");
+    cargarOferentes();
+  } else {
+    alert("Error: " + result.error);
+  }
 }
 
 // Gestión Marcas
@@ -319,25 +321,26 @@ document.getElementById("marcaForm").addEventListener("submit", async (e) => {
   });
   const result = await response.json();
   if (result.success) {
+    alert(id ? "Marca actualizada" : "Marca creada");
     cerrarModalMarca();
     cargarMarcas();
-    mostrarModalMensaje("Éxito", id ? "Marca actualizada" : "Marca creada", "success");
   } else {
-    mostrarModalMensaje("Error", result.error, "error");
+    alert("Error: " + result.error);
   }
 });
 
 async function eliminarMarca(id) {
   mostrarModalConfirmar("¿Eliminar esta marca?", async () => {
-    const response = await fetch(`/api/marcas/${id}`, { method: "DELETE" });
-    const result = await response.json();
-    if (result.success) {
-      cargarMarcas();
-      mostrarModalMensaje("Éxito", "Marca eliminada", "success");
-    } else {
-      mostrarModalMensaje("Error", result.error, "error");
-    }
-  });
+
+  const response = await fetch(`/api/marcas/${id}`, { method: "DELETE" });
+  const result = await response.json();
+
+  if (result.success) {
+    alert("Marca eliminada");
+    cargarMarcas();
+  } else {
+    alert("Error: " + result.error);
+  }
 }
 
 // Gestión Tipos de Licitación
@@ -403,25 +406,28 @@ document.getElementById("tipoForm").addEventListener("submit", async (e) => {
   });
   const result = await response.json();
   if (result.success) {
-    mostrarModalMensaje("Mensaje", id ? "Tipo actualizado" : "Tipo creado", "success");
+    alert(id ? "Tipo actualizado" : "Tipo creado");
     cerrarModalTipo();
     cargarTipos();
   } else {
-    mostrarModalMensaje("Mensaje", "Error: " + result.error, "success");
+    alert("Error: " + result.error);
   }
 });
 
 async function eliminarTipo(id) {
   mostrarModalConfirmar("¿Eliminar este tipo de licitación?", async () => {
-    const response = await fetch(`/api/tipos-licitacion/${id}`, { method: "DELETE" });
-    const result = await response.json();
-    if (result.success) {
-      cargarTipos();
-      mostrarModalMensaje("Éxito", "Tipo eliminado", "success");
-    } else {
-      mostrarModalMensaje("Error", result.error, "error");
-    }
+
+  const response = await fetch(`/api/tipos-licitacion/${id}`, {
+    method: "DELETE",
   });
+  const result = await response.json();
+
+  if (result.success) {
+    alert("Tipo eliminado");
+    cargarTipos();
+  } else {
+    alert("Error: " + result.error);
+  }
 }
 
 // Gestión Catálogo con paginación en servidor
@@ -433,7 +439,8 @@ function buscarCatalogo() {
 
 async function cargarCatalogo(page = 1) {
   const search = document.getElementById("searchCatalogo")?.value || "";
-  const url = `/api/catalogo?page=${page}&per_page=50&search=${encodeURIComponent(search)}`;
+  const campo = document.getElementById("campoCatalogo")?.value || "todos";
+  const url = `/api/catalogo?page=${page}&per_page=50&search=${encodeURIComponent(search)}&campo=${campo}`;
 
   const response = await fetch(url);
   catalogoData = await response.json();
@@ -451,10 +458,10 @@ function mostrarCatalogo() {
   catalogoData.productos.forEach((p) => {
     const tr = document.createElement("tr");
     tr.innerHTML = `
-            <td>
-                <button onclick="editarProductoCatalogo(${p.id})" class="btn-primary">Editar</button>
-            </td>
             <td>${p.numero_registro}</td>
+            <td>${p.troquel || "-"}</td>
+            <td>${p.cod_ab !== null && p.cod_ab !== undefined ? p.cod_ab : "-"}</td>
+            <td>${p.troquel_ean || "-"}</td>
             <td>${p.cod_monodroga !== null && p.cod_monodroga !== undefined ? p.cod_monodroga : "-"}</td>
             <td>${p.monodroga}</td>
             <td>${p.cod_laboratorio !== null && p.cod_laboratorio !== undefined ? p.cod_laboratorio : "-"}</td>
@@ -465,32 +472,15 @@ function mostrarCatalogo() {
             <td>${p.precio_caja ? "$" + p.precio_caja.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "-"}</td>
             <td>${p.precio_unitario ? "$" + p.precio_unitario.toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "-"}</td>
             <td>${p.fecha || "-"}</td>
-            <td>${p.troquel || "-"}</td>
-            <td>${p.cod_ab !== null && p.cod_ab !== undefined ? p.cod_ab : "-"}</td>
-            <td>${p.troquel_ean || "-"}</td>
+            <td>
+                <button onclick="editarProductoCatalogo(${p.id})" class="btn-primary">Editar</button>
+            </td>
         `;
     tbody.appendChild(tr);
   });
 
   actualizarInfoCatalogo();
   actualizarPaginacionCatalogo();
-  sincronizarScrolls();
-}
-
-function sincronizarScrolls() {
-  const container = document.getElementById("catalogoScrollContainer");
-  const scrollTop = document.querySelector("#catalogoScrollTop").parentElement;
-  const table = container.querySelector("table");
-  
-  document.getElementById("catalogoScrollTop").style.width = table.offsetWidth + "px";
-  
-  container.addEventListener("scroll", () => {
-    scrollTop.scrollLeft = container.scrollLeft;
-  });
-  
-  scrollTop.addEventListener("scroll", () => {
-    container.scrollLeft = scrollTop.scrollLeft;
-  });
 }
 
 function actualizarInfoCatalogo() {
@@ -540,9 +530,14 @@ function irAPaginaCatalogo() {
 }
 
 async function recargarCatalogo() {
-  mostrarModalConfirmar("¿Recargar catálogo desde Excel? Esto puede tardar unos segundos.", () => {
-    mostrarModalMensaje("Info", "Función de recarga desde servidor. Implementar endpoint si es necesario.", "success");
-  });
+  if (
+    !confirm("¿Recargar catálogo desde Excel? Esto puede tardar unos segundos.")
+  )
+    return;
+
+  alert(
+    "Función de recarga desde servidor. Implementar endpoint si es necesario.",
+  );
 }
 
 async function subirExcel() {
@@ -673,41 +668,6 @@ function cerrarModalMensaje() {
   if (modal) modal.style.display = "none";
 }
 
-function mostrarModalConfirmar(mensaje, callback) {
-  let modal = document.getElementById("modalConfirmar");
-  if (!modal) {
-    modal = document.createElement("div");
-    modal.id = "modalConfirmar";
-    modal.style.cssText = `
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.7); display: flex; align-items: center;
-      justify-content: center; z-index: 10002;
-    `;
-    modal.innerHTML = `
-      <div style="background: var(--bg-card); padding: 30px; border-radius: 10px; min-width: 400px; max-width: 500px;">
-        <h3 style="margin: 0 0 15px 0; color: var(--text);">Confirmar</h3>
-        <p id="textoConfirmar" style="margin: 0 0 20px 0; color: var(--text);"></p>
-        <div style="display: flex; gap: 10px;">
-          <button onclick="cerrarModalConfirmar()" class="btn-secondary" style="flex: 1;">Cancelar</button>
-          <button id="btnConfirmar" class="btn-danger" style="flex: 1;">Aceptar</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modal);
-  }
-  document.getElementById("textoConfirmar").textContent = mensaje;
-  document.getElementById("btnConfirmar").onclick = () => {
-    cerrarModalConfirmar();
-    callback();
-  };
-  modal.style.display = "flex";
-}
-
-function cerrarModalConfirmar() {
-  const modal = document.getElementById("modalConfirmar");
-  if (modal) modal.style.display = "none";
-}
-
 async function subirExcelClientes() {
   const fileInput = document.getElementById("excelClientes");
   const file = fileInput.files[0];
@@ -723,13 +683,13 @@ async function subirExcelClientes() {
     });
     const result = await response.json();
     if (result.success) {
-      mostrarModalMensaje("Mensaje", "✓ " + result.message, "success");
+      alert("✓ " + result.message);
       cargarClientes();
     } else {
-      mostrarModalMensaje("Mensaje", "✗ Error: " + result.error, "success");
+      alert("✗ Error: " + result.error);
     }
   } catch (error) {
-    mostrarModalMensaje("Mensaje", "✗ Error: " + error.message, "success");
+    alert("✗ Error: " + error.message);
   }
   fileInput.value = "";
 }
@@ -749,13 +709,13 @@ async function subirExcelOferentes() {
     });
     const result = await response.json();
     if (result.success) {
-      mostrarModalMensaje("Mensaje", "✓ " + result.message, "success");
+      alert("✓ " + result.message);
       cargarOferentes();
     } else {
-      mostrarModalMensaje("Mensaje", "✗ Error: " + result.error, "success");
+      alert("✗ Error: " + result.error);
     }
   } catch (error) {
-    mostrarModalMensaje("Mensaje", "✗ Error: " + error.message, "success");
+    alert("✗ Error: " + error.message);
   }
   fileInput.value = "";
 }
@@ -775,13 +735,13 @@ async function subirExcelMarcas() {
     });
     const result = await response.json();
     if (result.success) {
+      alert("✓ " + result.message);
       cargarMarcas();
-      mostrarModalMensaje("Éxito", result.message, "success");
     } else {
-      mostrarModalMensaje("Error", result.error, "error");
+      alert("✗ Error: " + result.error);
     }
   } catch (error) {
-    mostrarModalMensaje("Error", error.message, "error");
+    alert("✗ Error: " + error.message);
   }
   fileInput.value = "";
 }
@@ -801,13 +761,13 @@ async function subirExcelTipos() {
     });
     const result = await response.json();
     if (result.success) {
-      mostrarModalMensaje("Mensaje", "✓ " + result.message, "success");
+      alert("✓ " + result.message);
       cargarTipos();
     } else {
-      mostrarModalMensaje("Mensaje", "✗ Error: " + result.error, "success");
+      alert("✗ Error: " + result.error);
     }
   } catch (error) {
-    mostrarModalMensaje("Mensaje", "✗ Error: " + error.message, "success");
+    alert("✗ Error: " + error.message);
   }
   fileInput.value = "";
 }
@@ -856,14 +816,14 @@ document
 
       const result = await response.json();
       if (result.success) {
-        mostrarModalMensaje("Mensaje", id ? "Producto actualizado" : "Producto agregado", "success");
+        alert(id ? "Producto actualizado" : "Producto agregado");
         cerrarModalProductoCatalogo();
         cargarCatalogo();
       } else {
-        mostrarModalMensaje("Mensaje", "Error: " + result.error, "success");
+        alert("Error: " + result.error);
       }
     } catch (error) {
-      mostrarModalMensaje("Mensaje", "Error: " + error.message, "success");
+      alert("Error: " + error.message);
     }
   });
 
@@ -959,24 +919,24 @@ document.getElementById("portalForm").addEventListener("submit", async (e) => {
   });
   const result = await response.json();
   if (result.success) {
-    mostrarModalMensaje("Mensaje", id ? "Portal actualizado" : "Portal creado", "success");
+    alert(id ? "Portal actualizado" : "Portal creado");
     cerrarModalPortal();
     cargarPortales();
   } else {
-    mostrarModalMensaje("Mensaje", "Error: " + result.error, "success");
+    alert("Error: " + result.error);
   }
 });
 
 async function eliminarPortal(id) {
-  if (!confirm("¿Eliminar?")) return;
+  mostrarModalConfirmar("¿Eliminar?", async () => {
   const response = await fetch(`/api/portales-origen/${id}`, {
     method: "DELETE",
   });
   const result = await response.json();
   if (result.success) {
-    mostrarModalMensaje("Mensaje", "Portal eliminado", "success");
+    alert("Portal eliminado");
     cargarPortales();
-  } else mostrarModalMensaje("Mensaje", "Error: " + result.error, "success");
+  } else alert("Error: " + result.error);
 }
 
 // Gestión Modalidades Entrega
@@ -1036,24 +996,24 @@ document
     });
     const result = await response.json();
     if (result.success) {
-      mostrarModalMensaje("Mensaje", id ? "Modalidad actualizada" : "Modalidad creada", "success");
+      alert(id ? "Modalidad actualizada" : "Modalidad creada");
       cerrarModalModalidad();
       cargarModalidades();
     } else {
-      mostrarModalMensaje("Mensaje", "Error: " + result.error, "success");
+      alert("Error: " + result.error);
     }
   });
 
 async function eliminarModalidad(id) {
-  if (!confirm("¿Eliminar?")) return;
+  mostrarModalConfirmar("¿Eliminar?", async () => {
   const response = await fetch(`/api/modalidades-entrega/${id}`, {
     method: "DELETE",
   });
   const result = await response.json();
   if (result.success) {
-    mostrarModalMensaje("Mensaje", "Modalidad eliminada", "success");
+    alert("Modalidad eliminada");
     cargarModalidades();
-  } else mostrarModalMensaje("Mensaje", "Error: " + result.error, "success");
+  } else alert("Error: " + result.error);
 }
 
 // Gestión Formas Pago
@@ -1111,22 +1071,22 @@ document
     });
     const result = await response.json();
     if (result.success) {
-      mostrarModalMensaje("Mensaje", id ? "Forma de pago actualizada" : "Forma de pago creada", "success");
+      alert(id ? "Forma de pago actualizada" : "Forma de pago creada");
       cerrarModalFormaPago();
       cargarFormasPago();
     } else {
-      mostrarModalMensaje("Mensaje", "Error: " + result.error, "success");
+      alert("Error: " + result.error);
     }
   });
 
 async function eliminarFormaPago(id) {
-  if (!confirm("¿Eliminar?")) return;
+  mostrarModalConfirmar("¿Eliminar?", async () => {
   const response = await fetch(`/api/formas-pago/${id}`, { method: "DELETE" });
   const result = await response.json();
   if (result.success) {
-    mostrarModalMensaje("Mensaje", "Forma de pago eliminada", "success");
+    alert("Forma de pago eliminada");
     cargarFormasPago();
-  } else mostrarModalMensaje("Mensaje", "Error: " + result.error, "success");
+  } else alert("Error: " + result.error);
 }
 
 // Gestión Organismos
@@ -1184,22 +1144,22 @@ document
     });
     const result = await response.json();
     if (result.success) {
-      mostrarModalMensaje("Mensaje", id ? "Organismo actualizado" : "Organismo creado", "success");
+      alert(id ? "Organismo actualizado" : "Organismo creado");
       cerrarModalOrganismo();
       cargarOrganismos();
     } else {
-      mostrarModalMensaje("Mensaje", "Error: " + result.error, "success");
+      alert("Error: " + result.error);
     }
   });
 
 async function eliminarOrganismo(id) {
-  if (!confirm("¿Eliminar?")) return;
+  mostrarModalConfirmar("¿Eliminar?", async () => {
   const response = await fetch(`/api/organismos/${id}`, { method: "DELETE" });
   const result = await response.json();
   if (result.success) {
-    mostrarModalMensaje("Mensaje", "Organismo eliminado", "success");
+    alert("Organismo eliminado");
     cargarOrganismos();
-  } else mostrarModalMensaje("Mensaje", "Error: " + result.error, "success");
+  } else alert("Error: " + result.error);
 }
 
 // Gestión Motivos Pérdida
@@ -1257,24 +1217,24 @@ document
     });
     const result = await response.json();
     if (result.success) {
-      mostrarModalMensaje("Mensaje", id ? "Motivo actualizado" : "Motivo creado", "success");
+      alert(id ? "Motivo actualizado" : "Motivo creado");
       cerrarModalMotivoPerdida();
       cargarMotivosPerdida();
     } else {
-      mostrarModalMensaje("Mensaje", "Error: " + result.error, "success");
+      alert("Error: " + result.error);
     }
   });
 
 async function eliminarMotivoPerdida(id) {
-  if (!confirm("¿Eliminar?")) return;
+  mostrarModalConfirmar("¿Eliminar?", async () => {
   const response = await fetch(`/api/motivos-perdida/${id}`, {
     method: "DELETE",
   });
   const result = await response.json();
   if (result.success) {
-    mostrarModalMensaje("Mensaje", "Motivo eliminado", "success");
+    alert("Motivo eliminado");
     cargarMotivosPerdida();
-  } else mostrarModalMensaje("Mensaje", "Error: " + result.error, "success");
+  } else alert("Error: " + result.error);
 }
 
 // Gestión Mantenimientos Oferta
@@ -1334,24 +1294,24 @@ document
     });
     const result = await response.json();
     if (result.success) {
-      mostrarModalMensaje("Mensaje", id ? "Mantenimiento actualizado" : "Mantenimiento creado", "success");
+      alert(id ? "Mantenimiento actualizado" : "Mantenimiento creado");
       cerrarModalMantenimiento();
       cargarMantenimientos();
     } else {
-      mostrarModalMensaje("Mensaje", "Error: " + result.error, "success");
+      alert("Error: " + result.error);
     }
   });
 
 async function eliminarMantenimiento(id) {
-  if (!confirm("¿Eliminar?")) return;
+  mostrarModalConfirmar("¿Eliminar?", async () => {
   const response = await fetch(`/api/mantenimientos-oferta/${id}`, {
     method: "DELETE",
   });
   const result = await response.json();
   if (result.success) {
-    mostrarModalMensaje("Mensaje", "Mantenimiento eliminado", "success");
+    alert("Mantenimiento eliminado");
     cargarMantenimientos();
-  } else mostrarModalMensaje("Mensaje", "Error: " + result.error, "success");
+  } else alert("Error: " + result.error);
 }
 
 // Gestión Laboratorios
@@ -1446,25 +1406,22 @@ document
     });
     const result = await response.json();
     if (result.success) {
+      alert(id ? "Laboratorio actualizado" : "Laboratorio creado");
       cerrarModalLaboratorio();
       cargarLaboratorios();
-      mostrarModalMensaje("Éxito", id ? "Laboratorio actualizado" : "Laboratorio creado", "success");
     } else {
-      mostrarModalMensaje("Error", result.error, "error");
+      alert("Error: " + result.error);
     }
   });
 
 async function eliminarLaboratorio(id) {
-  mostrarModalConfirmar("¿Eliminar este laboratorio?", async () => {
-    const response = await fetch(`/api/laboratorios/${id}`, { method: "DELETE" });
-    const result = await response.json();
-    if (result.success) {
-      cargarLaboratorios();
-      mostrarModalMensaje("Éxito", "Laboratorio eliminado", "success");
-    } else {
-      mostrarModalMensaje("Error", result.error, "error");
-    }
-  });
+  mostrarModalConfirmar("¿Eliminar?", async () => {
+  const response = await fetch(`/api/laboratorios/${id}`, { method: "DELETE" });
+  const result = await response.json();
+  if (result.success) {
+    alert("Laboratorio eliminado");
+    cargarLaboratorios();
+  } else alert("Error: " + result.error);
 }
 
 // Gestión Monodrogas
@@ -1472,9 +1429,8 @@ let monodrogas = [];
 let monodrogasPaginacion = { pagina: 1, por_pagina: 50, total_paginas: 1 };
 
 async function cargarMonodrogas(pagina = 1) {
-  const search = document.getElementById("searchMonodroga")?.value || "";
   const response = await fetch(
-    `/api/monodrogas?pagina=${pagina}&por_pagina=50&search=${encodeURIComponent(search)}`,
+    `/api/monodrogas?pagina=${pagina}&por_pagina=50`,
   );
   const resultado = await response.json();
 
@@ -1497,10 +1453,6 @@ async function cargarMonodrogas(pagina = 1) {
 
   // Actualizar controles de paginación
   actualizarPaginacionMonodrogas();
-}
-
-function buscarMonodroga() {
-  cargarMonodrogas(1);
 }
 
 function actualizarPaginacionMonodrogas() {
@@ -1564,75 +1516,20 @@ document
     });
     const result = await response.json();
     if (result.success) {
+      alert(id ? "Monodroga actualizada" : "Monodroga creada");
       cerrarModalMonodroga();
       cargarMonodrogas();
-      mostrarModalMensaje("Éxito", id ? "Monodroga actualizada" : "Monodroga creada", "success");
     } else {
-      mostrarModalMensaje("Error", result.error, "error");
+      alert("Error: " + result.error);
     }
   });
-
-async function subirExcelMonodrogas() {
-  const fileInput = document.getElementById("excelMonodrogas");
-  const file = fileInput.files[0];
-  if (!file) return;
-
-  const formData = new FormData();
-  formData.append("file", file);
-
-  try {
-    const response = await fetch("/api/cargar-monodrogas", {
-      method: "POST",
-      body: formData,
-    });
-    const result = await response.json();
-    if (result.success) {
-      cargarMonodrogas();
-      mostrarModalMensaje("Éxito", result.message, "success");
-    } else {
-      mostrarModalMensaje("Error", result.error, "error");
-    }
-  } catch (error) {
-    mostrarModalMensaje("Error", error.message, "error");
-  }
-  fileInput.value = "";
-}
 
 async function eliminarMonodroga(id) {
-  mostrarModalConfirmar("¿Eliminar esta monodroga?", async () => {
-    const response = await fetch(`/api/monodrogas/${id}`, { method: "DELETE" });
-    const result = await response.json();
-    if (result.success) {
-      cargarMonodrogas();
-      mostrarModalMensaje("Éxito", "Monodroga eliminada", "success");
-    } else {
-      mostrarModalMensaje("Error", result.error, "error");
-    }
-  });
-}
-
-async function subirExcelLaboratorios() {
-  const fileInput = document.getElementById("excelLaboratorios");
-  const file = fileInput.files[0];
-  if (!file) return;
-
-  const formData = new FormData();
-  formData.append("file", file);
-
-  try {
-    const response = await fetch("/api/cargar-laboratorios", {
-      method: "POST",
-      body: formData,
-    });
-    const result = await response.json();
-    if (result.success) {
-      cargarLaboratorios();
-      mostrarModalMensaje("Éxito", result.message, "success");
-    } else {
-      mostrarModalMensaje("Error", result.error, "error");
-    }
-  } catch (error) {
-    mostrarModalMensaje("Error", error.message, "error");
-  }
-  fileInput.value = "";
+  mostrarModalConfirmar("¿Eliminar?", async () => {
+  const response = await fetch(`/api/monodrogas/${id}`, { method: "DELETE" });
+  const result = await response.json();
+  if (result.success) {
+    alert("Monodroga eliminada");
+    cargarMonodrogas();
+  } else alert("Error: " + result.error);
 }

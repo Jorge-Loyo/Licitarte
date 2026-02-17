@@ -64,13 +64,7 @@
     </div>
     
     <div class="search-box">
-        <select id="campoCatalogo" style="margin-right: 10px; padding: 8px;">
-            <option value="todos">Todos</option>
-            <option value="monodroga">Monodroga</option>
-            <option value="marca">Marca</option>
-            <option value="laboratorio">Laboratorio</option>
-        </select>
-        <input type="text" id="searchCatalogo" placeholder="Buscar..." style="margin-right: 10px;">
+        <input type="text" id="searchCatalogo" placeholder="Buscar por monodroga, marca, laboratorio o código..." style="margin-right: 10px; flex: 1;">
         <button onclick="buscarCatalogo()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer;">🔍 Buscar</button>
     </div>
     
@@ -78,14 +72,16 @@
         <strong id="catalogoInfo" style="color: var(--primary); font-size: 16px;">📦 Cargando productos...</strong>
     </div>
     
-    <div style="overflow-x: auto; max-height: 600px; overflow-y: auto;">
+    <div style="overflow-x: auto; max-height: 20px; margin-bottom: 5px;">
+        <div id="catalogoScrollTop" style="height: 1px;"></div>
+    </div>
+    
+    <div id="catalogoScrollContainer" style="overflow-x: auto; max-height: 600px; overflow-y: auto;">
         <table>
             <thead style="position: sticky; top: 0; background: var(--bg-dark); z-index: 10;">
                 <tr>
+                    <th>Acciones</th>
                     <th>N° Registro</th>
-                    <th>Troquel</th>
-                    <th>Cód AB</th>
-                    <th>Troquel EAN</th>
                     <th>Cód Monodroga</th>
                     <th>Monodroga</th>
                     <th>Cód Laboratorio</th>
@@ -96,7 +92,9 @@
                     <th>Precio Caja</th>
                     <th>Precio Unitario</th>
                     <th>Fecha</th>
-                    <th>Acciones</th>
+                    <th>Troquel</th>
+                    <th>Cód AB</th>
+                    <th>Troquel EAN</th>
                 </tr>
             </thead>
             <tbody id="catalogoBody"></tbody>
@@ -305,7 +303,11 @@
 <div id="tab-laboratorios" class="tab-content">
     <div class="page-header">
         <h3>Gestión de Laboratorios</h3>
-        <button onclick="nuevoLaboratorio()" class="btn-primary">+ Nuevo Laboratorio</button>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="nuevoLaboratorio()" class="btn-primary">+ Nuevo Laboratorio</button>
+            <input type="file" id="excelLaboratorios" accept=".xlsx,.xls" style="display:none" onchange="subirExcelLaboratorios()">
+            <button onclick="document.getElementById('excelLaboratorios').click()" class="btn-primary">📄 Cargar Excel</button>
+        </div>
     </div>
     <div class="table-container">
         <table>
@@ -326,8 +328,18 @@
 <div id="tab-monodrogas" class="tab-content">
     <div class="page-header">
         <h3>Gestión de Monodrogas</h3>
-        <button onclick="nuevaMonodroga()" class="btn-primary">+ Nueva Monodroga</button>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="nuevaMonodroga()" class="btn-primary">+ Nueva Monodroga</button>
+            <input type="file" id="excelMonodrogas" accept=".xlsx,.xls" style="display:none" onchange="subirExcelMonodrogas()">
+            <button onclick="document.getElementById('excelMonodrogas').click()" class="btn-primary">📄 Cargar Excel</button>
+        </div>
     </div>
+    
+    <div class="search-box">
+        <input type="text" id="searchMonodroga" placeholder="Buscar por ID, código de monodroga o nombre..." style="margin-right: 10px; flex: 1;">
+        <button onclick="buscarMonodroga()" style="padding: 8px 16px; background: var(--primary); color: white; border: none; border-radius: 4px; cursor: pointer;">🔍 Buscar</button>
+    </div>
+    
     <div class="table-container">
         <table>
             <thead>
@@ -688,5 +700,6 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/modales.js') }}"></script>
 <script src="{{ url_for('static', filename='js/administracion.js') }}"></script>
 {% endblock %}

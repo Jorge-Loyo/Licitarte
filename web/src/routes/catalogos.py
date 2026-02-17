@@ -175,26 +175,15 @@ def get_catalogo():
     page = int(request.args.get('page', 1))
     per_page = int(request.args.get('per_page', 50))
     search = request.args.get('search', '').strip()
-    campo = request.args.get('campo', 'todos').strip()
     offset = (page - 1) * per_page
     
     with db.get_connection() as conn:
         cursor = conn.cursor()
         
-        # Construir WHERE según campo
+        # Buscar en todos los campos
         if search:
-            if campo == 'monodroga':
-                where = "WHERE monodroga LIKE %s"
-                params = (f'%{search}%',)
-            elif campo == 'marca':
-                where = "WHERE marca LIKE %s"
-                params = (f'%{search}%',)
-            elif campo == 'laboratorio':
-                where = "WHERE laboratorio LIKE %s"
-                params = (f'%{search}%',)
-            else:  # todos
-                where = "WHERE monodroga LIKE %s OR marca LIKE %s OR laboratorio LIKE %s"
-                params = (f'%{search}%', f'%{search}%', f'%{search}%')
+            where = "WHERE monodroga LIKE %s OR marca LIKE %s OR laboratorio LIKE %s OR CAST(cod_monodroga AS TEXT) LIKE %s"
+            params = (f'%{search}%', f'%{search}%', f'%{search}%', f'%{search}%')
         else:
             where = ""
             params = ()
@@ -208,7 +197,7 @@ def get_catalogo():
         cursor.execute(f"""SELECT id, numero_registro, monodroga, marca, presentacion, laboratorio, 
                        precio_caja, precio_unitario, costo_unitario, fecha, troquel, cod_ab, troquel_ean,
                        cod_monodroga, cod_laboratorio, multidosis FROM medicamentos {where}
-                       ORDER BY monodroga, marca, presentacion LIMIT %s OFFSET %s""",
+                       ORDER BY monodroga LIMIT %s OFFSET %s""",
                      params + (per_page, offset))
         productos = cursor.fetchall()
     

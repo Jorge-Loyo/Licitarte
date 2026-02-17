@@ -548,6 +548,11 @@ class DatabaseManager:
         """Carga productos desde Excel a tabla medicamentos y sincroniza laboratorios/monodrogas"""
         try:
             df = pd.read_excel(excel_path)
+            
+            # Ordenar para que los registros con monodroga != 'Pendiente' se procesen primero
+            df['_prioridad'] = df['Monodroga'].apply(lambda x: 0 if pd.notna(x) and str(x).strip().lower() != 'pendiente' else 1)
+            df = df.sort_values('_prioridad')
+            
             total_rows = len(df)
             batch_size = 1000
             
@@ -585,19 +590,30 @@ class DatabaseManager:
                             if not numero_registro or numero_registro == 'nan':
                                 continue
                             
-                            # Sincronizar monodroga: insertar solo si no existe
+                            # Sincronizar monodroga: insertar con el ID del Excel si no existe
                             monodroga_final = monodroga_excel.strip()
-                            if monodroga_excel and monodroga_excel.strip():
+                            if monodroga_excel and monodroga_excel.strip() and cod_monodroga:
                                 if USE_POSTGRES:
-                                    cursor.execute("INSERT INTO monodrogas (nombre) VALUES (%s) ON CONFLICT (nombre) DO NOTHING", (monodroga_excel.strip(),))
-                                    # Obtener nombre correcto de la tabla monodrogas
-                                    cursor.execute("SELECT nombre FROM monodrogas WHERE LOWER(nombre) = LOWER(%s)", (monodroga_excel.strip(),))
+                                    # Insertar con el ID específico del Excel, solo si no existe
+                                    cursor.execute("""
+                                        INSERT INTO monodrogas (id, nombre) 
+                                        VALUES (%s, %s) 
+                                        ON CONFLICT (id) DO NOTHING
+                                    """, (cod_monodroga, monodroga_excel.strip()))
+                                    # Obtener el nombre que quedó en la tabla (el primero insertado)
+                                    cursor.execute("SELECT nombre FROM monodrogas WHERE id = %s", (cod_monodroga,))
                                 else:
-                                    cursor.execute("INSERT OR IGNORE INTO monodrogas (nombre) VALUES (?)", (monodroga_excel.strip(),))
-                                    cursor.execute("SELECT nombre FROM monodrogas WHERE LOWER(nombre) = LOWER(?)", (monodroga_excel.strip(),))
+                                    # Insertar con el ID específico del Excel, solo si no existe
+                                    cursor.execute("""
+                                        INSERT OR IGNORE INTO monodrogas (id, nombre) 
+                                        VALUES (?, ?)
+                                    """, (cod_monodroga, monodroga_excel.strip()))
+                                    cursor.execute("SELECT nombre FROM monodrogas WHERE id = ?", (cod_monodroga,))
                                 result = cursor.fetchone()
                                 if result:
                                     monodroga_final = result[0]
+                                else:
+                                    monodroga_final = monodroga_excel.strip()
                             
                             # Sincronizar laboratorio: insertar solo si no existe
                             laboratorio_final = laboratorio_excel.strip()
@@ -886,9 +902,9 @@ class DatabaseManager:
         with self.get_connection() as conn:
             cursor = conn.cursor()
             if USE_POSTGRES:
-                cursor.execute("SELECT * FROM clientes WHERE activo = TRUE ORDER BY nombre")
+                cursor.execute("SELECT * FROM clientes WHERE activo = TRUE ORDER BY id DESC")
             else:
-                cursor.execute("SELECT * FROM clientes WHERE activo = 1 ORDER BY nombre")
+                cursor.execute("SELECT * FROM clientes WHERE activo = 1 ORDER BY id DESC")
             return cursor.fetchall()
     
     def actualizar_cliente(self, cliente_id, nombre, razon_social, cuit, direccion, telefono, email, organismo_jurisdiccion=""):
@@ -930,9 +946,9 @@ class DatabaseManager:
         with self.get_connection() as conn:
             cursor = conn.cursor()
             if USE_POSTGRES:
-                cursor.execute("SELECT * FROM oferentes WHERE activo = TRUE ORDER BY nombre")
+                cursor.execute("SELECT * FROM oferentes WHERE activo = TRUE ORDER BY id DESC")
             else:
-                cursor.execute("SELECT * FROM oferentes WHERE activo = 1 ORDER BY nombre")
+                cursor.execute("SELECT * FROM oferentes WHERE activo = 1 ORDER BY id DESC")
             return cursor.fetchall()
     
     def actualizar_oferente(self, oferente_id, nombre):
@@ -970,9 +986,9 @@ class DatabaseManager:
         with self.get_connection() as conn:
             cursor = conn.cursor()
             if USE_POSTGRES:
-                cursor.execute("SELECT * FROM marcas WHERE activo = TRUE ORDER BY nombre")
+                cursor.execute("SELECT * FROM marcas WHERE activo = TRUE ORDER BY id DESC")
             else:
-                cursor.execute("SELECT * FROM marcas WHERE activo = 1 ORDER BY nombre")
+                cursor.execute("SELECT * FROM marcas WHERE activo = 1 ORDER BY id DESC")
             return cursor.fetchall()
     
     def actualizar_marca(self, marca_id, nombre):
@@ -1010,9 +1026,9 @@ class DatabaseManager:
         with self.get_connection() as conn:
             cursor = conn.cursor()
             if USE_POSTGRES:
-                cursor.execute("SELECT * FROM tipos_licitacion WHERE activo = TRUE ORDER BY nombre")
+                cursor.execute("SELECT * FROM tipos_licitacion WHERE activo = TRUE ORDER BY id DESC")
             else:
-                cursor.execute("SELECT * FROM tipos_licitacion WHERE activo = 1 ORDER BY nombre")
+                cursor.execute("SELECT * FROM tipos_licitacion WHERE activo = 1 ORDER BY id DESC")
             return cursor.fetchall()
     
     def actualizar_tipo_licitacion(self, tipo_id, nombre):
@@ -1050,9 +1066,9 @@ class DatabaseManager:
         with self.get_connection() as conn:
             cursor = conn.cursor()
             if USE_POSTGRES:
-                cursor.execute("SELECT * FROM portales_origen WHERE activo = TRUE ORDER BY nombre")
+                cursor.execute("SELECT * FROM portales_origen WHERE activo = TRUE ORDER BY id DESC")
             else:
-                cursor.execute("SELECT * FROM portales_origen WHERE activo = 1 ORDER BY nombre")
+                cursor.execute("SELECT * FROM portales_origen WHERE activo = 1 ORDER BY id DESC")
             return cursor.fetchall()
     
     def actualizar_portal_origen(self, portal_id, nombre):
@@ -1090,9 +1106,9 @@ class DatabaseManager:
         with self.get_connection() as conn:
             cursor = conn.cursor()
             if USE_POSTGRES:
-                cursor.execute("SELECT * FROM modalidades_entrega WHERE activo = TRUE ORDER BY nombre")
+                cursor.execute("SELECT * FROM modalidades_entrega WHERE activo = TRUE ORDER BY id DESC")
             else:
-                cursor.execute("SELECT * FROM modalidades_entrega WHERE activo = 1 ORDER BY nombre")
+                cursor.execute("SELECT * FROM modalidades_entrega WHERE activo = 1 ORDER BY id DESC")
             return cursor.fetchall()
     
     def actualizar_modalidad_entrega(self, modalidad_id, nombre):
@@ -1130,9 +1146,9 @@ class DatabaseManager:
         with self.get_connection() as conn:
             cursor = conn.cursor()
             if USE_POSTGRES:
-                cursor.execute("SELECT * FROM formas_pago WHERE activo = TRUE ORDER BY nombre")
+                cursor.execute("SELECT * FROM formas_pago WHERE activo = TRUE ORDER BY id DESC")
             else:
-                cursor.execute("SELECT * FROM formas_pago WHERE activo = 1 ORDER BY nombre")
+                cursor.execute("SELECT * FROM formas_pago WHERE activo = 1 ORDER BY id DESC")
             return cursor.fetchall()
     
     def actualizar_forma_pago(self, forma_id, nombre):
@@ -1170,9 +1186,9 @@ class DatabaseManager:
         with self.get_connection() as conn:
             cursor = conn.cursor()
             if USE_POSTGRES:
-                cursor.execute("SELECT * FROM organismos_jurisdiccion WHERE activo = TRUE ORDER BY nombre")
+                cursor.execute("SELECT * FROM organismos_jurisdiccion WHERE activo = TRUE ORDER BY id DESC")
             else:
-                cursor.execute("SELECT * FROM organismos_jurisdiccion WHERE activo = 1 ORDER BY nombre")
+                cursor.execute("SELECT * FROM organismos_jurisdiccion WHERE activo = 1 ORDER BY id DESC")
             return cursor.fetchall()
     
     def actualizar_organismo(self, organismo_id, nombre):
@@ -1210,9 +1226,9 @@ class DatabaseManager:
         with self.get_connection() as conn:
             cursor = conn.cursor()
             if USE_POSTGRES:
-                cursor.execute("SELECT * FROM motivos_perdida WHERE activo = TRUE ORDER BY nombre")
+                cursor.execute("SELECT * FROM motivos_perdida WHERE activo = TRUE ORDER BY id DESC")
             else:
-                cursor.execute("SELECT * FROM motivos_perdida WHERE activo = 1 ORDER BY nombre")
+                cursor.execute("SELECT * FROM motivos_perdida WHERE activo = 1 ORDER BY id DESC")
             return cursor.fetchall()
     
     def actualizar_motivo_perdida(self, motivo_id, nombre):
@@ -1250,9 +1266,9 @@ class DatabaseManager:
         with self.get_connection() as conn:
             cursor = conn.cursor()
             if USE_POSTGRES:
-                cursor.execute("SELECT * FROM mantenimientos_oferta WHERE activo = TRUE ORDER BY nombre")
+                cursor.execute("SELECT * FROM mantenimientos_oferta WHERE activo = TRUE ORDER BY id DESC")
             else:
-                cursor.execute("SELECT * FROM mantenimientos_oferta WHERE activo = 1 ORDER BY nombre")
+                cursor.execute("SELECT * FROM mantenimientos_oferta WHERE activo = 1 ORDER BY id DESC")
             return cursor.fetchall()
     
     def actualizar_mantenimiento_oferta(self, mantenimiento_id, nombre):
@@ -1299,11 +1315,11 @@ class DatabaseManager:
                 cursor.execute("SELECT COUNT(*) FROM laboratorios WHERE activo = TRUE")
                 total = cursor.fetchone()[0]
                 # Registros de la página
-                cursor.execute("SELECT id, nombre, activo FROM laboratorios WHERE activo = TRUE ORDER BY nombre LIMIT %s OFFSET %s", (por_pagina, offset))
+                cursor.execute("SELECT id, nombre, activo FROM laboratorios WHERE activo = TRUE ORDER BY id DESC LIMIT %s OFFSET %s", (por_pagina, offset))
             else:
                 cursor.execute("SELECT COUNT(*) FROM laboratorios WHERE activo = 1")
                 total = cursor.fetchone()[0]
-                cursor.execute("SELECT id, nombre, activo FROM laboratorios WHERE activo = 1 ORDER BY nombre LIMIT ? OFFSET ?", (por_pagina, offset))
+                cursor.execute("SELECT id, nombre, activo FROM laboratorios WHERE activo = 1 ORDER BY id DESC LIMIT ? OFFSET ?", (por_pagina, offset))
             
             datos = cursor.fetchall()
             return {
@@ -1345,24 +1361,66 @@ class DatabaseManager:
                 cursor.execute("INSERT INTO monodrogas (nombre) VALUES (?)", (nombre.strip(),))
                 return cursor.lastrowid
     
-    def obtener_monodrogas(self, pagina=1, por_pagina=50):
-        """Obtiene monodrogas con paginación"""
+    def obtener_monodrogas(self, pagina=1, por_pagina=50, search=""):
+        """Obtiene monodrogas con paginación y búsqueda"""
         pagina = max(1, int(pagina))
         por_pagina = min(100, max(10, int(por_pagina)))
         offset = (pagina - 1) * por_pagina
+        search = search.strip()
         
         with self.get_connection() as conn:
             cursor = conn.cursor()
-            if USE_POSTGRES:
-                # Total de registros
-                cursor.execute("SELECT COUNT(*) FROM monodrogas WHERE activo = TRUE")
-                total = cursor.fetchone()[0]
-                # Registros de la página
-                cursor.execute("SELECT id, nombre, activo FROM monodrogas WHERE activo = TRUE ORDER BY nombre LIMIT %s OFFSET %s", (por_pagina, offset))
+            
+            if search:
+                if USE_POSTGRES:
+                    cursor.execute("""
+                        SELECT COUNT(*) FROM monodrogas 
+                        WHERE activo = TRUE 
+                        AND (CAST(id AS TEXT) LIKE %s 
+                             OR nombre ILIKE %s
+                             OR EXISTS (SELECT 1 FROM medicamentos WHERE cod_monodroga = monodrogas.id AND CAST(cod_monodroga AS TEXT) LIKE %s))
+                    """, (f"%{search}%", f"%{search}%", f"%{search}%"))
+                    total = cursor.fetchone()[0]
+                    
+                    cursor.execute("""
+                        SELECT id, nombre, activo 
+                        FROM monodrogas 
+                        WHERE activo = TRUE 
+                        AND (CAST(id AS TEXT) LIKE %s 
+                             OR nombre ILIKE %s
+                             OR EXISTS (SELECT 1 FROM medicamentos WHERE cod_monodroga = monodrogas.id AND CAST(cod_monodroga AS TEXT) LIKE %s))
+                        ORDER BY id DESC 
+                        LIMIT %s OFFSET %s
+                    """, (f"%{search}%", f"%{search}%", f"%{search}%", por_pagina, offset))
+                else:
+                    cursor.execute("""
+                        SELECT COUNT(*) FROM monodrogas 
+                        WHERE activo = 1 
+                        AND (CAST(id AS TEXT) LIKE ? 
+                             OR nombre LIKE ?
+                             OR EXISTS (SELECT 1 FROM medicamentos WHERE cod_monodroga = monodrogas.id AND CAST(cod_monodroga AS TEXT) LIKE ?))
+                    """, (f"%{search}%", f"%{search}%", f"%{search}%"))
+                    total = cursor.fetchone()[0]
+                    
+                    cursor.execute("""
+                        SELECT id, nombre, activo 
+                        FROM monodrogas 
+                        WHERE activo = 1 
+                        AND (CAST(id AS TEXT) LIKE ? 
+                             OR nombre LIKE ?
+                             OR EXISTS (SELECT 1 FROM medicamentos WHERE cod_monodroga = monodrogas.id AND CAST(cod_monodroga AS TEXT) LIKE ?))
+                        ORDER BY id DESC 
+                        LIMIT ? OFFSET ?
+                    """, (f"%{search}%", f"%{search}%", f"%{search}%", por_pagina, offset))
             else:
-                cursor.execute("SELECT COUNT(*) FROM monodrogas WHERE activo = 1")
-                total = cursor.fetchone()[0]
-                cursor.execute("SELECT id, nombre, activo FROM monodrogas WHERE activo = 1 ORDER BY nombre LIMIT ? OFFSET ?", (por_pagina, offset))
+                if USE_POSTGRES:
+                    cursor.execute("SELECT COUNT(*) FROM monodrogas WHERE activo = TRUE")
+                    total = cursor.fetchone()[0]
+                    cursor.execute("SELECT id, nombre, activo FROM monodrogas WHERE activo = TRUE ORDER BY id DESC LIMIT %s OFFSET %s", (por_pagina, offset))
+                else:
+                    cursor.execute("SELECT COUNT(*) FROM monodrogas WHERE activo = 1")
+                    total = cursor.fetchone()[0]
+                    cursor.execute("SELECT id, nombre, activo FROM monodrogas WHERE activo = 1 ORDER BY id DESC LIMIT ? OFFSET ?", (por_pagina, offset))
             
             datos = cursor.fetchall()
             return {

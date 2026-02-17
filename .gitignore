@@ -26,6 +26,7 @@ wheels/
 
 # Base de datos local (nueva ubicación)
 shared/database/*.db
+!shared/database/licitaciones.db
 shared/database/*.db-journal
 shared/database/*_backup.db
 
@@ -84,6 +85,7 @@ data/backups/*
 
 # Análisis y documentación local (NO SUBIR A GIT)
 ANALISIS_LICITARTE.md
+DOCKER_CONFIG.md
 
 # Legacy (eliminados en Fase 5)
 # modules/
