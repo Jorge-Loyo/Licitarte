@@ -65,6 +65,19 @@ if os.getenv('USE_POSTGRES') == 'true':
         else:
             print("✓ Columna fecha_carga ya existe")
         
+        print("Verificando columna porcentaje_poliza en tabla licitaciones...")
+        cursor.execute("""
+            SELECT column_name FROM information_schema.columns 
+            WHERE table_name='licitaciones' AND column_name='porcentaje_poliza'
+        """)
+        if not cursor.fetchone():
+            print("Agregando columna porcentaje_poliza...")
+            cursor.execute("ALTER TABLE licitaciones ADD COLUMN porcentaje_poliza REAL")
+            conn.commit()
+            print("✓ Columna porcentaje_poliza agregada")
+        else:
+            print("✓ Columna porcentaje_poliza ya existe")
+        
         cursor.close()
         conn.close()
         print("✓ Verificación de columnas completada exitosamente")

@@ -118,6 +118,7 @@ def crear_licitacion():
             data.modalidad_entrega or '',
             data.forma_pago or '',
             data.requiere_poliza,
+            data.porcentaje_poliza,
             data.monto_poliza,
             data.observaciones or '',
             data.mantenimiento_oferta or '',
@@ -224,7 +225,7 @@ def get_licitacion_detalle(id):
                 cursor.execute("""
                     SELECT l.id, l.numero_licitacion, l.fecha, l.fecha_carga, l.cliente_id, l.tipo_licitacion_id,
                            l.portal_origen, l.modalidad_entrega, l.forma_pago, l.requiere_poliza, 
-                           l.monto_poliza, l.observaciones, l.mantenimiento_oferta, l.tipo_adjudicacion
+                           l.porcentaje_poliza, l.monto_poliza, l.observaciones, l.mantenimiento_oferta, l.tipo_adjudicacion
                     FROM licitaciones l
                     WHERE l.id = %s
                 """, (id,))
@@ -232,7 +233,7 @@ def get_licitacion_detalle(id):
                 cursor.execute("""
                     SELECT l.id, l.numero_licitacion, l.fecha, l.fecha_carga, l.cliente_id, l.tipo_licitacion_id,
                            l.portal_origen, l.modalidad_entrega, l.forma_pago, l.requiere_poliza, 
-                           l.monto_poliza, l.observaciones, l.mantenimiento_oferta, l.tipo_adjudicacion
+                           l.porcentaje_poliza, l.monto_poliza, l.observaciones, l.mantenimiento_oferta, l.tipo_adjudicacion
                     FROM licitaciones l
                     WHERE l.id = ?
                 """, (id,))
@@ -249,10 +250,11 @@ def get_licitacion_detalle(id):
                     'modalidad_entrega': row[7],
                     'forma_pago': row[8],
                     'requiere_poliza': row[9],
-                    'monto_poliza': row[10],
-                    'observaciones': row[11],
-                    'mantenimiento_oferta': row[12],
-                    'tipo_adjudicacion': row[13]
+                    'porcentaje_poliza': row[10],
+                    'monto_poliza': row[11],
+                    'observaciones': row[12],
+                    'mantenimiento_oferta': row[13],
+                    'tipo_adjudicacion': row[14]
                 })
             return jsonify({'error': 'No encontrada'}), 404
     except Exception as e:
@@ -273,7 +275,7 @@ def actualizar_licitacion(id):
                     UPDATE licitaciones 
                     SET numero_licitacion=%s, fecha=%s, cliente_id=%s, tipo_licitacion_id=%s,
                         portal_origen=%s, modalidad_entrega=%s, forma_pago=%s,
-                        requiere_poliza=%s, monto_poliza=%s, observaciones=%s, mantenimiento_oferta=%s,
+                        requiere_poliza=%s, porcentaje_poliza=%s, monto_poliza=%s, observaciones=%s, mantenimiento_oferta=%s,
                         tipo_adjudicacion=%s
                     WHERE id=%s
                 """, (
@@ -285,6 +287,7 @@ def actualizar_licitacion(id):
                     data.get('modalidad_entrega', ''),
                     data.get('forma_pago', ''),
                     data.get('requiere_poliza', False),
+                    float(data['porcentaje_poliza']) if data.get('porcentaje_poliza') else None,
                     float(data['monto_poliza']) if data.get('monto_poliza') else None,
                     data.get('observaciones', ''),
                     data.get('mantenimiento_oferta', ''),
@@ -296,7 +299,7 @@ def actualizar_licitacion(id):
                     UPDATE licitaciones 
                     SET numero_licitacion=?, fecha=?, cliente_id=?, tipo_licitacion_id=?,
                         portal_origen=?, modalidad_entrega=?, forma_pago=?,
-                        requiere_poliza=?, monto_poliza=?, observaciones=?, mantenimiento_oferta=?,
+                        requiere_poliza=?, porcentaje_poliza=?, monto_poliza=?, observaciones=?, mantenimiento_oferta=?,
                         tipo_adjudicacion=?
                     WHERE id=?
                 """, (
@@ -308,6 +311,7 @@ def actualizar_licitacion(id):
                     data.get('modalidad_entrega', ''),
                     data.get('forma_pago', ''),
                     data.get('requiere_poliza', False),
+                    float(data['porcentaje_poliza']) if data.get('porcentaje_poliza') else None,
                     float(data['monto_poliza']) if data.get('monto_poliza') else None,
                     data.get('observaciones', ''),
                     data.get('mantenimiento_oferta', ''),

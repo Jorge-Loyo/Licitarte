@@ -629,6 +629,7 @@ document.getElementById('licitacionForm').addEventListener('submit', async (e) =
         modalidad_entrega: document.getElementById('modalidadEntrega').value,
         forma_pago: document.getElementById('formaPago').value,
         requiere_poliza: document.getElementById('requierePoliza').checked,
+        porcentaje_poliza: document.getElementById('porcentajePoliza').value || null,
         monto_poliza: document.getElementById('montoPoliza').value || null,
         observaciones: document.getElementById('observaciones').value,
         mantenimiento_oferta: document.getElementById('mantenimientoOferta').value,

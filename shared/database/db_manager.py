@@ -85,6 +85,7 @@ class DatabaseManager:
                         modalidad_entrega TEXT,
                         forma_pago TEXT,
                         requiere_poliza BOOLEAN DEFAULT FALSE,
+                        porcentaje_poliza REAL,
                         monto_poliza REAL,
                         observaciones TEXT,
                         mantenimiento_oferta TEXT,
@@ -351,6 +352,8 @@ class DatabaseManager:
                     cursor.execute("ALTER TABLE licitaciones ADD COLUMN monto_poliza REAL")
                 if 'observaciones' not in columns:
                     cursor.execute("ALTER TABLE licitaciones ADD COLUMN observaciones TEXT")
+                if 'porcentaje_poliza' not in columns:
+                    cursor.execute("ALTER TABLE licitaciones ADD COLUMN porcentaje_poliza REAL")
                 if 'mantenimiento_oferta' not in columns:
                     cursor.execute("ALTER TABLE licitaciones ADD COLUMN mantenimiento_oferta TEXT")
                 if 'numero_presupuesto' not in columns:
@@ -689,7 +692,7 @@ class DatabaseManager:
                 cursor.execute("SELECT * FROM medicamentos WHERE numero_registro = ?", (numero_registro,))
             return cursor.fetchone()
     
-    def crear_licitacion(self, numero, fecha, oferente_ganador="", marca_ganadora="", precio_ganador=None, cliente_id=None, tipo_licitacion_id=None, portal_origen="", modalidad_entrega="", forma_pago="", requiere_poliza=False, monto_poliza=None, observaciones="", mantenimiento_oferta="", fecha_carga=None):
+    def crear_licitacion(self, numero, fecha, oferente_ganador="", marca_ganadora="", precio_ganador=None, cliente_id=None, tipo_licitacion_id=None, portal_origen="", modalidad_entrega="", forma_pago="", requiere_poliza=False, porcentaje_poliza=None, monto_poliza=None, observaciones="", mantenimiento_oferta="", fecha_carga=None):
         if not numero or not fecha:
             raise ValueError("Número y fecha son obligatorios")
         if len(numero.strip()) > 100:
@@ -697,14 +700,14 @@ class DatabaseManager:
         with self.get_connection() as conn:
             cursor = conn.cursor()
             if USE_POSTGRES:
-                cursor.execute("""INSERT INTO licitaciones (numero_licitacion, cliente_id, tipo_licitacion_id, fecha, oferente_ganador, marca_ganadora, precio_ganador, portal_origen, modalidad_entrega, forma_pago, requiere_poliza, monto_poliza, observaciones, mantenimiento_oferta, fecha_carga) 
-                                  VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id""",
-                              (numero.strip(), cliente_id, tipo_licitacion_id, fecha.strip(), oferente_ganador.strip(), marca_ganadora.strip(), precio_ganador, portal_origen, modalidad_entrega, forma_pago, requiere_poliza, monto_poliza, observaciones, mantenimiento_oferta, fecha_carga))
+                cursor.execute("""INSERT INTO licitaciones (numero_licitacion, cliente_id, tipo_licitacion_id, fecha, oferente_ganador, marca_ganadora, precio_ganador, portal_origen, modalidad_entrega, forma_pago, requiere_poliza, porcentaje_poliza, monto_poliza, observaciones, mantenimiento_oferta, fecha_carga) 
+                                  VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id""",
+                              (numero.strip(), cliente_id, tipo_licitacion_id, fecha.strip(), oferente_ganador.strip(), marca_ganadora.strip(), precio_ganador, portal_origen, modalidad_entrega, forma_pago, requiere_poliza, porcentaje_poliza, monto_poliza, observaciones, mantenimiento_oferta, fecha_carga))
                 return cursor.fetchone()[0]
             else:
-                cursor.execute("""INSERT INTO licitaciones (numero_licitacion, cliente_id, tipo_licitacion_id, fecha, oferente_ganador, marca_ganadora, precio_ganador, portal_origen, modalidad_entrega, forma_pago, requiere_poliza, monto_poliza, observaciones, mantenimiento_oferta, fecha_carga) 
-                                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                              (numero.strip(), cliente_id, tipo_licitacion_id, fecha.strip(), oferente_ganador.strip(), marca_ganadora.strip(), precio_ganador, portal_origen, modalidad_entrega, forma_pago, 1 if requiere_poliza else 0, monto_poliza, observaciones, mantenimiento_oferta, fecha_carga))
+                cursor.execute("""INSERT INTO licitaciones (numero_licitacion, cliente_id, tipo_licitacion_id, fecha, oferente_ganador, marca_ganadora, precio_ganador, portal_origen, modalidad_entrega, forma_pago, requiere_poliza, porcentaje_poliza, monto_poliza, observaciones, mantenimiento_oferta, fecha_carga) 
+                                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                              (numero.strip(), cliente_id, tipo_licitacion_id, fecha.strip(), oferente_ganador.strip(), marca_ganadora.strip(), precio_ganador, portal_origen, modalidad_entrega, forma_pago, 1 if requiere_poliza else 0, porcentaje_poliza, monto_poliza, observaciones, mantenimiento_oferta, fecha_carga))
                 return cursor.lastrowid
     
     def agregar_producto(self, licitacion_id, monodroga, marca, presentacion, cantidad, precio_ofertado, resultado, precio_ganador=None, oferente_ganador="", marca_ofrecida="", marca_ganadora="", motivo_perdida="", numero_renglon="", costo_unitario=None, margen_porcentaje=None, observaciones="", producto_cotizar="principal"):

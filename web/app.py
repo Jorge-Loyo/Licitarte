@@ -12,18 +12,6 @@ from flask_cors import CORS
 load_dotenv()
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-# Sincronizar base de datos local a Render en cada deploy
-if os.getenv('USE_POSTGRES') == 'true' and os.getenv('SYNC_DB') == 'true':
-    try:
-        print("Iniciando sincronización de base de datos...")
-        import subprocess
-        result = subprocess.run(['python', 'sync_db.py'], capture_output=True, text=True)
-        print(result.stdout)
-        if result.stderr:
-            print(result.stderr)
-    except Exception as e:
-        print(f"Error en sincronización: {e}")
-
 from shared.database.db_manager import DatabaseManager
 from security_config import SecurityConfig
 from src.models.user import User
