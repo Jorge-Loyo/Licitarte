@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# type: ignore
 """
 Script para importar medicamentos desde el archivo Alfabeta_Febrero.xlsx
 a la tabla medicamentos de la base de datos.

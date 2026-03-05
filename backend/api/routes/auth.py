@@ -3,11 +3,13 @@ from flask import Blueprint, request, jsonify
 from flask_login import login_user, logout_user, login_required, current_user
 import sys
 from pathlib import Path
+from typing import cast
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 from backend.api.services.auth_service import AuthService
 from backend.api.schemas.dtos import ResponseDTO
 from backend.constants import ErrorMessages
+from backend.api.models.user import User
 
 bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 service = AuthService()
@@ -38,7 +40,7 @@ def logout():
 @login_required
 def me():
     """Obtener usuario actual"""
-    return jsonify(service.usuario_to_dict(current_user)), 200
+    return jsonify(service.usuario_to_dict(cast(User, current_user._get_current_object()))), 200
 
 @bp.route('/check', methods=['GET'])
 @login_required
@@ -47,6 +49,6 @@ def check():
     if current_user.is_authenticated:
         return jsonify({
             'authenticated': True,
-            'user': service.usuario_to_dict(current_user)
+            'user': service.usuario_to_dict(cast(User, current_user._get_current_object()))
         }), 200
     return jsonify({'authenticated': False}), 200

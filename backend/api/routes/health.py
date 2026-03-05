@@ -34,12 +34,10 @@ def health_check():
 @bp.route('/status', methods=['GET'])
 def status():
     """Status detallado del sistema"""
-    import psutil
     import os
     
     return jsonify({
         'status': 'running',
         'pid': os.getpid(),
-        'memory_usage_mb': psutil.Process().memory_info().rss / 1024 / 1024,
-        'cpu_percent': psutil.cpu_percent(interval=0.1)
+        'version': '1.0.0'
     }), 200

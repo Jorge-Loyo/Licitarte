@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# type: ignore
 """
 Script para actualizar precios de medicamentos desde un nuevo archivo Excel.
 

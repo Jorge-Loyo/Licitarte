@@ -16,6 +16,8 @@ class ConnectionPool:
     """Pool de conexiones para PostgreSQL con reconexión automática"""
     
     def __init__(self, min_conn=2, max_conn=10):
+        if not DATABASE_URL:
+            raise RuntimeError("DATABASE_URL no está configurado")
         try:
             self.pool = PsycopgPool(
                 DATABASE_URL, 
@@ -66,4 +68,4 @@ class ConnectionPool:
     
     def close_all(self):
         """Cierra todas las conexiones"""
-        self.pool.closeall()
+        self.pool.close()

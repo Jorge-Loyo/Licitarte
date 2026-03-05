@@ -1,3 +1,4 @@
+# type: ignore
 """Tests para LicitacionService"""
 import unittest
 from unittest.mock import Mock, patch, MagicMock

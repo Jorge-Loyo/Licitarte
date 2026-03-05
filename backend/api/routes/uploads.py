@@ -1,5 +1,5 @@
 """Rutas de carga masiva Excel"""
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify, current_app, Response
 import sys
 import os
 from pathlib import Path
@@ -58,17 +58,23 @@ def cargar_catalogo():
                                     continue
                                     
                                 troquel = str(row.get('Troquel', '')) if pd.notna(row.get('Troquel')) else None
-                                cod_ab = int(row.get('Cod AB')) if pd.notna(row.get('Cod AB')) and row.get('Cod AB') else None
+                                cod_ab_val = row.get('Cod AB')
+                                cod_ab = int(cod_ab_val) if pd.notna(cod_ab_val) and cod_ab_val else None
                                 troquel_ean = str(row.get('Troquel.1', '')) if pd.notna(row.get('Troquel.1')) else None
-                                cod_monodroga = int(row.get('Cod Monodroga')) if pd.notna(row.get('Cod Monodroga')) and row.get('Cod Monodroga') else None
+                                cod_monodroga_val = row.get('Cod Monodroga')
+                                cod_monodroga = int(cod_monodroga_val) if pd.notna(cod_monodroga_val) and cod_monodroga_val else None
                                 monodroga_excel = str(row.get('Monodroga', '')) if pd.notna(row.get('Monodroga')) else ''
-                                cod_laboratorio = int(row.get('Cod Laboratorio')) if pd.notna(row.get('Cod Laboratorio')) and row.get('Cod Laboratorio') else None
+                                cod_laboratorio_val = row.get('Cod Laboratorio')
+                                cod_laboratorio = int(cod_laboratorio_val) if pd.notna(cod_laboratorio_val) and cod_laboratorio_val else None
                                 laboratorio_excel = str(row.get('Laboratorio', '')) if pd.notna(row.get('Laboratorio')) else ''
                                 marca = str(row.get('Marca', '')) if pd.notna(row.get('Marca')) else ''
                                 presentacion = str(row.get('Presentacion', '')) if pd.notna(row.get('Presentacion')) else ''
-                                multidosis = int(row.get('Multidosis')) if pd.notna(row.get('Multidosis')) and row.get('Multidosis') else None
-                                precio_caja = float(row.get('Precio x caja', 0)) if pd.notna(row.get('Precio x caja')) else None
-                                precio_unitario = float(row.get('Precio unitario', 0)) if pd.notna(row.get('Precio unitario')) else None
+                                multidosis_val = row.get('Multidosis')
+                                multidosis = int(multidosis_val) if pd.notna(multidosis_val) and multidosis_val else None
+                                precio_caja_val = row.get('Precio x caja')
+                                precio_caja = float(precio_caja_val) if pd.notna(precio_caja_val) else None
+                                precio_unitario_val = row.get('Precio unitario')
+                                precio_unitario = float(precio_unitario_val) if pd.notna(precio_unitario_val) else None
                                 
                                 fecha_raw = row.get('Fecha')
                                 if pd.notna(fecha_raw):
@@ -142,7 +148,7 @@ def cargar_catalogo():
                 if os.path.exists(filepath):
                     os.remove(filepath)
         
-        return current_app.response_class(generate(), mimetype='text/event-stream')
+        return Response(generate(), mimetype='text/event-stream')
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
@@ -154,6 +160,15 @@ def crear_producto_catalogo():
         return jsonify({'success': False, 'error': 'Número de registro es obligatorio'}), 400
     
     try:
+        cod_ab_val = data.get('cod_ab')
+        cod_ab = int(cod_ab_val) if cod_ab_val else None
+        cod_monodroga_val = data.get('cod_monodroga')
+        cod_monodroga = int(cod_monodroga_val) if cod_monodroga_val else None
+        cod_laboratorio_val = data.get('cod_laboratorio')
+        cod_laboratorio = int(cod_laboratorio_val) if cod_laboratorio_val else None
+        multidosis_val = data.get('multidosis')
+        multidosis = int(multidosis_val) if multidosis_val else None
+        
         with db.get_connection() as conn:
             cursor = conn.cursor()
             if USE_POSTGRES:
@@ -168,9 +183,9 @@ def crear_producto_catalogo():
                     float(data['precio_caja']) if data.get('precio_caja') else None,
                     float(data['precio_unitario']) if data.get('precio_unitario') else None,
                     float(data['costo_unitario']) if data.get('costo_unitario') else None,
-                    data.get('fecha', ''), data.get('troquel', ''), data.get('cod_ab'),
-                    data.get('troquel_ean', ''), data.get('cod_monodroga'),
-                    data.get('cod_laboratorio'), data.get('multidosis')
+                    data.get('fecha', ''), data.get('troquel', ''), cod_ab,
+                    data.get('troquel_ean', ''), cod_monodroga,
+                    cod_laboratorio, multidosis
                 ))
             else:
                 cursor.execute("""
@@ -184,9 +199,9 @@ def crear_producto_catalogo():
                     float(data['precio_caja']) if data.get('precio_caja') else None,
                     float(data['precio_unitario']) if data.get('precio_unitario') else None,
                     float(data['costo_unitario']) if data.get('costo_unitario') else None,
-                    data.get('fecha', ''), data.get('troquel', ''), data.get('cod_ab'),
-                    data.get('troquel_ean', ''), data.get('cod_monodroga'),
-                    data.get('cod_laboratorio'), data.get('multidosis')
+                    data.get('fecha', ''), data.get('troquel', ''), cod_ab,
+                    data.get('troquel_ean', ''), cod_monodroga,
+                    cod_laboratorio, multidosis
                 ))
             conn.commit()
         return jsonify({'success': True}), 201
@@ -200,6 +215,15 @@ def actualizar_producto_catalogo(id):
         return jsonify({'success': False, 'error': 'Request body no puede estar vacío'}), 400
     
     try:
+        cod_ab_val = data.get('cod_ab')
+        cod_ab = int(cod_ab_val) if cod_ab_val else None
+        cod_monodroga_val = data.get('cod_monodroga')
+        cod_monodroga = int(cod_monodroga_val) if cod_monodroga_val else None
+        cod_laboratorio_val = data.get('cod_laboratorio')
+        cod_laboratorio = int(cod_laboratorio_val) if cod_laboratorio_val else None
+        multidosis_val = data.get('multidosis')
+        multidosis = int(multidosis_val) if multidosis_val else None
+        
         with db.get_connection() as conn:
             cursor = conn.cursor()
             if USE_POSTGRES:
@@ -213,9 +237,9 @@ def actualizar_producto_catalogo(id):
                     float(data['precio_caja']) if data.get('precio_caja') else None,
                     float(data['precio_unitario']) if data.get('precio_unitario') else None,
                     float(data['costo_unitario']) if data.get('costo_unitario') else None,
-                    data.get('fecha', ''), data.get('troquel', ''), data.get('cod_ab'),
-                    data.get('troquel_ean', ''), data.get('cod_monodroga'),
-                    data.get('cod_laboratorio'), data.get('multidosis'), id
+                    data.get('fecha', ''), data.get('troquel', ''), cod_ab,
+                    data.get('troquel_ean', ''), cod_monodroga,
+                    cod_laboratorio, multidosis, id
                 ))
             else:
                 cursor.execute("""
@@ -228,9 +252,9 @@ def actualizar_producto_catalogo(id):
                     float(data['precio_caja']) if data.get('precio_caja') else None,
                     float(data['precio_unitario']) if data.get('precio_unitario') else None,
                     float(data['costo_unitario']) if data.get('costo_unitario') else None,
-                    data.get('fecha', ''), data.get('troquel', ''), data.get('cod_ab'),
-                    data.get('troquel_ean', ''), data.get('cod_monodroga'),
-                    data.get('cod_laboratorio'), data.get('multidosis'), id
+                    data.get('fecha', ''), data.get('troquel', ''), cod_ab,
+                    data.get('troquel_ean', ''), cod_monodroga,
+                    cod_laboratorio, multidosis, id
                 ))
             conn.commit()
         return jsonify({'success': True}), 200
@@ -360,8 +384,10 @@ def cargar_monodrogas():
             cursor = conn.cursor()
             for _, row in df.iterrows():
                 try:
-                    id_monodroga = int(row.get('ID', row.get('id', row.get('Cod Monodroga', 0))))
-                    descripcion = str(row.get('Descripcion', row.get('descripcion', row.get('Monodroga', ''))))
+                    id_val = row.get('ID') or row.get('id') or row.get('Cod Monodroga') or 0
+                    id_monodroga = int(id_val) if id_val else 0
+                    desc_val = row.get('Descripcion') or row.get('descripcion') or row.get('Monodroga') or ''
+                    descripcion = str(desc_val) if desc_val else ''
                     
                     if id_monodroga and descripcion:
                         if USE_POSTGRES:
@@ -404,7 +430,8 @@ def cargar_laboratorios():
                 id_laboratorio = None
                 for col in ['ID', 'id', 'Id', 'Cod Laboratorio', 'cod_laboratorio']:
                     if col in df.columns and pd.notna(row.get(col)):
-                        id_laboratorio = int(row.get(col)) if row.get(col) else None
+                        val = row.get(col)
+                        id_laboratorio = int(val) if val is not None else None
                         break
                 
                 # Buscar Descripción
