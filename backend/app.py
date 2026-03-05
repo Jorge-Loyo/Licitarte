@@ -151,6 +151,10 @@ def serve_template(filename):
 def serve_modules(filename):
     return send_from_directory(os.path.join(template_dir, 'modules'), filename)
 
+@app.route('/templates/<path:filename>')
+def serve_templates(filename):
+    return send_from_directory(os.path.join(template_dir, 'templates'), filename)
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     is_production = os.environ.get('FLASK_ENV') == 'production'
