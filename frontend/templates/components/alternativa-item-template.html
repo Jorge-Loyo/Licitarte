@@ -1,0 +1,47 @@
+<div class="alternativa-item" id="{{id}}" style="background: #0d0d0d; padding: 18px; border-radius: 8px; margin-bottom: 12px; position: relative; border: 1px solid #333;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #333;">
+        <span style="color: #999; font-size: 13px; font-weight: 600;">✨ Alternativa #{{numero}}</span>
+        <button type="button" class="btn-eliminar-alternativa" style="background: var(--danger-color); color: white; border: none; border-radius: 50%; width: 26px; height: 26px; cursor: pointer; font-size: 16px; font-weight: bold; transition: all 0.2s;">×</button>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+        <div class="form-group" style="position: relative;">
+            <label style="font-size: 12px; font-weight: 600; color: #999; margin-bottom: 6px; display: block;">Laboratorio *</label>
+            <input type="text" class="alt-laboratorio-input" placeholder="Escriba para buscar..." required style="font-size: 15px; padding: 10px; width: 100%; border: 1px solid #444; border-radius: 5px; background: #1a1a1a; color: white;">
+            <input type="hidden" class="alt-laboratorio">
+            <div class="alt-laboratorio-sugerencias" style="display: none; position: absolute; background: #1a1a1a; border: 1px solid var(--primary); border-radius: 5px; max-height: 200px; overflow-y: auto; z-index: 1000; width: calc(100% - 20px); box-shadow: 0 4px 6px rgba(0,0,0,0.3);"></div>
+        </div>
+        <div class="form-group">
+            <label style="font-size: 12px; font-weight: 600; color: #999; margin-bottom: 6px; display: block;">Marca - Presentación *</label>
+            <select class="alt-selector" disabled required style="font-size: 15px; padding: 10px; width: 100%; border: 1px solid #444; border-radius: 5px; background: #1a1a1a; color: white;">
+                <option value="">Primero seleccione laboratorio...</option>
+            </select>
+            <input type="hidden" class="alt-marca">
+            <input type="hidden" class="alt-presentacion">
+        </div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+        <div class="form-group">
+            <label style="font-size: 12px; font-weight: 600; color: #999; margin-bottom: 6px; display: block;">Costo Unitario</label>
+            <input type="number" class="alt-costo" step="0.01" min="0" style="font-size: 15px; padding: 10px; width: 100%; border: 1px solid #444; border-radius: 5px; background: #1a1a1a; color: white;">
+        </div>
+        <div class="form-group">
+            <label style="font-size: 12px; font-weight: 600; color: #999; margin-bottom: 6px; display: block;">Margen (%)</label>
+            <input type="number" class="alt-margen" step="0.01" min="0" style="font-size: 15px; padding: 10px; width: 100%; border: 1px solid #444; border-radius: 5px; background: #1a1a1a; color: white;">
+        </div>
+        <div class="form-group">
+            <label style="font-size: 12px; font-weight: 600; color: #999; margin-bottom: 6px; display: block;">Precio Ofertado</label>
+            <input type="number" class="alt-precio" step="0.01" min="0" readonly style="font-size: 15px; padding: 10px; width: 100%; border: 1px solid #444; border-radius: 5px; background: #333; color: var(--primary); cursor: not-allowed; font-weight: bold;">
+        </div>
+        <div class="form-group">
+            <label style="font-size: 12px; font-weight: 600; color: #999; margin-bottom: 6px; display: block;">Total Renglón</label>
+            <input type="text" class="alt-total-renglon" readonly style="font-size: 15px; padding: 10px; width: 100%; border: 1px solid #444; border-radius: 5px; background: #333; color: var(--primary); cursor: not-allowed; font-weight: bold;">
+        </div>
+    </div>
+    
+    <div class="form-group">
+        <label style="font-size: 12px; font-weight: 600; color: #999; margin-bottom: 6px; display: block;">Observaciones</label>
+        <textarea class="alt-observaciones" rows="2" style="font-size: 15px; padding: 10px; width: 100%; border: 1px solid #444; border-radius: 5px; background: #1a1a1a; color: white; resize: vertical; font-family: inherit;"></textarea>
+    </div>
+</div>
