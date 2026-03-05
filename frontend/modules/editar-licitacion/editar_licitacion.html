@@ -1,0 +1,167 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Editar Licitación - Licitarte{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>✏️ Editar Licitación</h2>
+    <button onclick="window.location.href='/gestion'" class="btn-secondary">← Volver a Gestión</button>
+</div>
+
+<form id="licitacionForm" class="form-container">
+    <input type="hidden" id="licitacionId">
+    
+    <div style="background: var(--bg-dark); padding: 30px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+        <h3 style="color: var(--primary); margin-bottom: 25px; font-size: 18px; font-weight: 600; border-bottom: 2px solid var(--primary); padding-bottom: 10px;">📋 DATOS DE LICITACIÓN</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px;">
+            <div class="form-group">
+                <label>N° Licitación *</label>
+                <input type="text" id="numeroLicitacion" required style="font-size: 16px; padding: 12px;">
+            </div>
+            <div class="form-group">
+                <label>Fecha de Carga</label>
+                <input type="text" id="fechaCarga" readonly style="background: #333; cursor: not-allowed; font-size: 16px; padding: 12px;">
+            </div>
+            <div class="form-group">
+                <label>Fecha de Apertura *</label>
+                <input type="date" id="fecha" required style="font-size: 16px; padding: 12px;">
+            </div>
+            <div class="form-group">
+                <label>Hora de Apertura *</label>
+                <input type="time" id="horaApertura" required style="font-size: 16px; padding: 12px;">
+            </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="form-group">
+                <label>Cliente *</label>
+                <select id="clienteSelect" required onchange="seleccionarCliente()" style="font-size: 16px; padding: 12px;">
+                    <option value="">Seleccione cliente...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Organismo/Jurisdicción</label>
+                <input type="text" id="clienteOrganismo" readonly style="background: #333; cursor: not-allowed; font-size: 16px; padding: 12px;">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Tipo de Licitación</label>
+            <select id="tipoLicitacionSelect" style="font-size: 16px; padding: 12px;">
+                <option value="">Seleccione tipo...</option>
+            </select>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+            <div class="form-group">
+                <label>Portal/Origen</label>
+                <select id="portalOrigen" style="font-size: 16px; padding: 12px;">
+                    <option value="">Seleccione...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Modalidad de Entrega</label>
+                <select id="modalidadEntrega" style="font-size: 16px; padding: 12px;">
+                    <option value="">Seleccione...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Forma de Pago</label>
+                <select id="formaPago" style="font-size: 16px; padding: 12px;">
+                    <option value="">Seleccione...</option>
+                </select>
+            </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px;">
+            <div class="form-group">
+                <label>Mantenimiento de Oferta</label>
+                <select id="mantenimientoOferta" style="font-size: 16px; padding: 12px;">
+                    <option value="">Seleccione...</option>
+                </select>
+            </div>
+            <div></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px;">
+            <div class="form-group">
+                <label>Tipo de Adjudicación</label>
+                <select id="tipoAdjudicacion" onchange="manejarTipoAdjudicacion()" style="font-size: 16px; padding: 12px;">
+                    <option value="Parcial">Parcial</option>
+                    <option value="Total">Total</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Observaciones</label>
+                <input type="text" id="observaciones" placeholder="Notas adicionales..." style="font-size: 16px; padding: 12px;">
+            </div>
+        </div>
+    </div>
+
+    <div style="background: var(--bg-dark); padding: 30px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+        <h3 style="color: var(--primary); margin-bottom: 25px; font-size: 18px; font-weight: 600; border-bottom: 2px solid var(--primary); padding-bottom: 10px;">📦 PRODUCTOS</h3>
+        <div id="productosContainer"></div>
+        <div style="text-align: center; margin-top: 20px;">
+            <button type="button" onclick="agregarProducto()" class="btn-primary" style="padding: 14px 30px; font-size: 17px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">➕ Agregar Producto</button>
+        </div>
+    </div>
+
+    <div style="background: var(--bg-dark); padding: 30px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+        <h3 style="color: var(--primary); margin-bottom: 25px; font-size: 18px; font-weight: 600; border-bottom: 2px solid var(--primary); padding-bottom: 10px;">📜 PÓLIZA DE GARANTÍA</h3>
+        <div style="display: grid; grid-template-columns: auto 1fr 1fr 1fr; gap: 15px; align-items: end;">
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" id="requierePoliza" style="width: 18px; height: 18px;"> Requiere Póliza
+                </label>
+            </div>
+            <div class="form-group">
+                <label>% sobre Monto Total</label>
+                <input type="number" step="0.01" id="porcentajePoliza" disabled oninput="calcularMontoPoliza()" placeholder="Ej: 5" style="font-size: 16px; padding: 12px;">
+            </div>
+            <div class="form-group">
+                <label>Monto Total Cotizado</label>
+                <input type="text" id="montoTotalDisplay" readonly style="background: #333; cursor: not-allowed; font-size: 16px; padding: 12px; font-weight: bold; color: var(--primary);">
+            </div>
+            <div class="form-group">
+                <label>Monto de Póliza</label>
+                <input type="text" id="montoPolizaDisplay" readonly style="background: #333; cursor: not-allowed; font-size: 16px; padding: 12px; font-weight: bold; color: var(--primary);">
+            </div>
+        </div>
+        <input type="hidden" id="montoPoliza">
+    </div>
+
+    <div id="margenTotalContainer" style="background: var(--bg-dark); padding: 30px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: none;">
+        <h3 style="color: var(--primary); margin-bottom: 25px; font-size: 18px; font-weight: 600; border-bottom: 2px solid var(--primary); padding-bottom: 10px;">💰 MARGEN TOTAL DE GANANCIA</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px;">
+            <div class="form-group">
+                <label>Costo Total</label>
+                <input type="text" id="costoTotalDisplay" readonly style="background: #333; cursor: not-allowed; font-size: 16px; padding: 12px; font-weight: bold; color: var(--primary);">
+            </div>
+            <div class="form-group">
+                <label>Precio Total Ofertado</label>
+                <input type="text" id="precioTotalDisplay" readonly style="background: #333; cursor: not-allowed; font-size: 16px; padding: 12px; font-weight: bold; color: var(--primary);">
+            </div>
+            <div class="form-group">
+                <label>Margen Total ($)</label>
+                <input type="text" id="margenTotalDisplay" readonly style="background: #333; cursor: not-allowed; font-size: 16px; padding: 12px; font-weight: bold; color: var(--success-color);">
+            </div>
+            <div class="form-group">
+                <label>Margen Total (%)</label>
+                <input type="text" id="margenTotalPorcentajeDisplay" readonly style="background: #333; cursor: not-allowed; font-size: 16px; padding: 12px; font-weight: bold; color: var(--success-color);">
+            </div>
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 20px; justify-content: flex-end; margin-top: 30px;">
+        <button type="button" onclick="window.location.href='/gestion'" class="btn-secondary" style="padding: 14px 35px; font-size: 17px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">Cancelar</button>
+        <button type="submit" class="btn-success" style="padding: 14px 35px; font-size: 17px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">✔ Guardar Cambios</button>
+    </div>
+</form>
+
+<div id="modalNotificacion" class="modal">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <h3 id="notificacionTitulo" style="color: var(--primary); margin-bottom: 20px;"></h3>
+        <p id="notificacionMensaje" style="font-size: 16px; margin-bottom: 25px;"></p>
+        <button onclick="cerrarNotificacion()" class="btn-primary" style="padding: 12px 30px;">Aceptar</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/modules/editar-licitacion/editar_licitacion.js"></script>
+{% endblock %}

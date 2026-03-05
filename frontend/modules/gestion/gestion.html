@@ -1,0 +1,222 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Licitaciones - Licitarte{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>📋 Licitaciones</h2>
+    <button onclick="cargarLicitaciones()" class="btn-primary">🔄 Actualizar</button>
+</div>
+
+<div class="search-box">
+    <input type="text" id="searchInput" placeholder="Buscar por N° o cliente..." onkeyup="filtrarLicitaciones()">
+    <select id="filtroTipo" onchange="filtrarLicitaciones()">
+        <option value="">Todos los tipos</option>
+    </select>
+</div>
+
+<div class="table-container">
+    <table id="licitacionesTable">
+        <thead>
+            <tr>
+                <th>N° Licitación</th>
+                <th>Cliente</th>
+                <th>Tipo</th>
+                <th>Fecha</th>
+                <th>Total Cotizado</th>
+                <th>Presupuesto N°</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="licitacionesBody"></tbody>
+    </table>
+</div>
+
+<div style="display: flex; justify-content: center; gap: 10px; margin-top: 15px;">
+    <button onclick="cambiarPaginaGestion(-1)" class="btn-secondary" id="btnAnteriorGestion">Anterior</button>
+    <span id="paginaInfoGestion" style="padding: 10px;">Página 1</span>
+    <button onclick="cambiarPaginaGestion(1)" class="btn-secondary" id="btnSiguienteGestion">Siguiente</button>
+</div>
+
+<div id="modalDetalle" class="modal">
+    <div class="modal-content" style="max-width: 90%;">
+        <span class="close" onclick="cerrarModal()">&times;</span>
+        <h3 id="detalleTitle">Detalle de Licitación</h3>
+        <div id="detalleInfo" style="background: #2a2a2a; padding: 15px; border-radius: 5px; margin-bottom: 20px;"></div>
+        <h4>Productos</h4>
+        <div class="table-container">
+            <table id="productosTable">
+                <thead>
+                    <tr>
+                        <th>Monodroga</th>
+                        <th>Marca - Presentación</th>
+                        <th>Cantidad</th>
+                        <th>Precio Oferta</th>
+                        <th>Total</th>
+                        <th>Observaciones</th>
+                        <th>Ganador</th>
+                        <th>Precio</th>
+                        <th>Laboratorio</th>
+                    </tr>
+                </thead>
+                <tbody id="productosBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div id="modalEditar" class="modal">
+    <div class="modal-content" style="max-width: 800px;">
+        <span class="close" onclick="cerrarModalEditar()">&times;</span>
+        <h3 id="modalEditarTitulo" style="color: var(--primary); margin-bottom: 25px; text-align: center;">Editar Producto</h3>
+        <form id="editarForm">
+            <input type="hidden" id="editProductoId">
+            
+            <div style="background: var(--bg-dark); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h4 style="color: var(--primary); margin-bottom: 15px; font-size: 14px;">DATOS DEL PRODUCTO</h4>
+                <div class="form-group">
+                    <label>Producto (Marca - Presentación) *</label>
+                    <select id="editProductoSelect" onchange="seleccionarProducto()" style="font-size: 16px; padding: 12px;">
+                        <option value="">Seleccione producto...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Monodroga *</label>
+                    <input type="text" id="editMonodroga" required readonly style="font-size: 16px; padding: 12px; background: #333;">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="form-group">
+                        <label>Marca *</label>
+                        <input type="text" id="editMarca" required readonly style="font-size: 16px; padding: 12px; background: #333;">
+                    </div>
+                    <div class="form-group">
+                        <label>Presentación *</label>
+                        <input type="text" id="editPresentacion" required readonly style="font-size: 16px; padding: 12px; background: #333;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Marca Ofrecida</label>
+                    <input type="text" id="editMarcaOfrecida" style="font-size: 16px; padding: 12px;">
+                </div>
+            </div>
+            
+            <div style="background: var(--bg-dark); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h4 style="color: var(--primary); margin-bottom: 15px; font-size: 14px;">MI OFERTA</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                    <div class="form-group">
+                        <label>Cantidad *</label>
+                        <input type="number" id="editCantidad" required style="font-size: 16px; padding: 12px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Precio Ofertado *</label>
+                        <input type="number" step="0.01" id="editPrecio" required style="font-size: 16px; padding: 12px;" oninput="calcularMargen()">
+                    </div>
+                    <div class="form-group">
+                        <label>Resultado *</label>
+                        <select id="editResultado" style="font-size: 16px; padding: 12px;">
+                            <option value="Parcial">Parcial</option>
+                            <option value="Adjudicado">Adjudicado</option>
+                            <option value="No Adjudicado">No Adjudicado</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="background: var(--bg-dark); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                <h4 style="color: var(--primary); margin-bottom: 15px; font-size: 14px;">DATOS DEL GANADOR</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                    <div class="form-group">
+                        <label>Oferente Ganador</label>
+                        <input type="text" id="editOferenteGanador" style="font-size: 16px; padding: 12px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Marca Ganadora</label>
+                        <input type="text" id="editMarcaGanadora" style="font-size: 16px; padding: 12px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Precio Ganador</label>
+                        <input type="number" step="0.01" id="editPrecioGanador" style="font-size: 16px; padding: 12px;">
+                    </div>
+                </div>
+                <div id="diferenciasContainer" style="display: none; margin-top: 15px; padding: 15px; background: #1a1a1a; border-radius: 5px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div>
+                            <label style="font-size: 12px; color: #888;">Diferencia $</label>
+                            <div id="diferenciaPesos" style="font-size: 18px; font-weight: bold; color: var(--danger-color);">-</div>
+                        </div>
+                        <div>
+                            <label style="font-size: 12px; color: #888;">Diferencia %</label>
+                            <div id="diferenciaPorcentaje" style="font-size: 18px; font-weight: bold; color: var(--danger-color);">-</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Motivo de Pérdida</label>
+                    <select id="editMotivoPerdida" disabled style="font-size: 16px; padding: 12px;">
+                        <option value="">Seleccione...</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="button" onclick="cerrarModalEditar()" class="btn-secondary">Cancelar</button>
+                <button type="submit" class="btn-success" style="padding: 12px 30px; font-size: 16px;">✔ Guardar Producto</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="modalEditarLicitacion" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="cerrarModalEditarLicitacion()">&times;</span>
+        <h3>Editar Licitación</h3>
+        <form id="editarLicitacionForm">
+            <input type="hidden" id="editLicitacionId">
+            <div class="form-group">
+                <label>N° Licitación *</label>
+                <input type="text" id="editNumeroLicitacion" required>
+            </div>
+            <div class="form-group">
+                <label>Cliente *</label>
+                <select id="editClienteSelect" required>
+                    <option value="">Seleccione cliente...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Tipo de Licitación</label>
+                <select id="editTipoLicitacionSelect">
+                    <option value="">Seleccione tipo...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Fecha *</label>
+                <input type="date" id="editFecha" required>
+            </div>
+            <button type="submit" class="btn-success">Guardar</button>
+        </form>
+    </div>
+</div>
+
+<div id="modalNotificacion" class="modal">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <h3 id="notificacionTitulo" style="color: var(--primary); margin-bottom: 20px;"></h3>
+        <p id="notificacionMensaje" style="font-size: 16px; margin-bottom: 25px;"></p>
+        <button onclick="cerrarNotificacion()" class="btn-primary" style="padding: 12px 30px;">Aceptar</button>
+    </div>
+</div>
+
+<div id="modalConfirmar" class="modal">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <h3 style="color: var(--danger-color); margin-bottom: 20px;">⚠️ Confirmar Eliminación</h3>
+        <p id="confirmarMensaje" style="font-size: 16px; margin-bottom: 25px;">¿Está seguro que desea eliminar esta licitación?</p>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+            <button onclick="cerrarModalConfirmar()" class="btn-secondary" style="padding: 12px 30px;">Cancelar</button>
+            <button onclick="confirmarEliminacion()" class="btn-danger" style="padding: 12px 30px;">Eliminar</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/modules/gestion/gestion.js"></script>
+{% endblock %}

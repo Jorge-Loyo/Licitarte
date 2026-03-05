@@ -1,403 +1,139 @@
-# Licitarte - Sistema de Gestión de Licitaciones Farmacéuticas
+# Licitarte - Sistema de Gestión de Licitaciones
 
-**Versión 1.3.2** - Sistema profesional para gestionar licitaciones farmacéuticas con análisis de márgenes, métricas avanzadas y normalización de catálogos.
-
-[![Versión](https://img.shields.io/badge/versión-1.3.2-blue.svg)](https://github.com/Jorge-Loyo/Licitarte)
-[![Python](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/)
-[![Flask](https://img.shields.io/badge/flask-3.0.0-green.svg)](https://flask.palletsprojects.com/)
-[![Licencia](https://img.shields.io/badge/licencia-Propietario-red.svg)](LICENSE)
-
-## Novedades v1.3.2
-
-- ✨ **Normalización de Catálogos**: Sincronización automática de Laboratorios y Monodrogas desde tabla Medicamentos
-- ✨ **Preservación de Correcciones**: Las ediciones del usuario en catálogos maestros se mantienen en futuras cargas
-- ✨ **Búsqueda Inteligente**: Autocompletado de laboratorios desde la primera letra
-- ✨ **Flujo Optimizado**: Monodroga → Laboratorio → Marca-Presentación con filtrado en cascada
-- ✨ **Propagación Automática**: Correcciones en tablas maestras se aplican a todos los medicamentos
-
-## Características
-
-### Gestión Completa
-- ✅ Licitaciones con datos completos (portal, modalidad, forma pago, pólizas)
-- ✅ Productos con análisis de margen en tiempo real
-- ✅ Catálogo Celty con costos unitarios
-- ✅ Clientes con organismo/jurisdicción
-- ✅ Oferentes, marcas, tipos de licitación
-- ✅ Catálogos configurables (portales, modalidades, formas pago, organismos, motivos pérdida)
-
-### Dashboard & Métricas
-- ✅ 6 indicadores clave (unidades, porcentajes, dinero)
-- ✅ Histórico de precios con filtros
-- ✅ Productos adjudicados paginados
-- ✅ Formato argentino con notación MILL
-
-### Módulo Métricas
-- ✅ Ranking de causas de pérdidas
-- ✅ Diferencia promedio $ y % vs ganador
-- ✅ Análisis de competitividad
-
-### Análisis de Rentabilidad
-- ✅ Alerta roja: Precio ≤ costo
-- ✅ Alerta amarilla: Margen < 8%
-- ✅ Alerta verde: Margen ≥ 8%
-- ✅ Cálculo automático al cotizar
-
-### Interfaz Moderna
-- ✅ Modales con secciones agrupadas
-- ✅ Inputs grandes (16px font, 12px padding)
-- ✅ Scrollbars personalizados
-- ✅ Notificaciones custom
-- ✅ Tema claro/oscuro
-
-## Tecnologías
-
-- **Backend**: Python 3.11, Flask 3.0
-- **Base de Datos**: SQLite (local) / PostgreSQL (producción)
-- **Frontend**: HTML5, CSS3, JavaScript Vanilla
-- **Despliegue**: Gunicorn, Render.com
-
-## 🚀 Inicio Rápido con Docker
-
-### Requisitos
-- Docker Desktop
-- Python 3.11
-
-### Pasos
-
-```bash
-# 1. Iniciar PostgreSQL
-docker-compose up -d
-
-# 2. Configurar entorno
-cd web
-copy .env.example .env
-
-# 3. Instalar dependencias
-pip install -r requirements.txt
-
-# 4. Ejecutar migraciones
-cd ..
-python shared/database/run_migrations.py
-
-# 5. Iniciar aplicación
-cd web
-python app.py
-```
-
-Abre: **http://localhost:5000**
-
-📖 **Guía completa**: Ver [INICIO_RAPIDO.md](INICIO_RAPIDO.md)
+Sistema web para gestión de licitaciones farmacéuticas con Flask y PostgreSQL.
 
 ## Estructura del Proyecto
 
 ```
 Licitarte/
-├── database/
-│   ├── db_manager.py          # Gestor de base de datos
-│   ├── licitaciones.db        # Base de datos SQLite
-│   └── migrate_*.py           # Scripts de migración
-├── web/
-│   ├── static/
-│   │   ├── css/style.css      # Estilos modernizados
+├── backend/              # Backend Flask
+│   ├── api/             # API REST
+│   │   ├── routes/      # Endpoints
+│   │   ├── services/    # Lógica de negocio
+│   │   ├── models/      # Modelos de datos
+│   │   └── schemas/     # Validación
+│   ├── database/        # Base de datos
+│   ├── middleware/      # Middleware
+│   ├── utils/          # Utilidades
+│   ├── app.py          # Aplicación principal
+│   └── config.py       # Configuración
+├── frontend/           # Frontend
+│   ├── static/        # CSS, JS, imágenes
+│   │   ├── css/
 │   │   ├── js/
-│   │   │   ├── ingreso.js     # Nueva licitación con análisis margen
-│   │   │   ├── gestion.js     # Gestión con diferencias
-│   │   │   ├── dashboard.js   # Dashboard 6 indicadores
-│   │   │   ├── metricas.js    # Módulo métricas
-│   │   │   ├── administracion.js  # CRUD catálogos
-│   │   │   └── theme.js       # Tema claro/oscuro
-│   │   └── img/Logo_licitarte.png
-│   ├── templates/
-│   │   ├── base.html          # Template base
-│   │   ├── dashboard.html     # Dashboard mejorado
-│   │   ├── ingreso.html       # Formulario modernizado
-│   │   ├── gestion.html       # Gestión con diferencias
-│   │   ├── metricas.html      # Módulo métricas
-│   │   ├── administracion.html # 9 catálogos
-│   │   └── ayuda.html         # Manual actualizado
-│   ├── app.py                 # Aplicación Flask
-│   └── requirements.txt       # Dependencias
-├── Data/Celty.xlsx            # Catálogo productos
-└── README.md                  # Este archivo
+│   │   │   ├── modules/  # Módulos JS
+│   │   │   ├── pages/    # JS por página
+│   │   │   └── shared/   # JS compartido
+│   │   └── img/
+│   └── templates/     # Templates HTML
+│       ├── components/
+│       └── pages/
+├── docker/            # Docker Compose
+├── data/             # Datos y backups
+├── scripts/          # Scripts de utilidad
+├── tests/            # Tests
+└── docs/             # Documentación
 ```
 
-## Módulos
+## Requisitos
 
-### 1. Dashboard
-- 6 indicadores: Unidades cotizadas/ganadas, % unidades, Total cotizado/ganado, % dinero
-- Formato MILL para montos grandes
-- Histórico de precios con filtros
-- Productos adjudicados paginados
+- Python 3.11+
+- Docker Desktop
+- PostgreSQL 15 (via Docker)
 
-### 2. Nueva Licitación
-- Formulario modernizado con secciones agrupadas
-- Datos completos: Portal, Modalidad, Forma Pago, Póliza, Observaciones
-- Selección de productos con análisis de margen en tiempo real
-- Alertas visuales: Rojo (≤costo), Amarillo (<8%), Verde (≥8%)
-- Auto-completado de campos según resultado
-- Múltiples productos por licitación
+## Instalación Rápida
 
-### 3. Gestión
-- Listado con Total Cotizado por licitación
-- Búsqueda y filtros avanzados
-- Detalle con columnas Dif. $ y Dif. % para no adjudicados
-- Edición de productos con análisis de margen
-- Modal modernizado con 3 secciones
-- Agregar productos a licitaciones existentes
+1. Clonar repositorio:
+```bash
+git clone <repo>
+cd Licitarte
+```
 
-### 4. Métricas
-- Ranking de causas de pérdidas con cantidad y %
-- Diferencia promedio $ y % vs ganador
-- Análisis de competitividad
+2. Iniciar aplicación:
+```bash
+start.bat
+```
 
-### 5. Administración
-- **Clientes**: Con organismo/jurisdicción (auto-completa en licitación)
-- **Catálogo Medicamentos**: 14 campos completos del Excel Alfabeta
-- **Catálogo Laboratorios**: Tabla maestra normalizada, preserva correcciones del usuario
-- **Catálogo Monodrogas**: Tabla maestra normalizada, preserva correcciones del usuario
-- **Sincronización Automática**: Al cargar Excel, sincroniza Laboratorios y Monodrogas
-- **Normalización**: Medicamentos usa siempre descripciones de tablas maestras
-- **Oferentes, Marcas, Tipos**: CRUD completo
-- **Organismos/Jurisdicción**: Catálogo configurable
-- **Portales/Origen**: Catálogo configurable
-- **Modalidades Entrega**: Catálogo configurable
-- **Formas de Pago**: Catálogo configurable
-- **Motivos Pérdida**: Catálogo configurable (5 por defecto)
-- Carga masiva desde Excel
-- Scroll lateral en catálogo productos
+El script automáticamente:
+- Crea entorno virtual
+- Instala dependencias
+- Inicia PostgreSQL en Docker
+- Inicia aplicación Flask
 
-### 6. Ayuda
-- Manual de usuario actualizado v1.1.0
-- Guías paso a paso
-- Nuevas funcionalidades documentadas
+## Configuración
+
+Editar `.env` con tus configuraciones:
+
+```env
+DATABASE_URL=postgresql://licitarte:licitarte123@localhost:5433/licitarte_db
+SECRET_KEY=tu-secret-key
+FLASK_ENV=development
+```
 
 ## Base de Datos
 
-### Tablas Principales
-- **clientes**: nombre, razon_social, cuit, direccion, telefono, email, organismo_jurisdiccion
-- **licitaciones**: numero, cliente_id, tipo_id, fecha, portal_origen, modalidad_entrega, forma_pago, requiere_poliza, monto_poliza, observaciones
-- **productos**: licitacion_id, monodroga, marca, presentacion, cantidad, precio_ofertado, resultado, precio_ganador, oferente_ganador, marca_ofrecida, marca_ganadora, motivo_perdida
-- **medicamentos**: 14 campos (troquel, cod_ab, troquel_ean, numero_registro, cod_monodroga, monodroga, cod_laboratorio, laboratorio, marca, presentacion, multidosis, precio_caja, precio_unitario, fecha)
-- **laboratorios**: Tabla maestra normalizada (id, nombre, activo)
-- **monodrogas**: Tabla maestra normalizada (id, nombre, activo)
+PostgreSQL corre en Docker:
+- Host: localhost
+- Puerto: 5433
+- Usuario: licitarte
+- Password: licitarte123
+- Base de datos: licitarte_db
 
-### Catálogos Configurables
-- **oferentes**, **marcas**, **tipos_licitacion**
-- **portales_origen**, **modalidades_entrega**, **formas_pago**
-- **organismos_jurisdiccion**, **motivos_perdida**
+### Comandos Docker
 
-## Análisis de Márgenes
-
-### Lógica de Alertas
-```javascript
-if (precioOfertado <= costoUnitario) {
-    // ROJO: Pérdida
-    margen = ((precioOfertado - costoUnitario) / costoUnitario) * 100
-} else if (margen < 8%) {
-    // AMARILLO: Margen bajo
-} else {
-    // VERDE: Margen aceptable
-}
-```
-
-### Aplicación
-- Nueva Licitación: Al ingresar precio ofertado
-- Gestión: Al editar producto
-- Requiere costo unitario cargado en catálogo
-
-## Diferencias vs Ganador
-
-### Cálculo Automático
-```javascript
-diferenciaPesos = precioOfertado - precioGanador
-diferenciaPorcentaje = (diferenciaPesos / precioGanador) * 100
-```
-
-### Visualización
-- Columnas Dif. $ y Dif. % en tabla de productos
-- Solo para resultado "No Adjudicado"
-- Formato argentino con MILL
-
-## Formato de Moneda
-
-### Regla MILL
-```javascript
-if (valor >= 1000000) {
-    return (valor / 1000000).toFixed(2) + ' MILL'
-} else {
-    return valor.toLocaleString('es-AR')
-}
-```
-
-### Ejemplos
-- $200.000.000,00 → $200,00 MILL
-- $850.500,50 → $850.500,50
-
-## Seguridad
-
-- ✓ Parametrización de consultas SQL (prevención SQL injection)
-- ✓ Validación de entrada en backend
-- ✓ SECRET_KEY único por entorno
-- ✓ Variables de entorno para credenciales
-- ✓ Manejo seguro de errores
-- ✓ CSRF protection en formularios
-- ✓ Sanitización de datos de usuario
-
-## Escalabilidad
-
-- ✓ Paginación en todas las tablas
-- ✓ Índices en columnas frecuentes
-- ✓ Context managers para conexiones DB
-- ✓ Soporte PostgreSQL para producción
-- ✓ Arquitectura modular
-- ✓ Separación frontend/backend
-- ✓ API REST para futuras integraciones
-
-## Despliegue a Producción
-
-### Variables de Entorno
 ```bash
-DATABASE_URL=postgresql://user:pass@host:5432/db
-SECRET_KEY=tu-secret-key-segura
-FLASK_ENV=production
-PORT=5000
+# Iniciar BD
+cd docker
+docker-compose up -d
+
+# Detener BD
+docker-compose down
+
+# Ver logs
+docker-compose logs -f
+
+# Backup
+docker exec licitarte_db pg_dump -U licitarte licitarte_db > backup.sql
 ```
 
-### Render.com
-1. Conectar repositorio GitHub
-2. Configurar variables de entorno
-3. Desplegar automáticamente
-4. Ejecutar migraciones si es necesario
+## Desarrollo
 
-## Mantenimiento
+### Estructura Modular
 
-### Actualizar Catálogo
+El proyecto usa arquitectura modular:
+
+**Backend:**
+- `api/routes/` - Endpoints REST
+- `api/services/` - Lógica de negocio
+- `api/models/` - Modelos de datos
+- `database/` - Gestión de BD
+
+**Frontend:**
+- `static/js/modules/` - Módulos reutilizables
+- `static/js/pages/` - JS específico por página
+- `templates/components/` - Componentes HTML
+
+### Ejecutar Tests
+
 ```bash
-python -c "from database.db_manager import DatabaseManager; db = DatabaseManager(); db.cargar_catalogo_desde_excel('Data/Celty.xlsx')"
+pytest tests/
 ```
 
-### Backup
-```bash
-# SQLite
-cp database/licitaciones.db database/backup_$(date +%Y%m%d).db
+## Endpoints Principales
 
-# PostgreSQL
-pg_dump $DATABASE_URL > backup_$(date +%Y%m%d).sql
-```
+- `GET /` - Dashboard
+- `GET /gestion` - Gestión de licitaciones
+- `GET /administracion` - Administración
+- `POST /api/licitaciones` - Crear licitación
+- `GET /api/catalogos` - Obtener catálogos
 
-### Migraciones
-```bash
-cd database
-python migrate_v2.py
-python migrate_catalogos.py
-python migrate_organismos.py
-python add_motivo_perdida.py
-```
+## Tecnologías
 
-## 🛠️ Solución de Problemas
-
-### Error: "KeyError: 'total_licitaciones'"
-**Solución**: Actualizar `db_manager.py` con el método `obtener_estadisticas()` completo.
-
-### Error: "Port 5000 already in use"
-**Solución**:
-```bash
-# Cambiar puerto
-export PORT=5001  # Linux/Mac
-set PORT=5001     # Windows
-python app.py
-```
-
-### Error: "No module named 'flask'"
-**Solución**:
-```bash
-cd web
-pip install -r requirements.txt
-```
-
-### Base de datos no se crea
-**Solución**:
-```bash
-mkdir database
-chmod 755 database  # Linux/Mac
-```ckup
-```bash
-# SQLite
-cp database/licitaciones.db database/backup_$(date +%Y%m%d).db
-
-# PostgreSQL
-pg_dump $DATABASE_URL > backup_$(date +%Y%m%d).sql
-```
-
-### Migraciones
-```bash
-cd database
-python migrate_v2.py
-python migrate_catalogos.py
-python migrate_organismos.py
-python add_motivo_perdida.py
-```
-
-## Changelog v1.1.0
-
-### Agregado
-- Módulo Métricas con ranking de pérdidas y diferencias promedio
-- Análisis de márgenes con alertas visuales (rojo/amarillo/verde)
-- Campo costo_unitario en catálogo de productos
-- Catálogos configurables: Portales, Modalidades, Formas Pago, Organismos, Motivos Pérdida
-- Columnas Dif. $ y Dif. % en productos no adjudicados
-- Dashboard con 6 indicadores (unidades, porcentajes, dinero)
-- Formato MILL para montos ≥1M
-- Campo organismo_jurisdiccion en clientes (auto-completa en licitación)
-- Campos v2.0 en licitaciones: portal_origen, modalidad_entrega, forma_pago, requiere_poliza, monto_poliza, observaciones
-- Total Cotizado por licitación en Gestión
-- Agregar productos a licitaciones existentes
-- Notificaciones custom en lugar de alert()
-- Scrollbars personalizados
-
-### Mejorado
-- Modales modernizados con secciones agrupadas
-- Inputs más grandes (16px font, 12px padding)
-- Formulario Nueva Licitación completamente rediseñado
-- Tabla catálogo con scroll lateral y header sticky
-- Lógica de resultado: Adjudicado auto-completa, No Adjudicado requiere motivo
-- Marca Ofrecida por defecto "Celtyc"
-- Resultado por defecto "Parcial"
-
-### Corregido
-- Múltiples archivos de base de datos consolidados
-- Referencia USE_POSTGRES en endpoints
-- Fecha se mantiene al editar productos del catálogo
-- Excel no sobrescribe costo_unitario (solo manual)
+- **Backend:** Flask, SQLAlchemy, Flask-Login
+- **Frontend:** JavaScript ES6+, HTML5, CSS3
+- **Base de Datos:** PostgreSQL 15
+- **Contenedores:** Docker, Docker Compose
 
 ## Licencia
 
-Propietario - Todos los derechos reservados
-
-## Versión
-
-**1.3.2** - Febrero 2025 - ✅ EN PRODUCCIÓN
-
-### 🚀 Acceso a Producción
-**URL:** https://licitarte.onrender.com (reemplaza con tu URL)
-
-### Novedades v1.3.2
-- ✅ Normalización de Catálogos: Laboratorios y Monodrogas sincronizados automáticamente
-- ✅ Preservación de Correcciones: Ediciones del usuario se mantienen en futuras cargas
-- ✅ Búsqueda Inteligente: Autocompletado de laboratorios desde primera letra
-- ✅ Flujo Optimizado: Monodroga → Laboratorio → Marca-Presentación
-- ✅ Propagación Automática: Correcciones se aplican a todos los medicamentos
-
-### Características v1.2.0
-- ✅ Producción Ready: Desplegado en Render con PostgreSQL
-- ✅ HTTP Status Codes: 100% compliance (54 endpoints corregidos)
-- ✅ Logging Estructurado: Sistema de logs con rotación
-- ✅ Migraciones Versionadas: Control de cambios en base de datos
-- ✅ Validaciones Pydantic: Validación robusta de datos
-- ✅ Tests Automatizados: 28% coverage con pytest (9/9 passing)
-- ✅ Seguridad Mejorada: SECRET_KEY fija, PostgreSQL, .env protegido
-- ✅ Documentación Completa: Análisis técnico y guías de deploy
-
-## Autor
-
-Jorge - Licitarte 2025
+Propietario

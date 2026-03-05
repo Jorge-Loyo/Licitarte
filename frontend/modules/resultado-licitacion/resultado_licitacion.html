@@ -1,0 +1,110 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Resultado Licitación - Licitarte{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Resultado de Licitación</h1>
+    <div id="infoLicitacion"></div>
+</div>
+
+<div class="content-section">
+    <table>
+        <thead>
+            <tr>
+                <th>Monodroga</th>
+                <th>Alt</th>
+                <th>Marca-Presentación</th>
+                <th>Laboratorio</th>
+                <th>Cantidad</th>
+                <th>Precio</th>
+                <th>Resultado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="listaProductos">
+        </tbody>
+    </table>
+    
+    <div style="margin-top: 20px; display: flex; justify-content: space-between;">
+        <button class="btn-secondary" onclick="window.location.href='/gestion-nueva'">← Volver</button>
+        <button class="btn-primary" onclick="guardarResultados()">💾 Guardar</button>
+    </div>
+</div>
+
+<!-- Modal Alternativas -->
+<div id="modalAlternativas" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="cerrarModalAlternativas()">&times;</span>
+        <h2>Seleccionar Alternativa</h2>
+        <div id="productoActual" style="margin-bottom: 20px;"></div>
+        <div id="listaAlternativas"></div>
+        <div style="margin-top: 20px; text-align: right;">
+            <button class="btn-secondary" onclick="cerrarModalAlternativas()">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Ofertas -->
+<div id="modalOfertas" class="modal">
+    <div class="modal-content" style="max-width: 800px;">
+        <div style="background: linear-gradient(135deg, #4dd0e1 0%, #26c6da 100%); padding: 20px; margin: -30px -30px 20px -30px; border-radius: 10px 10px 0 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="margin: 0; color: black; font-size: 24px;">💰 Ofertas del Producto</h2>
+                <span class="close" onclick="cerrarModalOfertas()" style="color: black; font-size: 32px;">&times;</span>
+            </div>
+            <div id="infoProductoOferta" style="margin-top: 10px; color: #333; font-size: 14px; background: rgba(255,255,255,0.9); padding: 10px; border-radius: 5px;"></div>
+        </div>
+        
+        <div id="listaOfertas" style="max-height: 400px; overflow-y: auto; margin-bottom: 20px;"></div>
+        
+        <div style="display: flex; gap: 10px; justify-content: space-between;">
+            <button class="btn-primary" onclick="agregarOferta()" style="flex: 1; padding: 12px; font-size: 16px;">➕ Agregar oferente</button>
+            <button class="btn-secondary" onclick="cerrarModalOfertas()" style="padding: 12px 20px;">Cancelar</button>
+            <button class="btn-success" onclick="guardarOfertas()" style="padding: 12px 20px;">💾 Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nuevo Oferente -->
+<div id="modalNuevoOferente" class="modal">
+    <div class="modal-content" style="max-width: 400px;">
+        <span class="close" onclick="cerrarModalNuevoOferente()">&times;</span>
+        <h2>Nuevo Oferente</h2>
+        <form id="formNuevoOferente">
+            <div style="margin-bottom: 15px;">
+                <label>Nombre:</label>
+                <input type="text" id="nuevoOferenteNombre" required style="width: 100%;">
+            </div>
+            <div style="text-align: right;">
+                <button type="button" class="btn-secondary" onclick="cerrarModalNuevoOferente()">Cancelar</button>
+                <button type="submit" class="btn-primary">💾 Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Seleccionar Ganador -->
+<div id="modalSeleccionarGanador" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <div style="background: linear-gradient(135deg, #ff5252 0%, #ff1744 100%); padding: 20px; margin: -30px -30px 20px -30px; border-radius: 10px 10px 0 0;">
+            <h2 style="margin: 0; color: white; font-size: 22px;">🏆 Seleccionar Ganador del Renglón</h2>
+        </div>
+        <div id="infoProductoGanador" style="margin-bottom: 20px; padding: 15px; background: #f5f5f5; border-radius: 5px; color: #333; font-size: 15px; line-height: 1.6; word-wrap: break-word;"></div>
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #333;">👥 Seleccione el oferente ganador:</label>
+            <select id="selectGanador" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 5px; font-size: 16px;">
+                <option value="">Seleccionar oferente...</option>
+            </select>
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button class="btn-secondary" onclick="cerrarModalGanador()">Cancelar</button>
+            <button class="btn-success" onclick="confirmarGanador()">✔ Confirmar</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/modules/resultado-licitacion/resultado_licitacion.js"></script>
+{% endblock %}

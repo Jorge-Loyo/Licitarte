@@ -4,92 +4,50 @@ __pycache__/
 *$py.class
 *.so
 .Python
-env/
 venv/
-.venv/
+env/
 ENV/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
 *.egg-info/
-.installed.cfg
-*.egg
+dist/
+build/
 
-# Base de datos local (nueva ubicación)
-shared/database/*.db
-!shared/database/licitaciones.db
-shared/database/*.db-journal
-shared/database/*_backup.db
+# Flask
+instance/
+.webassets-cache
 
-# Variables de entorno (CRÍTICO)
+# Environment
 .env
 .env.local
-.env.production
-web/.env
-web/.env.local
 
-# IDEs
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+backend/utils/logs/
+
+# Uploads
+uploads/
+*.xlsx
+*.xls
+
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# Logs
-*.log
-web/logs/
-logs/
-
 # OS
 .DS_Store
 Thumbs.db
 
-# Archivos temporales
-*.tmp
-*.bak
-
-# Uploads
-web/uploads/
-
-# Testing
-web/.coverage
-web/htmlcov/
-web/.pytest_cache/
-.coverage
-htmlcov/
-.pytest_cache/
-
-# Debug/Temporary scripts
-web/check_db.py
-**/check_tables.py
-**/migrar_datos.py
-
-# Distribución
-desktop/dist/
-*.rar
-*.zip
-*.exe
-
 # Backups
-data/backups/*
-!data/backups/.gitkeep
+*.bak
+*.backup
+data/backups/
 
-# Análisis y documentación local (NO SUBIR A GIT)
-ANALISIS_LICITARTE.md
-DOCKER_CONFIG.md
-
-# Legacy (eliminados en Fase 5)
-# modules/
-# database/
-# Img/
-# main.py
-# Licitarte_v1.0_Instalador/
+# Docker
+docker/postgres_data/

@@ -1,0 +1,44 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Documentación - Licitarte{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>📑 Documentación y Presupuestos</h2>
+</div>
+
+<div class="section">
+    <h3 style="color: var(--primary); margin-bottom: 20px;">Presupuestos Generados</h3>
+    
+    <div style="margin-bottom: 20px;">
+        <input type="text" id="buscarPresupuesto" placeholder="Buscar por número, licitación o cliente..." style="width: 100%; max-width: 400px; padding: 12px; font-size: 16px; border-radius: 6px; border: 1px solid var(--primary);">
+    </div>
+    
+    <div style="overflow-x: auto;">
+        <table id="tablaPresupuestos" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: var(--primary); color: white;">
+                    <th style="padding: 15px; text-align: center;">Presupuesto N°</th>
+                    <th style="padding: 15px; text-align: left;">Licitación</th>
+                    <th style="padding: 15px; text-align: left;">Cliente</th>
+                    <th style="padding: 15px; text-align: center;">Fecha Generación</th>
+                    <th style="padding: 15px; text-align: center;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="presupuestosBody">
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 40px; color: #999;">Cargando presupuestos...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div id="paginacion" style="margin-top: 20px; text-align: center;">
+        <button onclick="cargarPagina(paginaActual - 1)" id="btnAnterior" class="btn-secondary" style="margin: 0 5px;">← Anterior</button>
+        <span id="infoPagina" style="margin: 0 15px; font-size: 16px;">Página 1</span>
+        <button onclick="cargarPagina(paginaActual + 1)" id="btnSiguiente" class="btn-secondary" style="margin: 0 5px;">Siguiente →</button>
+    </div>
+</div>
+
+<script src="/modules/documentacion/documentacion.js"></script>
+{% endblock %}

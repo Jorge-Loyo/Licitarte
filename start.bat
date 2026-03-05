@@ -1,21 +1,31 @@
 @echo off
-echo Verificando PostgreSQL Docker...
+echo Iniciando Licitarte...
+echo.
 
-docker ps | findstr licitarte-postgres >nul 2>&1
-if %ERRORLEVEL% NEQ 0 (
-    echo.
-    echo ERROR: PostgreSQL Docker no esta corriendo
-    echo.
-    echo Inicia el contenedor con:
-    echo   docker start licitarte-postgres
-    echo.
-    echo O inicia docker-compose:
-    echo   docker-compose up -d
-    echo.
-    pause
-    exit /b 1
+cd /d "%~dp0"
+
+if not exist ".env" (
+    echo Copiando .env.example a .env...
+    copy .env.example .env
 )
 
-echo PostgreSQL OK - Iniciando aplicacion...
-cd web
+echo Activando entorno virtual...
+if exist "venv\Scripts\activate.bat" (
+    call venv\Scripts\activate.bat
+) else (
+    echo Creando entorno virtual...
+    python -m venv venv
+    call venv\Scripts\activate.bat
+    echo Instalando dependencias...
+    pip install -r requirements.txt
+)
+
+echo.
+echo "Base de datos ya existe en licitarte-postgres (puerto 5433)"
+
+echo.
+echo Iniciando aplicacion Flask...
+cd backend
 python app.py
+
+pause

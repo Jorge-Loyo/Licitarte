@@ -1,0 +1,267 @@
+{% extends "shared/base.html" %}
+
+{% block title %}Ayuda - Licitarte{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>❓ Manual de Usuario - v1.3.2</h2>
+</div>
+
+<div class="help-container">
+    <div class="help-sidebar">
+        <a href="#inicio" class="help-link">🏠 Inicio</a>
+        <a href="#ingreso" class="help-link">➕ Nueva Licitación</a>
+        <a href="#gestion" class="help-link">📋 Gestión</a>
+        <a href="#metricas" class="help-link">📈 Métricas</a>
+        <a href="#dashboard" class="help-link">📊 Dashboard</a>
+        <a href="#administracion" class="help-link">⚙️ Administración</a>
+        <a href="#consejos" class="help-link">🔧 Consejos</a>
+    </div>
+    
+    <div class="help-content">
+        <section id="inicio">
+            <h3>🏠 Bienvenido a Licitarte v1.3.2</h3>
+            <p>Sistema profesional para gestionar licitaciones farmacéuticas con análisis de márgenes, métricas avanzadas y normalización de catálogos.</p>
+            <h4>Novedades v1.3.2:</h4>
+            <ul>
+                <li>✨ Normalización de catálogos: Laboratorios y Monodrogas sincronizados automáticamente</li>
+                <li>✨ Búsqueda inteligente de laboratorios con autocompletado desde primera letra</li>
+                <li>✨ Preservación de correcciones del usuario en catálogos maestros</li>
+                <li>✨ Flujo optimizado: Monodroga → Laboratorio → Marca-Presentación</li>
+                <li>✨ Sincronización automática al cargar catálogo desde Excel</li>
+            </ul>
+            <h4>Características principales:</h4>
+            <ul>
+                <li>✨ Análisis de márgenes con alertas visuales (rojo/amarillo/verde)</li>
+                <li>✨ Módulo de métricas con ranking de pérdidas</li>
+                <li>✨ Diferencias $ y % vs ganador</li>
+                <li>✨ Catálogos configurables (portales, modalidades, formas pago, organismos, motivos)</li>
+                <li>✨ Dashboard con 6 indicadores</li>
+                <li>✨ Formato MILL para montos grandes</li>
+                <li>✨ Gestión de costos unitarios</li>
+            </ul>
+        </section>
+
+        <section id="ingreso">
+            <h3>➕ Nueva Licitación</h3>
+            <h4>Datos de Licitación:</h4>
+            <ul>
+                <li><strong>N° Licitación:</strong> Número único identificador (obligatorio)</li>
+                <li><strong>Cliente:</strong> Seleccione de la lista (obligatorio, auto-completa Organismo)</li>
+                <li><strong>Organismo/Jurisdicción:</strong> Se completa automáticamente</li>
+                <li><strong>Tipo de Licitación:</strong> Seleccione el tipo</li>
+                <li><strong>Fecha:</strong> Fecha de la licitación (obligatorio)</li>
+                <li><strong>Portal/Origen:</strong> Catálogo configurable</li>
+                <li><strong>Modalidad de Entrega:</strong> Catálogo configurable</li>
+                <li><strong>Forma de Pago:</strong> Catálogo configurable</li>
+                <li><strong>Requiere Póliza:</strong> Checkbox, habilita Monto de Póliza</li>
+                <li><strong>Observaciones:</strong> Notas adicionales</li>
+            </ul>
+            <h4>Agregar Productos:</h4>
+            <ol>
+                <li>Clic en "➕ Agregar Producto"</li>
+                <li><strong>Monodroga:</strong> Escriba al menos 3 letras para buscar (autocomplete desde tabla monodrogas)</li>
+                <li><strong>Laboratorio:</strong> Escriba desde la primera letra para filtrar (autocomplete desde tabla laboratorios)</li>
+                <li><strong>Marca - Presentación:</strong> Seleccione del catálogo filtrado por monodroga y laboratorio</li>
+                <li><strong>Cantidad:</strong> Unidades ofertadas (obligatorio)</li>
+                <li><strong>Costo Unitario:</strong> Se completa automáticamente del catálogo</li>
+                <li><strong>Margen (%):</strong> Ingrese margen deseado</li>
+                <li><strong>Precio Ofertado:</strong> Se calcula automáticamente (costo × (1 + margen/100))</li>
+                <li><strong>⚠️ ANÁLISIS DE MARGEN:</strong> Alerta automática según costo unitario:
+                    <ul>
+                        <li>🔴 ROJO: Precio ≤ costo (pérdida)</li>
+                        <li>🟡 AMARILLO: Margen < 8% (bajo)</li>
+                        <li>🟢 VERDE: Margen ≥ 8% (aceptable)</li>
+                    </ul>
+                </li>
+                <li><strong>Resultado:</strong> Parcial (defecto) / Adjudicado / No Adjudicado</li>
+                <li><strong>Marca Ofrecida:</strong> Por defecto "Celtyc"</li>
+                <li><strong>Oferente Ganador:</strong> Seleccione de la lista</li>
+                <li><strong>Marca Ganadora:</strong> Ingrese marca</li>
+                <li><strong>Precio Ganador:</strong> Precio del ganador</li>
+            </ol>
+            <h4>Lógica de Resultado:</h4>
+            <ul>
+                <li><strong>Adjudicado:</strong> Auto-completa Oferente="Ganada", Marca=Marca Ofrecida, Precio=Precio Ofertado (campos deshabilitados)</li>
+                <li><strong>No Adjudicado:</strong> Requiere todos los campos + Motivo de Pérdida (dropdown)</li>
+                <li><strong>Parcial:</strong> Campos habilitados sin requerirlos</li>
+            </ul>
+        </section>
+
+        <section id="gestion">
+            <h3>📋 Gestión de Licitaciones</h3>
+            <h4>Funciones Disponibles:</h4>
+            <ul>
+                <li><strong>Listar:</strong> Ver todas con paginación (10 por página)</li>
+                <li><strong>Total Cotizado:</strong> Suma de precio_ofertado × cantidad (formato MILL)</li>
+                <li><strong>Buscar:</strong> Filtrar por N° o cliente</li>
+                <li><strong>Filtrar por Tipo:</strong> Seleccione tipo específico</li>
+                <li><strong>Ganancia:</strong> Items adjudicados/total (ej: 3/5)</li>
+                <li><strong>Ver Detalle:</strong> Consultar todos los productos</li>
+                <li><strong>➕ Agregar Producto:</strong> Agregar productos a licitación existente</li>
+                <li><strong>Editar Licitación:</strong> Modificar datos principales</li>
+                <li><strong>Editar Producto:</strong> Modal con 3 secciones:
+                    <ul>
+                        <li>DATOS DEL PRODUCTO: Selección de catálogo, monodroga, marca, presentación, marca ofrecida</li>
+                        <li>MI OFERTA: Cantidad, precio ofertado, resultado, análisis de margen</li>
+                        <li>DATOS DEL GANADOR: Oferente, marca, precio, diferencias ($ y %), motivo pérdida</li>
+                    </ul>
+                </li>
+                <li><strong>Eliminar:</strong> Borrar licitaciones completas</li>
+            </ul>
+            <h4>Columnas en Tabla de Productos:</h4>
+            <ul>
+                <li>Monodroga, Marca - Presentación, Cantidad</li>
+                <li>Precio Ofertado, Total $ (precio × cantidad)</li>
+                <li>Resultado, Oferente Ganador, Marca Ganadora, Precio Ganador</li>
+                <li><strong>Dif. $:</strong> Diferencia en pesos vs ganador (solo No Adjudicado)</li>
+                <li><strong>Dif. %:</strong> Diferencia porcentual vs ganador (solo No Adjudicado)</li>
+                <li>Marca Ofrecida, Acciones</li>
+            </ul>
+        </section>
+
+        <section id="metricas">
+            <h3>📈 Métricas</h3>
+            <h4>Diferencias Promedio:</h4>
+            <ul>
+                <li><strong>Diferencia Promedio $:</strong> Promedio de diferencias en pesos de productos no adjudicados</li>
+                <li><strong>Diferencia Promedio %:</strong> Promedio de diferencias porcentuales</li>
+                <li>Formato MILL para montos grandes</li>
+            </ul>
+            <h4>Ranking de Causas de Pérdidas:</h4>
+            <ul>
+                <li>Tabla ordenada por cantidad de ocurrencias</li>
+                <li>Columnas: # (posición), Motivo, Cantidad, % del total</li>
+                <li>Análisis de competitividad</li>
+            </ul>
+        </section>
+
+        <section id="dashboard">
+            <h3>📊 Dashboard</h3>
+            <h4>6 Indicadores Clave:</h4>
+            <ul>
+                <li><strong>Unidades Cotizadas:</strong> Suma de todas las cantidades</li>
+                <li><strong>Unidades Ganadas:</strong> Suma de cantidades adjudicadas</li>
+                <li><strong>% Unidades Ganadas:</strong> Porcentaje de unidades adjudicadas</li>
+                <li><strong>Total Cotizado:</strong> Suma de precio_ofertado × cantidad (formato MILL)</li>
+                <li><strong>Total Ganado:</strong> Suma de adjudicados (formato MILL)</li>
+                <li><strong>% Dinero Ganado:</strong> Porcentaje de dinero adjudicado</li>
+            </ul>
+            <h4>Formato MILL:</h4>
+            <p>Montos ≥ $1.000.000 se muestran en millones. Ejemplo: $200.000.000,00 → $200,00 MILL</p>
+            <h4>Productos Adjudicados:</h4>
+            <p>Tabla con productos ganados con paginación (5 por página).</p>
+            <h4>Histórico de Precios:</h4>
+            <p>Consulte histórico con búsqueda por monodroga y paginación (5 por página).</p>
+        </section>
+
+        <section id="administracion">
+            <h3>⚙️ Administración</h3>
+            <h4>Gestión de Clientes:</h4>
+            <ul>
+                <li><strong>Crear:</strong> nombre*, organismo/jurisdicción*, razón social*, CUIT, dirección, teléfono, email</li>
+                <li><strong>Organismo:</strong> Seleccione de catálogo configurable</li>
+                <li><strong>Editar/Eliminar:</strong> Modificar o desactivar</li>
+                <li><strong>Carga Excel:</strong> Columnas: nombre, organismo_jurisdiccion, razon_social, cuit, direccion, telefono, email</li>
+            </ul>
+            <h4>Catálogo de Productos Medicamentos:</h4>
+            <ul>
+                <li><strong>Visualizar:</strong> Tabla con scroll lateral y header sticky</li>
+                <li><strong>Buscar:</strong> Filtrar por monodroga, marca, presentación o laboratorio</li>
+                <li><strong>Campos:</strong> N° Registro, Troquel, Cód AB, Troquel EAN, Cód Monodroga, Monodroga, Cód Laboratorio, Laboratorio, Marca, Presentación, Multidosis, Precio Caja, Precio Unitario, Fecha</li>
+                <li><strong>Carga Excel:</strong> Sincroniza automáticamente tablas Laboratorios y Monodrogas</li>
+                <li><strong>Normalización:</strong> Usa descripciones de tablas maestras (preserva correcciones del usuario)</li>
+                <li><strong>Agregar:</strong> Crear productos manualmente</li>
+            </ul>
+            <h4>Catálogo de Laboratorios:</h4>
+            <ul>
+                <li><strong>Tabla Maestra:</strong> Descripciones corregidas por el usuario</li>
+                <li><strong>Sincronización:</strong> Se alimenta automáticamente desde tabla Medicamentos</li>
+                <li><strong>Preservación:</strong> Correcciones del usuario NO se sobrescriben al cargar Excel</li>
+                <li><strong>Editar:</strong> Corrija nombres incorrectos (ej: "CELTY" → "Celty S.A.")</li>
+                <li><strong>Propagación:</strong> Correcciones se aplican a todos los medicamentos en futuras cargas</li>
+            </ul>
+            <h4>Catálogo de Monodrogas:</h4>
+            <ul>
+                <li><strong>Tabla Maestra:</strong> Descripciones corregidas por el usuario</li>
+                <li><strong>Sincronización:</strong> Se alimenta automáticamente desde tabla Medicamentos</li>
+                <li><strong>Preservación:</strong> Correcciones del usuario NO se sobrescriben al cargar Excel</li>
+                <li><strong>Editar:</strong> Corrija nombres incorrectos</li>
+                <li><strong>Propagación:</strong> Correcciones se aplican a todos los medicamentos en futuras cargas</li>
+            </ul>
+            <h4>Catálogos Configurables:</h4>
+            <ul>
+                <li><strong>Oferentes:</strong> CRUD + carga Excel</li>
+                <li><strong>Marcas:</strong> CRUD + carga Excel</li>
+                <li><strong>Tipos de Licitación:</strong> CRUD + carga Excel</li>
+                <li><strong>Organismos/Jurisdicción:</strong> CRUD (5 por defecto: Nacional, Provincial, Municipal, CABA, Privado)</li>
+                <li><strong>Portales/Origen:</strong> CRUD (3 por defecto: Comprar, BAC, Otro)</li>
+                <li><strong>Modalidades de Entrega:</strong> CRUD (3 por defecto: Única, Múltiple, Programada)</li>
+                <li><strong>Formas de Pago:</strong> CRUD (3 por defecto: Contado, 30 días, 60 días)</li>
+                <li><strong>Motivos de Pérdida:</strong> CRUD (5 por defecto: Precio más alto, Marca no priorizada, No cumplía especificación, Error administrativo, Otro)</li>
+            </ul>
+        </section>
+
+        <section id="consejos">
+            <h3>🔧 Consejos y Buenas Prácticas</h3>
+            <h4>Análisis de Márgenes:</h4>
+            <ul>
+                <li>Cargue costos unitarios en catálogo para análisis automático</li>
+                <li>Alerta roja indica pérdida, revise antes de confirmar</li>
+                <li>Alerta amarilla sugiere revisar competitividad</li>
+                <li>Alerta verde indica margen saludable (≥8%)</li>
+            </ul>
+            <h4>Ingreso de Datos:</h4>
+            <ul>
+                <li>Seleccione cliente para auto-completar organismo</li>
+                <li>Use catálogos configurables para estandarizar datos</li>
+                <li>Resultado "Adjudicado" auto-completa campos del ganador</li>
+                <li>Resultado "No Adjudicado" requiere motivo de pérdida</li>
+                <li>Marca Ofrecida por defecto es "Celtyc"</li>
+            </ul>
+            <h4>Gestión:</h4>
+            <ul>
+                <li>Use Total Cotizado para análisis de volumen</li>
+                <li>Revise Dif. $ y Dif. % para mejorar competitividad</li>
+                <li>Agregue productos a licitaciones existentes con botón ➕</li>
+                <li>Use búsqueda y filtros para análisis específicos</li>
+            </ul>
+            <h4>Métricas:</h4>
+            <ul>
+                <li>Revise ranking de pérdidas para identificar patrones</li>
+                <li>Use diferencias promedio para ajustar estrategia de precios</li>
+                <li>Analice % para entender competitividad relativa</li>
+            </ul>
+            <h4>Administración:</h4>
+            <ul>
+                <li>Mantenga actualizado catálogo Medicamentos</li>
+                <li>Corrija nombres en tablas Laboratorios y Monodrogas (se preservan en futuras cargas)</li>
+                <li>Configure catálogos según necesidades del negocio</li>
+                <li>Haga backup antes de cargas masivas</li>
+            </ul>
+            <h4>Normalización de Catálogos:</h4>
+            <ul>
+                <li><strong>Primera carga:</strong> Laboratorios/Monodrogas se crean con descripción del Excel</li>
+                <li><strong>Corrección manual:</strong> Edite nombres en tablas Laboratorios/Monodrogas</li>
+                <li><strong>Cargas posteriores:</strong> Sistema usa descripciones corregidas (no las del Excel)</li>
+                <li><strong>Ejemplo:</strong> Excel trae "CELTY" → Usuario corrige a "Celty S.A." → Futuras cargas usan "Celty S.A."</li>
+                <li><strong>Beneficio:</strong> Correcciones se mantienen y propagan automáticamente</li>
+            </ul>
+            <h4>Flujo de Selección de Productos:</h4>
+            <ul>
+                <li><strong>Paso 1:</strong> Buscar Monodroga (mínimo 3 letras, consulta tabla monodrogas)</li>
+                <li><strong>Paso 2:</strong> Buscar Laboratorio (desde primera letra, consulta tabla laboratorios)</li>
+                <li><strong>Paso 3:</strong> Seleccionar Marca-Presentación (filtrado por monodroga + laboratorio)</li>
+                <li><strong>Autocompletado:</strong> Ambos inputs filtran en tiempo real</li>
+                <li><strong>Validación:</strong> Solo muestra opciones válidas según filtros aplicados</li>
+            </ul>
+            <h4>Respaldos:</h4>
+            <ul>
+                <li>Base de datos: database/licitaciones.db</li>
+                <li>Catálogo: Data/Celty.xlsx</li>
+                <li>Haga copias periódicas</li>
+            </ul>
+        </section>
+    </div>
+</div>
+{% endblock %}
