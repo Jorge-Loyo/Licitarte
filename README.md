@@ -44,17 +44,21 @@ Licitarte/
 ## Instalación Rápida
 
 1. Clonar repositorio:
+
 ```bash
 git clone <repo>
 cd Licitarte
 ```
 
 2. Iniciar aplicación:
+
 ```bash
-start.bat
+bash start.sh
+
 ```
 
 El script automáticamente:
+
 - Crea entorno virtual
 - Instala dependencias
 - Inicia PostgreSQL en Docker
@@ -73,6 +77,7 @@ FLASK_ENV=development
 ## Base de Datos
 
 PostgreSQL corre en Docker:
+
 - Host: localhost
 - Puerto: 5433
 - Usuario: licitarte
@@ -103,12 +108,14 @@ docker exec licitarte_db pg_dump -U licitarte licitarte_db > backup.sql
 El proyecto usa arquitectura modular:
 
 **Backend:**
+
 - `api/routes/` - Endpoints REST
 - `api/services/` - Lógica de negocio
 - `api/models/` - Modelos de datos
 - `database/` - Gestión de BD
 
 **Frontend:**
+
 - `static/js/modules/` - Módulos reutilizables
 - `static/js/pages/` - JS específico por página
 - `templates/components/` - Componentes HTML

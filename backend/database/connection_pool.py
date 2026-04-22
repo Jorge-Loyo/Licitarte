@@ -1,7 +1,12 @@
 import os
 from contextlib import contextmanager
+from pathlib import Path
+from dotenv import load_dotenv
 import psycopg
 from psycopg_pool import ConnectionPool as PsycopgPool
+
+# Cargar .env desde la raíz del proyecto (dos niveles arriba de este archivo)
+load_dotenv(Path(__file__).parent.parent.parent / '.env')
 
 USE_POSTGRES = True
 
